@@ -1,0 +1,235 @@
+{
+  "questionnaire": {
+    "location": {
+      "question": "Où habitez-vous ?",
+      "subtitle": "Code postal ou ville (ex: 75001 Paris)"
+    },
+    "origin_country": {
+      "question": "De quel pays venez-vous ?",
+      "subtitle": "Pour mieux adapter nos services"
+    },
+    "main_goal": {
+      "question": "Quel est votre objectif principal ?",
+      "choices": {
+        "learn_french": "Apprendre / améliorer mon français",
+        "find_job": "Trouver un emploi rapidement",
+        "job_training": "Faire une formation pour un métier",
+        "need_help": "Je ne sais pas / besoin d'aide"
+      }
+    },
+    "contact_48h": {
+      "question": "Êtes-vous disponible pour être contacté sous 48 heures ?",
+      "subtitle": "Un conseiller vous appellera pour vous aider",
+      "choices": {
+        "yes": "Oui, je suis disponible",
+        "no": "Non, pas tout de suite"
+      }
+    },
+    "literacy": {
+      "question": "Savez-vous lire et écrire dans votre langue ?",
+      "choices": {
+        "yes": "Oui, couramment",
+        "partial": "Un peu",
+        "no": "Non"
+      }
+    },
+    "french_level_cecrl": {
+      "question": "En français, vous êtes plutôt :",
+      "subtitle": "Soyez honnête, cela nous aide à vous orienter",
+      "choices": {
+        "alpha": "Débutant total / Je ne parle pas français",
+        "a1": "A1 - Je connais quelques mots et phrases",
+        "a2": "A2 - Je me débrouille pour les choses simples",
+        "b1": "B1+ - Je suis à l'aise en français"
+      }
+    },
+    "work_right": {
+      "question": "Avez-vous le droit de travailler en France ?",
+      "subtitle": "Titre de séjour avec autorisation de travail",
+      "choices": {
+        "yes": "Oui",
+        "no": "Non",
+        "unknown": "Je ne sais pas"
+      }
+    },
+    "barriers": {
+      "question": "Avez-vous des difficultés à lever ?",
+      "subtitle": "Sélectionnez tout ce qui s'applique",
+      "choices": {
+        "childcare": "Garde d'enfants",
+        "transport": "Transport / mobilité",
+        "health": "Santé",
+        "housing": "Logement",
+        "admin": "Administratif (papiers)",
+        "schedule": "Contraintes horaires",
+        "none": "Aucun frein"
+      }
+    },
+    "sector_satisfaction": {
+      "question": "Souhaitez-vous continuer dans votre secteur d'activité ou vous reconvertir ?",
+      "subtitle": "Si vous souhaitez changer de métier, nous vous orienterons vers une formation",
+      "choices": {
+        "continue": "Continuer dans mon secteur",
+        "reconvert": "Me reconvertir dans un autre secteur"
+      }
+    },
+    "fle_type": {
+      "question": "Quel type de cours de français vous intéresse ?",
+      "choices": {
+        "general": "Français général (vie quotidienne)",
+        "professional": "Français professionnel (pour le travail)"
+      }
+    },
+    "fle_format": {
+      "question": "Quand préférez-vous suivre les cours ?",
+      "choices": {
+        "daytime": "En journée",
+        "evening": "Le soir",
+        "flexible": "Je suis flexible"
+      }
+    },
+    "target_sector": {
+      "question": "Quel secteur vous intéresse ?",
+      "subtitle": "Métiers en tension avec des offres disponibles",
+      "choices": {
+        "logistique": "Logistique / Entrepôt",
+        "transport": "Transport / Livraison / Mobilité",
+        "btp": "BTP / Travaux publics / Réseaux",
+        "proprete": "Propreté / Hygiène",
+        "hotellerie": "Hôtellerie – Restauration / Métiers de bouche",
+        "sante": "Santé – Médico-social / Aide à la personne",
+        "commerce": "Commerce / Vente / Relation client",
+        "admin_accueil": "Administration / Accueil / Secrétariat",
+        "industrie": "Industrie / Production / Maintenance",
+        "securite": "Sécurité / Sûreté",
+        "transversal": "Transversal (tous secteurs)"
+      }
+    },
+    "training_duration": {
+      "question": "Quelle durée de formation pouvez-vous faire ?",
+      "choices": {
+        "short": "Courte (1-2 mois)",
+        "medium": "Moyenne (3-6 mois)",
+        "long": "Longue (6+ mois)"
+      }
+    },
+    "mobility": {
+      "question": "Quelle est votre mobilité géographique ?",
+      "choices": {
+        "local": "Locale (< 30 km)",
+        "regional": "Régionale (30-100 km)",
+        "national": "Nationale"
+      }
+    },
+    "funding_status": {
+      "question": "Avez-vous un financement pour la formation ?",
+      "subtitle": "France Travail, OPCO, Région, CPF...",
+      "choices": {
+        "yes": "Oui, j'ai un financement",
+        "pending": "C'est en cours",
+        "no": "Non, pas encore",
+        "unknown": "Je ne sais pas"
+      }
+    },
+    "work_schedule": {
+      "question": "Quels horaires de travail acceptez-vous ?",
+      "choices": {
+        "standard": "Journée standard",
+        "flexible": "Horaires décalés (nuit/WE)",
+        "any": "Tout horaire"
+      }
+    },
+    "mobility_km": {
+      "question": "Quel rayon de déplacement acceptez-vous ?",
+      "choices": {
+        "close": "< 10 km",
+        "medium": "10-30 km",
+        "far": "> 30 km"
+      }
+    },
+    "immediate_availability": {
+      "question": "Êtes-vous disponible immédiatement ?",
+      "choices": {
+        "yes": "Oui, immédiatement",
+        "soon": "Dans 1-2 semaines",
+        "later": "Plus tard"
+      }
+    },
+    "contact_firstname": {
+      "question": "Quel est votre prénom ?"
+    },
+    "contact_lastname": {
+      "question": "Quel est votre nom de famille ?"
+    },
+    "contact_email": {
+      "question": "Quel est votre email ?",
+      "subtitle": "Pour recevoir votre orientation personnalisée"
+    }
+  },
+  "completion": {
+    "profileCreated": "Profil créé avec succès !",
+    "profileSubtitle": "Votre profil a été créé avec succès",
+    "summary": "Récapitulatif",
+    "score": "Score de qualification",
+    "scoreQualified": "Lead qualifié",
+    "scoreToComplete": "Lead à compléter",
+    "scoreToQualify": "Lead à qualifier",
+    "completeness": "Complétude",
+    "fit": "Adéquation",
+    "reactivity": "Réactivité",
+    "yourProfile": "Votre profil",
+    "availability": "Disponibilité",
+    "immediate": "Immédiate",
+    "oneToTwoWeeks": "1-2 semaines",
+    "later": "Plus tard",
+    "finalizing": "Finalisation...",
+    "discoverPath": "Découvrir mon parcours"
+  },
+  "tags": {
+    "route_a": "Parcours FLE",
+    "route_b": "Parcours Formation",
+    "route_c": "Parcours Emploi",
+    "alpha": "Niveau Alpha",
+    "a1": "Niveau A1",
+    "a2": "Niveau A2",
+    "b1": "Niveau B1+",
+    "work_permit": "Droit au travail",
+    "no_work_permit": "Sans droit au travail",
+    "reactive": "Disponible rapidement",
+    "contact_ok": "Joignable 48h",
+    "available_now": "Disponible immédiatement",
+    "sector_btp": "BTP",
+    "sector_logistics": "Logistique",
+    "sector_cleaning": "Propreté",
+    "sector_care": "Aide à la personne",
+    "sector_hospitality": "Hôtellerie-Restauration",
+    "sector_security": "Sécurité",
+    "sector_transport": "Transport",
+    "barrier_childcare": "Garde d'enfants",
+    "barrier_transport": "Mobilité",
+    "barrier_health": "Santé",
+    "barrier_housing": "Logement",
+    "barrier_admin": "Administratif",
+    "no_barriers": "Aucun frein",
+    "fle_general": "Français général",
+    "fle_pro": "Français professionnel",
+    "daytime_classes": "Cours en journée",
+    "evening_classes": "Cours le soir",
+    "schedule_day": "Horaires de jour",
+    "schedule_flexible": "Horaires flexibles",
+    "night_ok": "Nuit possible",
+    "weekend_ok": "Week-end possible"
+  },
+  "routes": {
+    "route_a": { "label": "Parcours FLE", "description": "Formation en français langue étrangère", "icon": "📖" },
+    "route_b": { "label": "Parcours Formation", "description": "Formation professionnelle qualifiante", "icon": "🎓" },
+    "route_c": { "label": "Parcours Emploi", "description": "Prêt à travailler — mise en relation directe avec employeurs", "icon": "💼" },
+    "sas": { "label": "Parcours Accompagnement", "description": "Orientation et accompagnement personnalisé", "icon": "🤝" }
+  },
+  "ui": {
+    "next": "Suivant",
+    "skip": "Passer",
+    "finish": "Terminer",
+    "copyWhatsapp": "Copier le message WhatsApp"
+  }
+}

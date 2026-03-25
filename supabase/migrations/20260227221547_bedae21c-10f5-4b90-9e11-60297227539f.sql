@@ -1,0 +1,1 @@
+ALTER TABLE public.leads ADD COLUMN purchased_at timestamptz DEFAULT NULL;

@@ -1,0 +1,571 @@
+@tailwind base;
+
+/* Google Places Autocomplete styling */
+.pac-container {
+  z-index: 10000 !important;
+}
+
+.google-places-wrapper {
+  color-scheme: light;
+}
+
+.google-places-wrapper gmp-place-autocomplete {
+  width: 100%;
+  --gmp-color-surface: hsl(var(--background));
+  --gmp-color-on-surface: hsl(var(--foreground));
+  --gmp-color-on-surface-variant: hsl(var(--muted-foreground));
+  --gmp-color-primary: hsl(var(--primary));
+  --gmp-color-outline: hsl(var(--input));
+  color-scheme: light;
+}
+
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+@import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
+
+@import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap");
+
+@layer base {
+  :root {
+    /* Background & Foreground */
+    --background: 0 0% 96%;
+    --foreground: 0 0% 9%;
+
+    /* Cards & Surfaces */
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 9%;
+
+    --popover: 0 0% 89%;
+    --popover-foreground: 0 0% 9%;
+
+    /* Primary - French Blue modernisé */
+    --primary: 161 93% 30%;
+    --primary-foreground: 151 80% 95%;
+
+    /* Secondary - Bleu clair accueillant */
+    --secondary: 0 0% 32%;
+    --secondary-foreground: 0 0% 98%;
+
+    /* Muted */
+    --muted: 0 0% 63%;
+    --muted-foreground: 0 0% 9%;
+
+    /* Accent - Doré chaleureux */
+    --accent: 166 76% 96%;
+    --accent-foreground: 173 80% 40%;
+
+    /* Success - Vert réussite */
+    --success: 152 65% 42%;
+    --success-foreground: 0 0% 100%;
+
+    /* Destructive - Rouge France */
+    --destructive: 0 72% 50%;
+    --destructive-foreground: 0 85% 97%;
+
+    --border: 0 0% 83%;
+    --input: 0 0% 83%;
+    --ring: 161 93% 30%;
+
+    --radius: 0.75rem;
+
+    /* Custom gradients */
+    --gradient-hero: linear-gradient(135deg, hsl(220 70% 45%) 0%, hsl(240 60% 55%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(38 92% 55%) 0%, hsl(25 90% 55%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(220 30% 98%) 100%);
+    --gradient-glass: linear-gradient(135deg, hsla(0, 0%, 100%, 0.8) 0%, hsla(220, 30%, 98%, 0.6) 100%);
+
+    /* Sidebar */
+    --sidebar-background: 220 30% 98%;
+    --sidebar-foreground: 0 0% 9%;
+    --sidebar-primary: 161 93% 30%;
+    --sidebar-primary-foreground: 151 80% 95%;
+    --sidebar-accent: 0 0% 32%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 83%;
+    --sidebar-ring: 161 93% 30%;
+    --chart-1: 158 64% 51%;
+    --chart-2: 141 69% 58%;
+    --chart-3: 172 66% 50%;
+    --chart-4: 82 77% 55%;
+    --chart-5: 0 0% 45%;
+    --sidebar: 0 0% 98%;
+    --font-sans: 'Work Sans', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+    --font-serif: 'Lora', ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+    --font-mono: 'Inconsolata', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+    --tracking-normal: 0em;
+    --spacing: 0.25rem;
+  }
+
+  .dark {
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+
+    --card: 0 0% 14%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 0 0% 25%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 158 64% 51%;
+    --primary-foreground: 165 91% 9%;
+
+    --secondary: 0 0% 45%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 0 0% 45%;
+    --muted-foreground: 0 0% 98%;
+
+    --accent: 178 84% 10%;
+    --accent-foreground: 172 66% 50%;
+
+    --success: 152 60% 45%;
+    --success-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 85% 97%;
+
+    --border: 0 0% 32%;
+    --input: 0 0% 32%;
+    --ring: 158 64% 51%;
+
+    --sidebar-background: 220 30% 10%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 158 64% 51%;
+    --sidebar-primary-foreground: 165 91% 9%;
+    --sidebar-accent: 172 66% 50%;
+    --sidebar-accent-foreground: 178 84% 10%;
+    --sidebar-border: 0 0% 32%;
+    --sidebar-ring: 158 64% 51%;
+    --chart-1: 156 71% 66%;
+    --chart-2: 141 76% 73%;
+    --chart-3: 170 76% 64%;
+    --chart-4: 81 84% 67%;
+    --chart-5: 0 0% 45%;
+    --sidebar: 0 0% 14%;
+    --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+    --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+    --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 2px 4px -1px hsl(0 0% 0% / 0.1);
+    --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 4px 6px -1px hsl(0 0% 0% / 0.1);
+    --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.1), 0 8px 10px -1px hsl(0 0% 0% / 0.1);
+    --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-white/80 backdrop-blur-xl border border-white/20 shadow-xl;
+  }
+
+  .gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .gradient-warm {
+    background: var(--gradient-warm);
+  }
+
+  .text-gradient-hero {
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+}
+
+/* Print styles for /pitch investor deck */
+@media print {
+  @page {
+    margin: 1.2cm 1.5cm;
+    size: A4 portrait;
+  }
+
+  /* Global resets */
+  * {
+    animation: none !important;
+    transition: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    color-adjust: exact;
+  }
+
+  body, .min-h-screen {
+    background: white !important;
+    color: #1a1a1a !important;
+    font-size: 11pt !important;
+    line-height: 1.5 !important;
+  }
+
+  /* Hide interactive / nav elements (including fixed header) */
+  header, footer, nav,
+  .print\\:hidden,
+  button:not(.print-visible),
+  a[href="/onboarding"],
+  a[href="mailto:contact@tofrance.fr"],
+  .absolute.bottom-8 {
+    display: none !important;
+    position: static !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Main container: remove extra padding */
+  main {
+    padding: 0 !important;
+  }
+
+  /* Sections: tighter spacing, smart page breaks */
+  main > section {
+    padding-top: 1.2rem !important;
+    padding-bottom: 1.2rem !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Cover page */
+  main > section:first-of-type {
+    min-height: auto !important;
+    padding-top: 3rem !important;
+    padding-bottom: 2rem !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  /* Cards and tables should not break */
+  .card, [class*="Card"], [class*="rounded-3xl"], [class*="rounded-2xl"],
+  table, tr, .recharts-wrapper {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Force page break before specific sections for better layout */
+  /* Business model gets its own page */
+  main > section:nth-of-type(6) {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Projections get their own page */
+  main > section:nth-of-type(7) {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Typography: readable, high contrast */
+  h1 {
+    font-size: 26pt !important;
+    color: #0a0a0a !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h2 {
+    font-size: 18pt !important;
+    color: #0a0a0a !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  h3 {
+    font-size: 12pt !important;
+    color: #1a1a1a !important;
+  }
+
+  p, li, td, th, span {
+    color: #111 !important;
+  }
+
+  /* Muted text - much darker for print readability */
+  [class*="text-muted"] {
+    color: #333 !important;
+  }
+
+  [class*="text-muted-foreground"] {
+    color: #333 !important;
+  }
+
+  /* Destructive markers */
+  [class*="text-destructive"] {
+    color: #c00 !important;
+  }
+
+  /* Keep white text on gradient backgrounds */
+  .gradient-hero [class*="text-white"],
+  .gradient-hero h2,
+  .gradient-hero div,
+  .gradient-hero span {
+    color: white !important;
+  }
+
+  .gradient-hero [class*="text-white\\/"] {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+
+  /* Primary colored text - darker for contrast */
+  [class*="text-primary"] {
+    color: hsl(161, 93%, 22%) !important;
+  }
+
+  /* Accent foreground */
+  [class*="text-accent-foreground"] {
+    color: hsl(173, 80%, 28%) !important;
+  }
+
+  /* Success text */
+  [class*="text-success"] {
+    color: hsl(152, 65%, 30%) !important;
+  }
+
+  /* Foreground text - ensure maximum contrast */
+  [class*="text-foreground"] {
+    color: #0a0a0a !important;
+  }
+
+  /* Card backgrounds - slight tint for separation */
+  [class*="bg-card"] {
+    background-color: #fafafa !important;
+  }
+
+  [class*="bg-primary\\/5"], [class*="bg-primary\\/10"] {
+    background-color: hsl(161, 40%, 94%) !important;
+  }
+
+  [class*="bg-destructive\\/5"] {
+    background-color: hsl(0, 40%, 96%) !important;
+  }
+
+  [class*="bg-accent\\/10"] {
+    background-color: hsl(166, 40%, 94%) !important;
+  }
+
+  /* Table styling */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  th {
+    background-color: #f5f5f5 !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+  }
+
+  td, th {
+    padding: 8px 12px !important;
+    border-bottom: 1px solid #e0e0e0 !important;
+  }
+
+  /* Cards: subtle borders, no shadows */
+  [class*="shadow"] {
+    box-shadow: none !important;
+  }
+
+  [class*="border"] {
+    border-color: #ddd !important;
+  }
+
+  /* Chart: reduce height for print */
+  .recharts-wrapper {
+    max-height: 250px !important;
+  }
+
+  /* Grid layouts: ensure they stay side by side */
+  .grid {
+    display: grid !important;
+  }
+
+  /* Gradient hero section */
+  .gradient-hero {
+    background: linear-gradient(135deg, hsl(220, 70%, 45%) 0%, hsl(240, 60%, 55%) 100%) !important;
+    border-radius: 12px !important;
+  }
+
+  /* Gradient cards */
+  [class*="bg-gradient-to"] {
+    background: #f8f8f8 !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Remove blur/glass effects */
+  [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+  }
+
+  /* Links: no URL display */
+  a[href]:after {
+    content: none;
+  }
+
+  /* Upper tracking labels */
+  [class*="tracking-widest"] {
+    color: hsl(161, 93%, 30%) !important;
+    font-size: 9pt !important;
+  }
+
+  /* Score numbers */
+  [class*="text-3xl"][class*="font-bold"][class*="text-primary"] {
+    color: hsl(161, 93%, 30%) !important;
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   Print styles — Pitch Région (/pitch-region)
+   ═══════════════════════════════════════════════════════════ */
+@media print {
+  .pitch-region-print {
+    font-size: 10.5pt !important;
+    line-height: 1.45 !important;
+  }
+
+  /* Cover page: standalone */
+  .pitch-region-print .print-cover {
+    min-height: 90vh !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    padding-top: 6rem !important;
+    padding-bottom: 4rem !important;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  /* Generic section spacing for print */
+  .pitch-region-print .print-section {
+    padding-top: 1.5rem !important;
+    padding-bottom: 1.5rem !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Forced page breaks */
+  .pitch-region-print .print-page-break {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  /* Cards: tighter, no shadows */
+  .pitch-region-print [class*="CardContent"] {
+    padding: 0.75rem !important;
+  }
+
+  /* Charts: shorter for print */
+  .pitch-region-print .recharts-wrapper {
+    max-height: 200px !important;
+  }
+
+  .pitch-region-print .h-72 {
+    height: 200px !important;
+  }
+
+  .pitch-region-print .h-48 {
+    height: 160px !important;
+  }
+
+  /* Grid: force 2-col for cards */
+  .pitch-region-print .grid.sm\\:grid-cols-2 {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .pitch-region-print .grid.lg\\:grid-cols-3 {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 0.75rem !important;
+  }
+
+  .pitch-region-print .grid.lg\\:grid-cols-4 {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+
+  /* Gradient hero box in impact section */
+  .pitch-region-print .gradient-hero {
+    padding: 1.5rem !important;
+    border-radius: 8px !important;
+  }
+
+  .pitch-region-print .gradient-hero .grid {
+    gap: 1rem !important;
+  }
+
+  /* Badge sizing */
+  .pitch-region-print .inline-flex[class*="badge"] {
+    font-size: 8pt !important;
+    padding: 2px 8px !important;
+  }
+
+  /* Section titles smaller */
+  .pitch-region-print h2 {
+    font-size: 16pt !important;
+    margin-bottom: 0.4rem !important;
+  }
+
+  .pitch-region-print h3 {
+    font-size: 11pt !important;
+  }
+
+  /* Descriptions tighter */
+  .pitch-region-print .mb-12 {
+    margin-bottom: 0.75rem !important;
+  }
+
+  /* Hide CTA section entirely */
+  .pitch-region-print .print\\:hidden {
+    display: none !important;
+  }
+}

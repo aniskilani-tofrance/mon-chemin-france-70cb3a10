@@ -1,0 +1,235 @@
+{
+  "questionnaire": {
+    "location": {
+      "question": "Where do you live?",
+      "subtitle": "Postal code or city (e.g., 75001 Paris)"
+    },
+    "origin_country": {
+      "question": "What country are you from?",
+      "subtitle": "To better adapt our services"
+    },
+    "main_goal": {
+      "question": "What is your main goal?",
+      "choices": {
+        "learn_french": "Learn / improve my French",
+        "find_job": "Find a job quickly",
+        "job_training": "Get vocational training",
+        "need_help": "I don't know / need help"
+      }
+    },
+    "contact_48h": {
+      "question": "Are you available to be contacted within 48 hours?",
+      "subtitle": "An advisor will call you to help",
+      "choices": {
+        "yes": "Yes, I am available",
+        "no": "No, not right now"
+      }
+    },
+    "literacy": {
+      "question": "Can you read and write in your language?",
+      "choices": {
+        "yes": "Yes, fluently",
+        "partial": "A little",
+        "no": "No"
+      }
+    },
+    "french_level_cecrl": {
+      "question": "In French, you are:",
+      "subtitle": "Be honest, this helps us guide you better",
+      "choices": {
+        "alpha": "Complete beginner / I don't speak French",
+        "a1": "A1 - I know some words and phrases",
+        "a2": "A2 - I can manage simple things",
+        "b1": "B1+ - I am comfortable in French"
+      }
+    },
+    "work_right": {
+      "question": "Do you have the right to work in France?",
+      "subtitle": "Residence permit with work authorization",
+      "choices": {
+        "yes": "Yes",
+        "no": "No",
+        "unknown": "I don't know"
+      }
+    },
+    "barriers": {
+      "question": "Do you have any challenges to overcome?",
+      "subtitle": "Select all that apply",
+      "choices": {
+        "childcare": "Childcare",
+        "transport": "Transport / mobility",
+        "health": "Health",
+        "housing": "Housing",
+        "admin": "Administrative (papers)",
+        "schedule": "Schedule constraints",
+        "none": "No barriers"
+      }
+    },
+    "sector_satisfaction": {
+      "question": "Do you want to continue in your field or switch careers?",
+      "subtitle": "If you want to change careers, we'll guide you to training",
+      "choices": {
+        "continue": "Continue in my field",
+        "reconvert": "Switch to a different field"
+      }
+    },
+    "fle_type": {
+      "question": "What type of French course interests you?",
+      "choices": {
+        "general": "General French (daily life)",
+        "professional": "Professional French (for work)"
+      }
+    },
+    "fle_format": {
+      "question": "When do you prefer to take classes?",
+      "choices": {
+        "daytime": "During the day",
+        "evening": "In the evening",
+        "flexible": "I'm flexible"
+      }
+    },
+    "target_sector": {
+      "question": "What sector interests you?",
+      "subtitle": "In-demand sectors with available positions",
+      "choices": {
+        "logistique": "Logistics / Warehouse",
+        "transport": "Transport / Delivery",
+        "btp": "Construction / Public works",
+        "proprete": "Cleaning / Hygiene",
+        "hotellerie": "Hospitality / Food industry",
+        "sante": "Health / Social care / Personal assistance",
+        "commerce": "Retail / Sales / Customer relations",
+        "admin_accueil": "Administration / Reception / Office work",
+        "industrie": "Industry / Production / Maintenance",
+        "securite": "Security / Safety",
+        "transversal": "Cross-sector (all sectors)"
+      }
+    },
+    "training_duration": {
+      "question": "How long can you train for?",
+      "choices": {
+        "short": "Short (1-2 months)",
+        "medium": "Medium (3-6 months)",
+        "long": "Long (6+ months)"
+      }
+    },
+    "mobility": {
+      "question": "What is your geographical mobility?",
+      "choices": {
+        "local": "Local (< 30 km)",
+        "regional": "Regional (30-100 km)",
+        "national": "National"
+      }
+    },
+    "funding_status": {
+      "question": "Do you have funding for training?",
+      "subtitle": "France Travail, OPCO, Region, CPF...",
+      "choices": {
+        "yes": "Yes, I have funding",
+        "pending": "It's in progress",
+        "no": "No, not yet",
+        "unknown": "I don't know"
+      }
+    },
+    "work_schedule": {
+      "question": "What work schedule do you accept?",
+      "choices": {
+        "standard": "Standard day",
+        "flexible": "Flexible hours (night/weekend)",
+        "any": "Any schedule"
+      }
+    },
+    "mobility_km": {
+      "question": "What travel radius do you accept?",
+      "choices": {
+        "close": "< 10 km",
+        "medium": "10-30 km",
+        "far": "> 30 km"
+      }
+    },
+    "immediate_availability": {
+      "question": "Are you available immediately?",
+      "choices": {
+        "yes": "Yes, immediately",
+        "soon": "In 1-2 weeks",
+        "later": "Later"
+      }
+    },
+    "contact_firstname": {
+      "question": "What is your first name?"
+    },
+    "contact_lastname": {
+      "question": "What is your last name?"
+    },
+    "contact_email": {
+      "question": "What is your email?",
+      "subtitle": "To receive your personalized guidance"
+    }
+  },
+  "completion": {
+    "profileCreated": "Profile created successfully!",
+    "profileSubtitle": "Your profile has been created successfully",
+    "summary": "Summary",
+    "score": "Qualification score",
+    "scoreQualified": "Qualified lead",
+    "scoreToComplete": "Lead to complete",
+    "scoreToQualify": "Lead to qualify",
+    "completeness": "Completeness",
+    "fit": "Fit",
+    "reactivity": "Reactivity",
+    "yourProfile": "Your profile",
+    "availability": "Availability",
+    "immediate": "Immediate",
+    "oneToTwoWeeks": "1-2 weeks",
+    "later": "Later",
+    "finalizing": "Finalizing...",
+    "discoverPath": "Discover my path"
+  },
+  "tags": {
+    "route_a": "FLE Path",
+    "route_b": "Training Path",
+    "route_c": "Employment Path",
+    "alpha": "Alpha Level",
+    "a1": "A1 Level",
+    "a2": "A2 Level",
+    "b1": "B1+ Level",
+    "work_permit": "Work permit",
+    "no_work_permit": "No work permit",
+    "reactive": "Available quickly",
+    "contact_ok": "Reachable 48h",
+    "available_now": "Available immediately",
+    "sector_btp": "Construction",
+    "sector_logistics": "Logistics",
+    "sector_cleaning": "Cleaning",
+    "sector_care": "Personal care",
+    "sector_hospitality": "Hospitality",
+    "sector_security": "Security",
+    "sector_transport": "Transport",
+    "barrier_childcare": "Childcare",
+    "barrier_transport": "Mobility",
+    "barrier_health": "Health",
+    "barrier_housing": "Housing",
+    "barrier_admin": "Administrative",
+    "no_barriers": "No barriers",
+    "fle_general": "General French",
+    "fle_pro": "Professional French",
+    "daytime_classes": "Daytime classes",
+    "evening_classes": "Evening classes",
+    "schedule_day": "Day schedule",
+    "schedule_flexible": "Flexible schedule",
+    "night_ok": "Night possible",
+    "weekend_ok": "Weekend possible"
+  },
+  "routes": {
+    "route_a": { "label": "FLE Path", "description": "French as a foreign language training", "icon": "📖" },
+    "route_b": { "label": "Training Path", "description": "Vocational training", "icon": "🎓" },
+    "route_c": { "label": "Employment Path", "description": "Ready to work — direct connection with employers", "icon": "💼" },
+    "sas": { "label": "Guidance Path", "description": "Personalized orientation and support", "icon": "🤝" }
+  },
+  "ui": {
+    "next": "Next",
+    "skip": "Skip",
+    "finish": "Finish",
+    "copyWhatsapp": "Copy WhatsApp message"
+  }
+}

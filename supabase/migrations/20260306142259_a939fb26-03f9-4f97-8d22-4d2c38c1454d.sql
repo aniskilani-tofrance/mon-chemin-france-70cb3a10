@@ -1,0 +1,1 @@
+ALTER TABLE public.contact_requests ADD COLUMN request_type TEXT NOT NULL DEFAULT 'partner';
