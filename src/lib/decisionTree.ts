@@ -235,19 +235,6 @@ export const ONBOARDING_TREE: DecisionTree = {
           tags: ["route_c", "entrepreneurship"],
         },
         {
-          id: "french_and_job",
-          label: {
-            fr: "Apprendre le français ET trouver un emploi",
-            en: "Learn French AND find a job",
-            ar: "تعلم الفرنسية والعثور على عمل",
-            es: "Aprender francés Y encontrar empleo",
-            pt: "Aprender francês E encontrar emprego",
-            ru: "Учить французский И найти работу",
-          },
-          icon: "📖💼",
-          tags: ["route_a", "route_c", "fle_priority", "job_priority"],
-        },
-        {
           id: "need_help",
           label: {
             fr: "Je ne sais pas / besoin d'aide",
