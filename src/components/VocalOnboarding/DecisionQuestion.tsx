@@ -88,21 +88,36 @@ export function DecisionQuestion({
     }, 400);
   };
 
-  // Handle multi-choice toggle
+  // Groups of mutually exclusive choices (only one from each group can be selected)
+  const EXCLUSIVE_GROUPS: string[][] = [
+    ["find_job", "job_training", "start_business"],
+  ];
+
+  // Handle multi-choice toggle with mutual exclusivity
   const handleMultiChoiceToggle = (choiceId: string) => {
-    // If selecting "none", deselect all others
-    if (choiceId === "none") {
-      setSelectedChoices(["none"]);
+    // If selecting "none" or "need_help", deselect all others
+    if (choiceId === "none" || choiceId === "need_help") {
+      setSelectedChoices([choiceId]);
       return;
     }
     
-    // If selecting something else, remove "none" if present
     setSelectedChoices(prev => {
-      const withoutNone = prev.filter(id => id !== "none");
-      if (withoutNone.includes(choiceId)) {
-        return withoutNone.filter(id => id !== choiceId);
+      // Remove "none"/"need_help" if present
+      let updated = prev.filter(id => id !== "none" && id !== "need_help");
+
+      if (updated.includes(choiceId)) {
+        // Deselect
+        return updated.filter(id => id !== choiceId);
       }
-      return [...withoutNone, choiceId];
+
+      // Check exclusive groups: remove any conflicting choice
+      for (const group of EXCLUSIVE_GROUPS) {
+        if (group.includes(choiceId)) {
+          updated = updated.filter(id => !group.includes(id));
+        }
+      }
+
+      return [...updated, choiceId];
     });
   };
 
