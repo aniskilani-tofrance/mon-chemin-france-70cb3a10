@@ -57,7 +57,7 @@ export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
       window.clearTimeout(timer);
       tts.stop();
     };
-  }, [introText, tts]);
+  }, [introText, tts.isSupported, tts.isEnabled, tts.speak, tts.stop]);
 
   const handleContinue = () => {
     tts.stop();
