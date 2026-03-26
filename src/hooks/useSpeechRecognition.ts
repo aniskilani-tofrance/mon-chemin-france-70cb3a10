@@ -1,5 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 
+// Extend Window for webkit prefix
+interface SpeechRecognitionWindow extends Window {
+  SpeechRecognition?: new () => SpeechRecognition;
+  webkitSpeechRecognition?: new () => SpeechRecognition;
+}
 const LANGUAGE_TO_BCP47: Record<string, string> = {
   fr: "fr-FR",
   en: "en-US",
@@ -35,7 +40,7 @@ export function useSpeechRecognition({
   const [transcript, setTranscript] = useState("");
   const [interimTranscript, setInterimTranscript] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
+  const recognitionRef = useRef<any>(null);
 
   const isSupported =
     typeof window !== "undefined" &&
@@ -43,9 +48,10 @@ export function useSpeechRecognition({
 
   const createRecognition = useCallback(() => {
     if (!isSupported) return null;
-    const SpeechRecognition =
-      window.SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
+    const w = window as unknown as SpeechRecognitionWindow;
+    const SpeechRecognitionCtor = w.SpeechRecognition || w.webkitSpeechRecognition;
+    if (!SpeechRecognitionCtor) return null;
+    const recognition = new SpeechRecognitionCtor();
     recognition.lang = LANGUAGE_TO_BCP47[language] || "fr-FR";
     recognition.continuous = continuous;
     recognition.interimResults = interimResults;
