@@ -214,10 +214,7 @@ const FLEDashboard = () => {
                       progress={moduleProgressPercent}
                       unlocked={mp?.unlocked ?? index === 0}
                       completed={!!mp?.completed_at}
-                      onClick={() => {
-                        // TODO: navigate to lesson page
-                        console.log("Open module", module.id);
-                      }}
+                      onClick={() => navigate(`/fle/exercise/${module.id}`)}
                     />
                   </motion.div>
                 );
