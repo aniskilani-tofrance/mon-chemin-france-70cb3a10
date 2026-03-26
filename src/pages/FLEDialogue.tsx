@@ -81,12 +81,14 @@ const FLEDialogue = () => {
     language: "fr",
   });
 
-  const { isListening, transcript, startListening, stopListening, isSupported: sttSupported } = useSpeechRecognition({
+  const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening } = useSpeechRecognition({
     language: "fr-FR",
-    onResult: (text) => {
-      setInputText(text);
-    },
   });
+
+  // Sync transcript to input
+  useEffect(() => {
+    if (transcript) setInputText(transcript);
+  }, [transcript]);
 
   // Auto-scroll to bottom
   useEffect(() => {
