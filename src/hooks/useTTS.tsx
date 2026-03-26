@@ -1,19 +1,8 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { LanguageCode } from "@/lib/translations";
+import { supabase } from "@/integrations/supabase/client";
 
-// Map language codes to BCP 47 for Web Speech API
-const LANGUAGE_TO_BCP47: Partial<Record<LanguageCode, string>> = {
-  fr: "fr-FR",
-  en: "en-US",
-  ar: "ar-SA",
-  es: "es-ES",
-  pt: "pt-BR",
-  ru: "ru-RU",
-};
-
-// Languages supported for TTS
 const SUPPORTED_TTS_LANGUAGES: LanguageCode[] = ["fr", "en", "ar", "es", "pt", "ru"];
-
 const TTS_ENABLED_KEY = "tts_enabled";
 
 export function isTTSSupportedForLanguage(language: LanguageCode): boolean {
@@ -42,24 +31,9 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     return stored === null ? true : stored === "true";
   });
 
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const [voicesReady, setVoicesReady] = useState(false);
-  const isSupported = typeof window !== "undefined" && "speechSynthesis" in window;
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const abortRef = useRef<AbortController | null>(null);
   const langSupported = isTTSSupportedForLanguage(language);
-
-  // Wait for voices to be loaded
-  useEffect(() => {
-    if (!isSupported) return;
-    const synth = window.speechSynthesis;
-    const checkVoices = () => {
-      if (synth.getVoices().length > 0) {
-        setVoicesReady(true);
-      }
-    };
-    checkVoices();
-    synth.addEventListener("voiceschanged", checkVoices);
-    return () => synth.removeEventListener("voiceschanged", checkVoices);
-  }, [isSupported]);
 
   // Cancel speech when language changes
   useEffect(() => {
@@ -70,98 +44,131 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+      abortRef.current?.abort();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
       }
     };
   }, []);
 
   const stop = useCallback(() => {
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
+    abortRef.current?.abort();
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
     }
-    utteranceRef.current = null;
     setIsSpeaking(false);
   }, []);
 
-  const speak = useCallback((text: string) => {
-    if (!isSupported || !isEnabled || !langSupported) return;
+  const speak = useCallback(async (text: string) => {
+    if (!isEnabled || !langSupported || !text.trim()) return;
 
     // Stop any current speech
+    stop();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      setIsSpeaking(true);
+      onStart?.();
+
+      const { data, error } = await supabase.functions.invoke("openai-tts", {
+        body: { text, voice: "nova", speed: 0.9 },
+      });
+
+      if (controller.signal.aborted) return;
+
+      if (error) {
+        console.warn("[TTS] Edge function error:", error);
+        // Fallback to Web Speech API
+        fallbackSpeak(text);
+        return;
+      }
+
+      // data is a Blob from the edge function
+      const blob = data instanceof Blob ? data : new Blob([data], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        onEnd?.();
+      };
+
+      audio.onerror = () => {
+        console.warn("[TTS] Audio playback error, falling back to Web Speech");
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        fallbackSpeak(text);
+      };
+
+      await audio.play();
+    } catch (err: any) {
+      if (controller.signal.aborted) return;
+      console.warn("[TTS] OpenAI TTS failed, using fallback:", err.message);
+      fallbackSpeak(text);
+    }
+  }, [isEnabled, langSupported, language, onStart, onEnd, stop]);
+
+  // Web Speech API fallback
+  const fallbackSpeak = useCallback((text: string) => {
+    if (typeof window === "undefined" || !("speechSynthesis" in window)) {
+      setIsSpeaking(false);
+      onEnd?.();
+      return;
+    }
+
     window.speechSynthesis.cancel();
-    setIsSpeaking(false);
+
+    const LANGUAGE_TO_BCP47: Partial<Record<LanguageCode, string>> = {
+      fr: "fr-FR", en: "en-US", ar: "ar-SA", es: "es-ES", pt: "pt-BR", ru: "ru-RU",
+    };
 
     const bcp47 = LANGUAGE_TO_BCP47[language] || "fr-FR";
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = bcp47;
     utterance.rate = 0.72;
-    utterance.pitch = 1;
-    utterance.volume = 1;
 
-    // Try to find the best quality voice available
     const voices = window.speechSynthesis.getVoices();
     const langPrefix = bcp47.split("-")[0];
-    
-    // Priority: premium/enhanced voices > exact locale match > language match
-    const premiumKeywords = ["premium", "enhanced", "natural", "neural", "wavenet", "studio"];
-    const lowQualityKeywords = ["compact", "espeak", "mbrola"];
-    
-    const candidates = voices.filter(
-      (v) => v.lang.startsWith(langPrefix) && !lowQualityKeywords.some(k => v.name.toLowerCase().includes(k))
-    );
-    
-    // Sort: premium first, then exact locale, then remote voices
-    candidates.sort((a, b) => {
-      const aScore = (premiumKeywords.some(k => a.name.toLowerCase().includes(k)) ? 100 : 0)
-        + (a.lang === bcp47 ? 10 : 0)
-        + (!a.localService ? 5 : 0);
-      const bScore = (premiumKeywords.some(k => b.name.toLowerCase().includes(k)) ? 100 : 0)
-        + (b.lang === bcp47 ? 10 : 0)
-        + (!b.localService ? 5 : 0);
-      return bScore - aScore;
-    });
-    
+    const candidates = voices.filter(v => v.lang.startsWith(langPrefix));
     if (candidates.length > 0) utterance.voice = candidates[0];
 
     utterance.onstart = () => {
       setIsSpeaking(true);
       onStart?.();
     };
-
     utterance.onend = () => {
       setIsSpeaking(false);
-      utteranceRef.current = null;
       onEnd?.();
     };
-
-    utterance.onerror = (e) => {
-      if (e.error !== "canceled" && e.error !== "interrupted") {
-        console.warn("[TTS] Speech error:", e.error);
-      }
+    utterance.onerror = () => {
       setIsSpeaking(false);
-      utteranceRef.current = null;
     };
 
-    utteranceRef.current = utterance;
     window.speechSynthesis.speak(utterance);
-  }, [isSupported, isEnabled, langSupported, language, onStart, onEnd]);
+  }, [language, onStart, onEnd]);
 
   const toggle = useCallback(() => {
     setIsEnabled((prev) => {
       const next = !prev;
       localStorage.setItem(TTS_ENABLED_KEY, String(next));
-      if (!next) {
-        window.speechSynthesis?.cancel();
-        setIsSpeaking(false);
-      }
+      if (!next) stop();
       return next;
     });
-  }, []);
+  }, [stop]);
 
   return {
     isSpeaking,
     isEnabled,
-    isSupported: isSupported && langSupported,
+    isSupported: langSupported,
     speak,
     stop,
     toggle,
