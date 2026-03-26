@@ -115,7 +115,7 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
       onStart?.();
 
       const { data, error } = await supabase.functions.invoke("openai-tts", {
-        body: { text, voice: "nova", speed: 0.9 },
+        body: { text, language, speed: 0.9 },
       });
 
       if (controller.signal.aborted) return;

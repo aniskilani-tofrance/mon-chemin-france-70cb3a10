@@ -1,8 +1,18 @@
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
+};
+
+// Best OpenAI TTS voice per language for Marianne (female advisor)
+const VOICE_MAP: Record<string, string> = {
+  fr: "nova",      // Warm natural French female
+  en: "shimmer",   // Expressive English female
+  ar: "nova",      // Best female for Arabic
+  es: "nova",      // Warm natural Spanish female
+  pt: "nova",      // Clear Portuguese female
+  ru: "shimmer",   // Expressive Russian female
 };
 
 Deno.serve(async (req) => {
@@ -11,7 +21,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { text, voice, speed } = await req.json();
+    const { text, language, voice, speed } = await req.json();
 
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'text is required' }), {
@@ -28,6 +38,7 @@ Deno.serve(async (req) => {
       });
     }
 
+    const selectedVoice = voice || VOICE_MAP[language || 'fr'] || 'nova';
     const truncatedText = text.slice(0, 4096);
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -39,7 +50,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'tts-1',
         input: truncatedText,
-        voice: voice || 'nova',
+        voice: selectedVoice,
         speed: speed || 0.9,
         response_format: 'mp3',
       }),
@@ -54,9 +65,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Convert to base64 to avoid binary transfer issues
     const audioBuffer = await response.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
+    const base64 = base64Encode(audioBuffer);
 
     return new Response(JSON.stringify({ audio_base64: base64 }), {
       headers: {
