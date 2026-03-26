@@ -35,13 +35,11 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
   const abortRef = useRef<AbortController | null>(null);
   const langSupported = isTTSSupportedForLanguage(language);
 
-  // Cancel speech when language changes
   useEffect(() => {
     stop();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [language]);
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       abortRef.current?.abort();
@@ -59,65 +57,13 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
       audioRef.current.currentTime = 0;
       audioRef.current = null;
     }
+    // Also stop Web Speech API fallback
+    if (typeof window !== "undefined" && "speechSynthesis" in window) {
+      window.speechSynthesis.cancel();
+    }
     setIsSpeaking(false);
   }, []);
 
-  const speak = useCallback(async (text: string) => {
-    if (!isEnabled || !langSupported || !text.trim()) return;
-
-    // Stop any current speech
-    stop();
-
-    const controller = new AbortController();
-    abortRef.current = controller;
-
-    try {
-      setIsSpeaking(true);
-      onStart?.();
-
-      const { data, error } = await supabase.functions.invoke("openai-tts", {
-        body: { text, voice: "nova", speed: 0.9 },
-      });
-
-      if (controller.signal.aborted) return;
-
-      if (error) {
-        console.warn("[TTS] Edge function error:", error);
-        // Fallback to Web Speech API
-        fallbackSpeak(text);
-        return;
-      }
-
-      // data is a Blob from the edge function
-      const blob = data instanceof Blob ? data : new Blob([data], { type: "audio/mpeg" });
-      const url = URL.createObjectURL(blob);
-      const audio = new Audio(url);
-      audioRef.current = audio;
-
-      audio.onended = () => {
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-        onEnd?.();
-      };
-
-      audio.onerror = () => {
-        console.warn("[TTS] Audio playback error, falling back to Web Speech");
-        setIsSpeaking(false);
-        URL.revokeObjectURL(url);
-        audioRef.current = null;
-        fallbackSpeak(text);
-      };
-
-      await audio.play();
-    } catch (err: any) {
-      if (controller.signal.aborted) return;
-      console.warn("[TTS] OpenAI TTS failed, using fallback:", err.message);
-      fallbackSpeak(text);
-    }
-  }, [isEnabled, langSupported, language, onStart, onEnd, stop]);
-
-  // Web Speech API fallback
   const fallbackSpeak = useCallback((text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setIsSpeaking(false);
@@ -155,6 +101,64 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
 
     window.speechSynthesis.speak(utterance);
   }, [language, onStart, onEnd]);
+
+  const speak = useCallback(async (text: string) => {
+    if (!isEnabled || !langSupported || !text.trim()) return;
+
+    stop();
+
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    try {
+      setIsSpeaking(true);
+      onStart?.();
+
+      const { data, error } = await supabase.functions.invoke("openai-tts", {
+        body: { text, voice: "nova", speed: 0.9 },
+      });
+
+      if (controller.signal.aborted) return;
+
+      if (error || !data?.audio_base64) {
+        console.warn("[TTS] Edge function error, falling back:", error);
+        fallbackSpeak(text);
+        return;
+      }
+
+      // Decode base64 to audio blob
+      const binaryString = atob(data.audio_base64);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      const blob = new Blob([bytes], { type: "audio/mpeg" });
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      audioRef.current = audio;
+
+      audio.onended = () => {
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        onEnd?.();
+      };
+
+      audio.onerror = () => {
+        console.warn("[TTS] Audio playback error, falling back");
+        setIsSpeaking(false);
+        URL.revokeObjectURL(url);
+        audioRef.current = null;
+        fallbackSpeak(text);
+      };
+
+      await audio.play();
+    } catch (err: any) {
+      if (controller.signal.aborted) return;
+      console.warn("[TTS] OpenAI TTS failed, using fallback:", err.message);
+      fallbackSpeak(text);
+    }
+  }, [isEnabled, langSupported, stop, onStart, onEnd, fallbackSpeak]);
 
   const toggle = useCallback(() => {
     setIsEnabled((prev) => {

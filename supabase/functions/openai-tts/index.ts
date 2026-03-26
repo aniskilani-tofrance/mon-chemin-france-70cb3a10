@@ -2,7 +2,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 Deno.serve(async (req) => {
@@ -28,7 +28,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Truncate text to 4096 chars (OpenAI TTS limit)
     const truncatedText = text.slice(0, 4096);
 
     const response = await fetch('https://api.openai.com/v1/audio/speech', {
@@ -40,7 +39,7 @@ Deno.serve(async (req) => {
       body: JSON.stringify({
         model: 'tts-1',
         input: truncatedText,
-        voice: voice || 'nova', // nova = warm female voice, good for French
+        voice: voice || 'nova',
         speed: speed || 0.9,
         response_format: 'mp3',
       }),
@@ -48,20 +47,21 @@ Deno.serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI TTS error:', errorText);
-      return new Response(JSON.stringify({ error: 'TTS generation failed' }), {
+      console.error('OpenAI TTS error:', response.status, errorText);
+      return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
+    // Convert to base64 to avoid binary transfer issues
     const audioBuffer = await response.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(audioBuffer)));
 
-    return new Response(audioBuffer, {
+    return new Response(JSON.stringify({ audio_base64: base64 }), {
       headers: {
         ...corsHeaders,
-        'Content-Type': 'audio/mpeg',
-        'Cache-Control': 'public, max-age=3600',
+        'Content-Type': 'application/json',
       },
     });
   } catch (error) {
