@@ -2,8 +2,8 @@ import { useState, useRef, useCallback, useEffect } from "react";
 
 // Extend Window for webkit prefix
 interface SpeechRecognitionWindow extends Window {
-  SpeechRecognition?: new () => SpeechRecognition;
-  webkitSpeechRecognition?: new () => SpeechRecognition;
+  SpeechRecognition?: any;
+  webkitSpeechRecognition?: any;
 }
 const LANGUAGE_TO_BCP47: Record<string, string> = {
   fr: "fr-FR",
