@@ -1,16 +1,17 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTTS } from "@/hooks/useTTS";
 import { AnimatedAgent } from "./AnimatedAgent";
 
-// Marianne's introduction in supported languages
 const MARIANNE_INTRO: Record<string, string> = {
   fr: "Bonjour ! Je suis Marianne, votre conseillère. Je suis là pour vous aider à trouver la formation idéale. Répondez à quelques questions et je vous proposerai des solutions adaptées à votre profil.",
   en: "Hello! I'm Marianne, your advisor. I'm here to help you find the ideal training. Answer a few questions and I'll suggest solutions tailored to your profile.",
   ar: "مرحباً! أنا ماريان، مستشارتك. أنا هنا لمساعدتك في العثور على التدريب المثالي. أجب على بعض الأسئلة وسأقترح عليك حلولاً تناسب ملفك الشخصي.",
-  es: "¡Hola! Soy Marianne, tu asesora. Estoy aquí para ayudarte a encontrar la formación ideal. Responde algunas preguntas y te sugeriré soluciones adaptadas a tu perfil.",
+  es: "¡Hola! Soy Marianne, tu asesora. Estoy aquí para ayudarte a encontrar la formation ideal. Responde algunas preguntas y te sugeriré soluciones adaptadas a tu perfil.",
   pt: "Olá! Sou Marianne, sua conselheira. Estou aqui para ajudá-lo a encontrar a formação ideal. Responda algumas perguntas e sugerirei soluções adaptadas ao seu perfil.",
   ru: "Здравствуйте! Я Марианна, ваш консультант. Я здесь, чтобы помочь вам найти идеальное обучение. Ответьте на несколько вопросов, и я предложу решения, подходящие для вашего профиля.",
 };
@@ -39,10 +40,29 @@ interface MarianneIntroStepProps {
 
 export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
   const { language } = useLanguage();
+  const tts = useTTS({ language });
 
   const introText = MARIANNE_INTRO[language] || MARIANNE_INTRO.fr;
   const continueText = CONTINUE_TEXT[language] || CONTINUE_TEXT.fr;
   const subtitleText = SUBTITLE_TEXT[language] || SUBTITLE_TEXT.fr;
+
+  useEffect(() => {
+    if (!tts.isSupported || !tts.isEnabled || !introText) return;
+
+    const timer = window.setTimeout(() => {
+      tts.speak(introText);
+    }, 450);
+
+    return () => {
+      window.clearTimeout(timer);
+      tts.stop();
+    };
+  }, [introText, tts]);
+
+  const handleContinue = () => {
+    tts.stop();
+    onContinue();
+  };
 
   return (
     <motion.div
@@ -53,12 +73,10 @@ export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
     >
       <Card variant="elevated" className="mx-auto max-w-lg">
         <CardContent className="p-6 sm:p-8">
-          {/* Marianne Avatar */}
           <div className="mb-6 flex justify-center">
             <AnimatedAgent state="idle" size="lg" />
           </div>
 
-          {/* Marianne's name */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -73,19 +91,17 @@ export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
             </p>
           </motion.div>
 
-          {/* Introduction text bubble */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.5 }}
             className="mb-6 rounded-2xl bg-secondary/50 p-4 text-left"
           >
-            <p className="text-sm text-foreground leading-relaxed sm:text-base">
+            <p className="text-sm leading-relaxed text-foreground sm:text-base">
               {introText}
             </p>
           </motion.div>
 
-          {/* Continue button */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
@@ -95,7 +111,7 @@ export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
               variant="hero"
               size="lg"
               className="w-full"
-              onClick={onContinue}
+              onClick={handleContinue}
             >
               {continueText}
               <ArrowRight className="h-5 w-5" />
