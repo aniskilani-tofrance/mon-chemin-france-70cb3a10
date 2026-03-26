@@ -107,6 +107,278 @@ export type Database = {
         }
         Relationships: []
       }
+      fle_exercise_results: {
+        Row: {
+          ai_feedback: string | null
+          attempt_number: number | null
+          created_at: string
+          exercise_id: string
+          id: string
+          is_correct: boolean | null
+          module_id: string
+          oral_score: number | null
+          time_spent_seconds: number | null
+          user_answer: string | null
+          user_id: string
+        }
+        Insert: {
+          ai_feedback?: string | null
+          attempt_number?: number | null
+          created_at?: string
+          exercise_id: string
+          id?: string
+          is_correct?: boolean | null
+          module_id: string
+          oral_score?: number | null
+          time_spent_seconds?: number | null
+          user_answer?: string | null
+          user_id: string
+        }
+        Update: {
+          ai_feedback?: string | null
+          attempt_number?: number | null
+          created_at?: string
+          exercise_id?: string
+          id?: string
+          is_correct?: boolean | null
+          module_id?: string
+          oral_score?: number | null
+          time_spent_seconds?: number | null
+          user_answer?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fle_exercise_results_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "fle_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fle_exercise_results_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fle_exercises: {
+        Row: {
+          choices: Json | null
+          correct_answer: string | null
+          created_at: string
+          difficulty: number | null
+          exercise_type: Database["public"]["Enums"]["fle_exercise_type"]
+          hint_text: string | null
+          id: string
+          image_url: string | null
+          module_id: string
+          prompt_audio_url: string | null
+          prompt_text: string | null
+          sort_order: number
+        }
+        Insert: {
+          choices?: Json | null
+          correct_answer?: string | null
+          created_at?: string
+          difficulty?: number | null
+          exercise_type: Database["public"]["Enums"]["fle_exercise_type"]
+          hint_text?: string | null
+          id?: string
+          image_url?: string | null
+          module_id: string
+          prompt_audio_url?: string | null
+          prompt_text?: string | null
+          sort_order?: number
+        }
+        Update: {
+          choices?: Json | null
+          correct_answer?: string | null
+          created_at?: string
+          difficulty?: number | null
+          exercise_type?: Database["public"]["Enums"]["fle_exercise_type"]
+          hint_text?: string | null
+          id?: string
+          image_url?: string | null
+          module_id?: string
+          prompt_audio_url?: string | null
+          prompt_text?: string | null
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fle_exercises_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fle_module_progress: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          exercises_done: number | null
+          exercises_total: number | null
+          id: string
+          module_id: string
+          score: number | null
+          started_at: string | null
+          unlocked: boolean | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          exercises_done?: number | null
+          exercises_total?: number | null
+          id?: string
+          module_id: string
+          score?: number | null
+          started_at?: string | null
+          unlocked?: boolean | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          exercises_done?: number | null
+          exercises_total?: number | null
+          id?: string
+          module_id?: string
+          score?: number | null
+          started_at?: string | null
+          unlocked?: boolean | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fle_module_progress_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fle_modules: {
+        Row: {
+          category: Database["public"]["Enums"]["fle_category"]
+          cecrl_level: Database["public"]["Enums"]["cecrl_level"]
+          created_at: string
+          description: string | null
+          duration_minutes: number | null
+          icon: string | null
+          id: string
+          is_active: boolean | null
+          prerequisites: string[] | null
+          sector: string | null
+          sort_order: number
+          theme: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category?: Database["public"]["Enums"]["fle_category"]
+          cecrl_level?: Database["public"]["Enums"]["cecrl_level"]
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          prerequisites?: string[] | null
+          sector?: string | null
+          sort_order?: number
+          theme: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["fle_category"]
+          cecrl_level?: Database["public"]["Enums"]["cecrl_level"]
+          created_at?: string
+          description?: string | null
+          duration_minutes?: number | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean | null
+          prerequisites?: string[] | null
+          sector?: string | null
+          sort_order?: number
+          theme?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      fle_user_progress: {
+        Row: {
+          comprehension_score: number | null
+          created_at: string
+          estimated_level: Database["public"]["Enums"]["cecrl_level"] | null
+          id: string
+          last_activity_at: string | null
+          oral_score: number | null
+          phrases_mastered: number | null
+          placement_completed: boolean | null
+          preferred_category: Database["public"]["Enums"]["fle_category"] | null
+          streak_days: number | null
+          target_sector: string | null
+          total_time_minutes: number | null
+          total_xp: number | null
+          updated_at: string
+          user_id: string
+          words_learned: number | null
+        }
+        Insert: {
+          comprehension_score?: number | null
+          created_at?: string
+          estimated_level?: Database["public"]["Enums"]["cecrl_level"] | null
+          id?: string
+          last_activity_at?: string | null
+          oral_score?: number | null
+          phrases_mastered?: number | null
+          placement_completed?: boolean | null
+          preferred_category?:
+            | Database["public"]["Enums"]["fle_category"]
+            | null
+          streak_days?: number | null
+          target_sector?: string | null
+          total_time_minutes?: number | null
+          total_xp?: number | null
+          updated_at?: string
+          user_id: string
+          words_learned?: number | null
+        }
+        Update: {
+          comprehension_score?: number | null
+          created_at?: string
+          estimated_level?: Database["public"]["Enums"]["cecrl_level"] | null
+          id?: string
+          last_activity_at?: string | null
+          oral_score?: number | null
+          phrases_mastered?: number | null
+          placement_completed?: boolean | null
+          preferred_category?:
+            | Database["public"]["Enums"]["fle_category"]
+            | null
+          streak_days?: number | null
+          target_sector?: string | null
+          total_time_minutes?: number | null
+          total_xp?: number | null
+          updated_at?: string
+          user_id?: string
+          words_learned?: number | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           consent_id: string | null
@@ -579,8 +851,22 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "provider" | "user"
+      cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
       certification_type: "language" | "cqp" | "tp"
       consent_type: "lead_sharing" | "marketing" | "analytics"
+      fle_category: "quotidien" | "professionnel"
+      fle_exercise_type:
+        | "listen_repeat"
+        | "listen_choose"
+        | "oral_answer"
+        | "vocal_recognition"
+        | "image_word_audio"
+        | "reformulate"
+        | "complete_dialogue"
+        | "role_play"
+        | "interview_sim"
+        | "safety_instruction"
+        | "vocal_dialogue"
       lead_status:
         | "pending"
         | "contacted"
@@ -726,8 +1012,23 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "provider", "user"],
+      cecrl_level: ["alpha", "post_alpha", "a1", "a2", "b1"],
       certification_type: ["language", "cqp", "tp"],
       consent_type: ["lead_sharing", "marketing", "analytics"],
+      fle_category: ["quotidien", "professionnel"],
+      fle_exercise_type: [
+        "listen_repeat",
+        "listen_choose",
+        "oral_answer",
+        "vocal_recognition",
+        "image_word_audio",
+        "reformulate",
+        "complete_dialogue",
+        "role_play",
+        "interview_sim",
+        "safety_instruction",
+        "vocal_dialogue",
+      ],
       lead_status: [
         "pending",
         "contacted",
