@@ -33,6 +33,7 @@ const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Heberger = lazy(() => import("./pages/Heberger"));
 const PitchRegion = lazy(() => import("./pages/PitchRegion"));
+const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -74,6 +75,7 @@ const App = () => (
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
+              <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
