@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2 } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
 import { FLEModuleCard } from "@/components/FLE/FLEModuleCard";
@@ -146,6 +147,26 @@ const FLEDashboard = () => {
             <Volume2 className="h-4 w-4" /> {progress.phrases_mastered} phrases
           </span>
         </div>
+
+        {/* Dialogue CTA */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-6"
+        >
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-3 rounded-xl border-primary/20 bg-primary/5 py-6 hover:bg-primary/10"
+            onClick={() => navigate("/fle/dialogue")}
+          >
+            <MessageCircle className="h-5 w-5 text-primary" />
+            <div className="text-left">
+              <span className="block text-sm font-semibold text-foreground">Dialogues avec Marianne</span>
+              <span className="block text-xs text-muted-foreground">Boulangerie, médecin, transports…</span>
+            </div>
+          </Button>
+        </motion.div>
 
         {/* Category filter */}
         <div className="flex gap-2 mb-6">
