@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Menu, X, Building2, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, Handshake, Server, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -20,18 +20,18 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mt-2 flex items-center justify-between rounded-2xl border border-primary/10 bg-card/80 px-4 py-1.5 shadow-soft backdrop-blur-xl sm:px-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logoTofrance} alt="ToFrance" className="h-12 w-auto" width={48} height={48} />
+          <Link to="/" className="flex items-center gap-3 -my-4">
+            <img src={logoTofrance} alt="ToFrance" className="h-20 w-auto" width={80} height={80} />
           </Link>
 
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-6 lg:flex">
             <Link to="/devenir-partenaire" className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              <Building2 className="h-4 w-4" />
+              <Handshake className="h-4 w-4" />
               Devenir partenaire
             </Link>
             <Link to="/heberger" className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              <Building2 className="h-4 w-4" />
+              <Server className="h-4 w-4" />
               Héberger la plateforme
             </Link>
             {isAdmin && (
@@ -103,7 +103,7 @@ export function Header() {
                 className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Building2 className="h-4 w-4" />
+                <Handshake className="h-4 w-4" />
                 Devenir partenaire
               </Link>
               <Link
@@ -111,7 +111,7 @@ export function Header() {
                 className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Building2 className="h-4 w-4" />
+                <Server className="h-4 w-4" />
                 Héberger la plateforme
               </Link>
               {isAdmin && (
