@@ -111,8 +111,8 @@ export function Header() {
                 className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Server className="h-4 w-4" />
-                Héberger la plateforme
+                <Home className="h-4 w-4" />
+                Accueillir la plateforme
               </Link>
               {isAdmin && (
                 <Link
