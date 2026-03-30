@@ -5,6 +5,162 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const ONBOARDING_COPY: Record<string, { intro: string; ack: string; clarify: string; done: string; multi: string }> = {
+  fr: {
+    intro: "Bonjour, je suis Marianne.",
+    ack: "Merci.",
+    clarify: "Je n'ai pas bien compris.",
+    done: "Merci pour vos réponses !",
+    multi: "Vous pouvez choisir plusieurs réponses.",
+  },
+  en: {
+    intro: "Hello, I'm Marianne.",
+    ack: "Thank you.",
+    clarify: "I didn't fully understand.",
+    done: "Thank you for your answers!",
+    multi: "You can choose several answers.",
+  },
+  ar: {
+    intro: "مرحباً، أنا ماريان.",
+    ack: "شكراً.",
+    clarify: "لم أفهم جيداً.",
+    done: "شكراً على إجاباتك!",
+    multi: "يمكنك اختيار أكثر من إجابة.",
+  },
+  es: {
+    intro: "Hola, soy Marianne.",
+    ack: "Gracias.",
+    clarify: "No he entendido bien.",
+    done: "¡Gracias por tus respuestas!",
+    multi: "Puedes elegir varias respuestas.",
+  },
+  pt: {
+    intro: "Olá, eu sou Marianne.",
+    ack: "Obrigada.",
+    clarify: "Não entendi bem.",
+    done: "Obrigada pelas suas respostas!",
+    multi: "Você pode escolher várias respostas.",
+  },
+  ru: {
+    intro: "Здравствуйте, я Марианна.",
+    ack: "Спасибо.",
+    clarify: "Я не совсем поняла.",
+    done: "Спасибо за ваши ответы!",
+    multi: "Можно выбрать несколько вариантов.",
+  },
+};
+
+function normalizeText(value: string) {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractContent(content: unknown): string {
+  if (typeof content === "string") return content.trim();
+  if (Array.isArray(content)) {
+    return content
+      .map((part: any) => {
+        if (typeof part === "string") return part;
+        if (typeof part?.text === "string") return part.text;
+        if (typeof part?.content === "string") return part.content;
+        return "";
+      })
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
+function getQuestionText(question: any, language: string): string {
+  return question?.question?.[language] || question?.question?.fr || "";
+}
+
+function getQuestionChoices(question: any, language: string): string[] {
+  return (question?.choices || [])
+    .map((choice: any) => choice?.label?.[language] || choice?.label?.fr || choice?.id)
+    .filter(Boolean);
+}
+
+function buildQuestionPrompt(question: any, language: string): string {
+  const copy = ONBOARDING_COPY[language] || ONBOARDING_COPY.fr;
+  const questionText = getQuestionText(question, language);
+  const choices = getQuestionChoices(question, language);
+
+  if (!choices.length) return questionText;
+
+  const joinedChoices = language === "ar" ? choices.join(" أو ") : choices.join(", ");
+  const multiHint = question?.type === "multiChoice" ? ` ${copy.multi}` : "";
+  return `${questionText} ${joinedChoices}.${multiHint}`.trim();
+}
+
+function matchChoiceIds(question: any, userAnswer: string, language: string): string[] {
+  const normalizedAnswer = normalizeText(userAnswer || "");
+  if (!normalizedAnswer) return [];
+
+  const matches = (question?.choices || [])
+    .filter((choice: any) => {
+      const candidates = [
+        choice?.id,
+        choice?.label?.[language],
+        choice?.label?.fr,
+        choice?.label?.en,
+      ].filter(Boolean);
+
+      return candidates.some((candidate: string) => {
+        const normalizedCandidate = normalizeText(candidate);
+        return (
+          normalizedAnswer === normalizedCandidate ||
+          normalizedAnswer.includes(normalizedCandidate) ||
+          normalizedCandidate.includes(normalizedAnswer)
+        );
+      });
+    })
+    .map((choice: any) => choice.id);
+
+  return question?.type === "multiChoice" ? matches : matches.slice(0, 1);
+}
+
+function buildOnboardingFallback(body: any) {
+  const { phase, question, next_question, user_answer, language } = body;
+  const copy = ONBOARDING_COPY[language] || ONBOARDING_COPY.fr;
+
+  if (phase === "greet") {
+    return {
+      marianne_message: `${copy.intro} ${buildQuestionPrompt(question, language)}`.trim(),
+      matched_choice_ids: null,
+      extracted_text: null,
+      needs_clarification: false,
+    };
+  }
+
+  const matchedChoiceIds = question?.choices?.length ? matchChoiceIds(question, user_answer || "", language) : [];
+  const extractedText = question?.choices?.length ? null : (user_answer || "").trim() || null;
+  const needsClarification = Boolean(question?.choices?.length) && matchedChoiceIds.length === 0;
+
+  if (needsClarification) {
+    return {
+      marianne_message: `${copy.clarify} ${buildQuestionPrompt(question, language)}`.trim(),
+      matched_choice_ids: null,
+      extracted_text: null,
+      needs_clarification: true,
+    };
+  }
+
+  const nextMessage = next_question ? buildQuestionPrompt(next_question, language) : copy.done;
+
+  return {
+    marianne_message: `${copy.ack} ${nextMessage}`.trim(),
+    matched_choice_ids: matchedChoiceIds.length ? matchedChoiceIds : null,
+    extracted_text: extractedText,
+    needs_clarification: false,
+  };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -169,6 +325,8 @@ Réponds en JSON.`;
       throw new Error("Action non reconnue : " + action);
     }
 
+    const model = action === "onboarding_chat" ? "google/gemini-2.5-flash" : "openai/gpt-5-mini";
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -176,7 +334,7 @@ Réponds en JSON.`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-5-mini",
+        model,
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
@@ -203,7 +361,18 @@ Réponds en JSON.`;
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || "";
+    const content = extractContent(data.choices?.[0]?.message?.content) || extractContent(data.output_text);
+
+    if (!content) {
+      if (action === "onboarding_chat") {
+        return new Response(
+          JSON.stringify(buildOnboardingFallback(body)),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      throw new Error("Empty AI response");
+    }
 
     // Try to parse as JSON, fallback to raw content
     let parsed;
