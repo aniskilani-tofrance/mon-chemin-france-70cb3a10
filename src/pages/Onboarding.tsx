@@ -32,6 +32,15 @@ interface OnboardingAnswers extends TreeOnboardingAnswers {
   consent_marketing?: boolean;
 }
 
+const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string; disable: string }> = {
+  fr: { on: "Son ON", off: "Son OFF", enable: "Activer le son", disable: "Désactiver le son" },
+  en: { on: "Sound ON", off: "Sound OFF", enable: "Enable sound", disable: "Disable sound" },
+  ar: { on: "الصوت يعمل", off: "الصوت متوقف", enable: "تفعيل الصوت", disable: "إيقاف الصوت" },
+  es: { on: "Sonido ON", off: "Sonido OFF", enable: "Activar sonido", disable: "Desactivar sonido" },
+  pt: { on: "Som ON", off: "Som OFF", enable: "Ativar som", disable: "Desativar som" },
+  ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },
+};
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
@@ -47,6 +56,8 @@ const Onboarding = () => {
   const estimatedTotal = estimateTotalQuestions(answers);
   const currentQuestionNumber = questionHistory.length + 1;
   const currentRoute = determineRoute(answers);
+  const isRTL = language === "ar";
+  const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
 
   // Track step changes
   useEffect(() => {
@@ -189,17 +200,20 @@ const Onboarding = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex flex-col">
+    <div
+      className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex flex-col"
+      dir={isRTL ? "rtl" : "ltr"}
+      lang={language}
+    >
       <Header />
       
-      {/* Floating TTS toggle - visible after language selection */}
       {step !== "language" && tts.isSupported && (
         <motion.button
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={tts.toggle}
           className="fixed top-24 right-4 z-50 flex items-center gap-2 rounded-full border border-primary/20 bg-card/90 px-4 py-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-secondary sm:right-8"
-          aria-label={tts.isEnabled ? "Désactiver le son" : "Activer le son"}
+          aria-label={tts.isEnabled ? soundText.disable : soundText.enable}
         >
           {tts.isEnabled ? (
             <Volume2 className="h-4 w-4 text-primary" />
@@ -207,7 +221,7 @@ const Onboarding = () => {
             <VolumeX className="h-4 w-4 text-muted-foreground" />
           )}
           <span className="text-xs font-medium text-foreground">
-            {tts.isEnabled ? "Son ON" : "Son OFF"}
+            {tts.isEnabled ? soundText.on : soundText.off}
           </span>
         </motion.button>
       )}
