@@ -20,8 +20,8 @@ export function Header() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mt-2 flex items-center justify-between rounded-2xl border border-primary/10 bg-card/80 px-4 py-1.5 shadow-soft backdrop-blur-xl sm:px-6">
           {/* Logo */}
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logoTofrance} alt="ToFrance" className="h-12 w-auto" width={48} height={48} />
+          <Link to="/" className="flex items-center gap-3 -my-4">
+            <img src={logoTofrance} alt="ToFrance" className="h-20 w-auto" width={80} height={80} />
           </Link>
 
           {/* Desktop Navigation */}
