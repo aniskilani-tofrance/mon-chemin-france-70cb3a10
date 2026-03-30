@@ -166,26 +166,49 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         const nextQId = getNextQuestion(currentQuestionId, answerValue, newAnswers);
         const nextQ = nextQId ? ONBOARDING_TREE.questions[nextQId] : null;
 
-        const response = await callOnboardingChat({
-          action: "onboarding_chat",
-          phase: "parse",
-          question: currentQuestion,
-          user_answer: answerValue,
-          next_question: nextQ,
-          language,
-          conversation_summary: buildSummary(),
-        });
-
-        const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
-        setMessages(prev => [...prev, marianneMsg]);
-        speak(response.marianne_message);
-
-        if (nextQId) {
-          setQuestionHistory(prev => [...prev, currentQuestionId]);
-          setCurrentQuestionId(nextQId);
+        // For location, skip AI vocal repeat (hard to transcribe city names across languages)
+        if (currentQuestionId === "location") {
+          if (nextQId && nextQ) {
+            const shortAck = await callOnboardingChat({
+              action: "onboarding_chat",
+              phase: "parse",
+              question: currentQuestion,
+              user_answer: answerValue,
+              next_question: nextQ,
+              language,
+              conversation_summary: buildSummary(),
+            });
+            const marianneMsg: ChatMessage = { role: "marianne", content: shortAck.marianne_message };
+            setMessages(prev => [...prev, marianneMsg]);
+            // Don't speak the location back — just show text
+            setQuestionHistory(prev => [...prev, currentQuestionId]);
+            setCurrentQuestionId(nextQId);
+          } else {
+            setIsComplete(true);
+            setTimeout(() => onComplete(newAnswers), 1500);
+          }
         } else {
-          setIsComplete(true);
-          setTimeout(() => onComplete(newAnswers), 1500);
+          const response = await callOnboardingChat({
+            action: "onboarding_chat",
+            phase: "parse",
+            question: currentQuestion,
+            user_answer: answerValue,
+            next_question: nextQ,
+            language,
+            conversation_summary: buildSummary(),
+          });
+
+          const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
+          setMessages(prev => [...prev, marianneMsg]);
+          speak(response.marianne_message);
+
+          if (nextQId) {
+            setQuestionHistory(prev => [...prev, currentQuestionId]);
+            setCurrentQuestionId(nextQId);
+          } else {
+            setIsComplete(true);
+            setTimeout(() => onComplete(newAnswers), 1500);
+          }
         }
       } else {
         const nextQIdPreview = getNextQuestion(currentQuestionId, "", newAnswers);
