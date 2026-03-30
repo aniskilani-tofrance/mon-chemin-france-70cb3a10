@@ -41,11 +41,6 @@ interface ChatOnboardingProps {
 
 export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
   const { language } = useLanguage();
-  const { speak, isSpeaking } = useTTS({ language });
-  const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening } = useSpeechRecognition({
-    language: language === "ar" ? "ar-SA" : language === "es" ? "es-ES" : language === "pt" ? "pt-BR" : language === "ru" ? "ru-RU" : language === "en" ? "en-US" : "fr-FR",
-  });
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,10 +50,12 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [isComplete, setIsComplete] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
+  const [vocalMode, setVocalMode] = useState(true); // full vocal by default
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
-  
   const hasGreeted = useRef(false);
+  const shouldAutoListen = useRef(false);
+  const pendingTranscriptRef = useRef<string>("");
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
   const isDirectText = DIRECT_TEXT_QUESTIONS.has(currentQuestionId);
@@ -66,15 +63,44 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isEmail = currentQuestionId === "contact_email";
   const isRTL = language === "ar";
 
+  // TTS with onEnd to auto-start mic
+  const { speak, isSpeaking } = useTTS({
+    language,
+    onEnd: () => {
+      if (shouldAutoListen.current && vocalMode && sttSupported && !isWidget) {
+        shouldAutoListen.current = false;
+        setTimeout(() => startListening(), 300);
+      }
+    },
+  });
+
+  const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening, reset: resetSTT } = useSpeechRecognition({
+    language: language === "ar" ? "ar-SA" : language === "es" ? "es-ES" : language === "pt" ? "pt-BR" : language === "ru" ? "ru-RU" : language === "en" ? "en-US" : "fr-FR",
+  });
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isProcessing]);
 
-  // Sync transcript
+  // Sync transcript to input
   useEffect(() => {
-    if (transcript) setInputText(transcript);
+    if (transcript) {
+      setInputText(transcript);
+      pendingTranscriptRef.current = transcript;
+    }
   }, [transcript]);
+
+  // Auto-submit when STT stops (final result) in vocal mode
+  useEffect(() => {
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isWidget) {
+      const value = pendingTranscriptRef.current.trim();
+      pendingTranscriptRef.current = "";
+      if (value) {
+        setTimeout(() => processAnswer(value), 200);
+      }
+    }
+  }, [isListening]);
 
   // Build conversation summary for AI context
   const buildSummary = useCallback(() => {
@@ -87,6 +113,14 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     if (answers.contact_firstname) parts.push(`Prénom: ${answers.contact_firstname}`);
     return parts.join(", ");
   }, [answers]);
+
+  // Speak and auto-start mic after
+  const speakAndListen = useCallback((text: string) => {
+    shouldAutoListen.current = true;
+    resetSTT();
+    pendingTranscriptRef.current = "";
+    speak(text);
+  }, [speak, resetSTT]);
 
   // Greet on mount
   useEffect(() => {
@@ -108,14 +142,14 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       const msg: ChatMessage = { role: "marianne", content: response.marianne_message };
       setMessages([msg]);
-      speak(response.marianne_message);
+      speakAndListen(response.marianne_message);
     } catch (err) {
       console.error("Greet error:", err);
       const fallback = language === "ar" ? "مرحباً! أنا ماريان. أين تسكن في فرنسا؟" :
         language === "en" ? "Hello! I'm Marianne. Where do you live in France?" :
         "Bonjour ! Je suis Marianne, votre conseillère. Où habitez-vous en France ?";
       setMessages([{ role: "marianne", content: fallback }]);
-      speak(fallback);
+      speakAndListen(fallback);
     } finally {
       setIsProcessing(false);
       console.log("[DEBUG-LOC] greet done, isProcessing set to false");
@@ -145,7 +179,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             "Cet email ne semble pas correct. Pouvez-vous réessayer ?"
         };
         setMessages(prev => [...prev, errorMsg]);
-        speak(errorMsg.content);
+        speakAndListen(errorMsg.content);
         return;
       }
     }
@@ -180,7 +214,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             });
             const marianneMsg: ChatMessage = { role: "marianne", content: shortAck.marianne_message };
             setMessages(prev => [...prev, marianneMsg]);
-            // Don't speak the location back — just show text
+            // For location, speak the ack but don't auto-listen (next Q needs widget or voice)
+            speakAndListen(shortAck.marianne_message);
             setQuestionHistory(prev => [...prev, currentQuestionId]);
             setCurrentQuestionId(nextQId);
           } else {
@@ -200,7 +235,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
           const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
           setMessages(prev => [...prev, marianneMsg]);
-          speak(response.marianne_message);
+          speakAndListen(response.marianne_message);
 
           if (nextQId) {
             setQuestionHistory(prev => [...prev, currentQuestionId]);
@@ -227,7 +262,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         if (response.needs_clarification) {
           const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
           setMessages(prev => [...prev, marianneMsg]);
-          speak(response.marianne_message);
+          speakAndListen(response.marianne_message);
           setIsProcessing(false);
           return;
         }
@@ -283,7 +318,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
         const marianneMsg: ChatMessage = { role: "marianne", content: finalMessage };
         setMessages(prev => [...prev, marianneMsg]);
-        speak(finalMessage);
+        speakAndListen(finalMessage);
 
         if (nextQId) {
           setQuestionHistory(prev => [...prev, currentQuestionId]);
@@ -304,13 +339,17 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      if (transcript) setInputText(transcript);
+      // In vocal mode, auto-submit happens via the useEffect
+      if (!vocalMode && transcript) setInputText(transcript);
     } else {
+      resetSTT();
+      pendingTranscriptRef.current = "";
       startListening();
     }
   };
 
   const handleSubmit = () => {
+    pendingTranscriptRef.current = "";
     processAnswer(inputText);
   };
 
@@ -411,7 +450,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       </div>
 
       {!isComplete && (
-        <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3">
+        <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
           {currentQuestionId === "location" && (
             <div className="mb-2">
               <GooglePlacesAutocomplete
@@ -429,50 +468,95 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          <div className="flex items-center gap-2">
-            {sttSupported && !isWidget && (
-              <Button
-                variant={isListening ? "destructive" : "outline"}
-                size="icon"
+          {/* Vocal-first: big mic button when not a widget question */}
+          {vocalMode && sttSupported && !isWidget && (
+            <div className="flex flex-col items-center gap-2">
+              <motion.button
                 onClick={handleMicToggle}
-                disabled={isProcessing}
+                disabled={isProcessing || isSpeaking}
+                className={`flex h-16 w-16 items-center justify-center rounded-full transition-all shadow-lg ${
+                  isListening
+                    ? "bg-destructive text-destructive-foreground animate-pulse"
+                    : isSpeaking
+                    ? "bg-muted text-muted-foreground cursor-wait"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
+                whileTap={{ scale: 0.9 }}
+              >
+                {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
+              </motion.button>
+              <p className="text-xs text-muted-foreground">
+                {isListening
+                  ? (language === "ar" ? "🎤 أتحدث..." : "🎤 Je vous écoute...")
+                  : isSpeaking
+                  ? (language === "ar" ? "🔊 ماريان تتحدث..." : "🔊 Marianne parle...")
+                  : (language === "ar" ? "اضغط للتحدث" : "Appuyez pour parler")}
+              </p>
+              {inputText && !isListening && (
+                <div className="flex items-center gap-2 w-full">
+                  <Input
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                    }}
+                    className="flex-1 text-sm"
+                    dir={isRTL ? "rtl" : "ltr"}
+                  />
+                  <Button size="icon" onClick={handleSubmit} disabled={isProcessing || !inputText.trim()} className="shrink-0">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Fallback text input for widget questions or non-vocal mode */}
+          {(!vocalMode || !sttSupported || isWidget) && (
+            <div className="flex items-center gap-2">
+              {sttSupported && !isWidget && (
+                <Button
+                  variant={isListening ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={handleMicToggle}
+                  disabled={isProcessing}
+                  className="shrink-0"
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+              )}
+
+              {currentQuestionId !== "location" && (
+                <Input
+                  type={isEmail ? "email" : "text"}
+                  value={inputText}
+                  onChange={(e) => {
+                    setInputText(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                  }}
+                  placeholder={isEmail ? "email@exemple.com" :
+                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+                  className="flex-1"
+                  disabled={isProcessing}
+                  dir={isRTL && !isEmail ? "rtl" : "ltr"}
+                />
+              )}
+
+              <Button
+                size="icon"
+                onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
+                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
                 className="shrink-0"
               >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                <Send className="h-4 w-4" />
               </Button>
-            )}
-
-            {currentQuestionId !== "location" && (
-              <Input
-                type={isEmail ? "email" : "text"}
-                value={inputText}
-                onChange={(e) => {
-                  setInputText(e.target.value);
-                  if (emailError) setEmailError(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && inputText.trim()) handleSubmit();
-                }}
-                placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
-                  isEmail ? "email@exemple.com" :
-                  (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
-                className="flex-1"
-                disabled={isProcessing}
-                dir={isRTL && !isEmail ? "rtl" : "ltr"}
-              />
-            )}
-
-            <Button
-              size="icon"
-              onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-              disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
-              className="shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+            </div>
+          )}
           
-          <div className="flex items-center space-x-2 mt-3 px-1">
+          <div className="flex items-center space-x-2 px-1">
             <Checkbox 
               id="rgpd" 
               checked={rgpdAccepted} 
