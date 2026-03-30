@@ -114,6 +114,14 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     return parts.join(", ");
   }, [answers]);
 
+  // Speak and auto-start mic after
+  const speakAndListen = useCallback((text: string) => {
+    shouldAutoListen.current = true;
+    resetSTT();
+    pendingTranscriptRef.current = "";
+    speak(text);
+  }, [speak, resetSTT]);
+
   // Greet on mount
   useEffect(() => {
     if (hasGreeted.current) return;
