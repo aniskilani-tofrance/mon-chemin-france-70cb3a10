@@ -376,18 +376,6 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       {!isComplete && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3">
-          {currentQuestionId === "location" && (
-            <div className="mb-2">
-              <GooglePlacesAutocomplete
-                ref={locationInputRef}
-                value={inputText}
-                onChange={setInputText}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleLocationSubmit();
-                }}
-              />
-            </div>
-          )}
 
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
