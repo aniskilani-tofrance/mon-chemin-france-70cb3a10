@@ -511,8 +511,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             </div>
           )}
 
-          {/* Fallback text input for widget questions or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isWidget) && (
+          {/* Fallback text input for email or non-vocal mode */}
+          {(!vocalMode || !sttSupported || isEmail) && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
