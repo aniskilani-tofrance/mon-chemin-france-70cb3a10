@@ -16,12 +16,14 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const { action, user_answer, expected_answer, prompt_text, exercise_type, user_level, language } = await req.json();
+    const body = await req.json();
+    const { action } = body;
 
     let systemPrompt = "";
     let userMessage = "";
 
     if (action === "feedback") {
+      const { user_answer, expected_answer, prompt_text, exercise_type, user_level, language } = body;
       systemPrompt = `Tu es Marianne, une assistante pédagogique FLE (Français Langue Étrangère) bienveillante et encourageante.
 Tu aides des apprenants primo-arrivants en France de niveau ${user_level || "A1"}.
 
@@ -44,6 +46,7 @@ Langue maternelle de l'apprenant : ${language || "inconnue"}
 
 Évalue la réponse et donne un feedback bienveillant en JSON.`;
     } else if (action === "dialogue") {
+      const { user_answer, prompt_text, user_level } = body;
       systemPrompt = `Tu es Marianne, une assistante conversationnelle FLE pour des apprenants de niveau ${user_level || "A1"}.
 Tu simules des dialogues de la vie quotidienne en France.
 
@@ -62,6 +65,7 @@ L'apprenant dit : "${user_answer}"
 
 Continue le dialogue en JSON.`;
     } else if (action === "generate_exercise") {
+      const { prompt_text, exercise_type, user_level, language } = body;
       systemPrompt = `Tu es un expert en pédagogie FLE. Génère un exercice adapté au niveau ${user_level || "A1"}.
 
 Réponds TOUJOURS en JSON valide :
@@ -76,6 +80,91 @@ Réponds TOUJOURS en JSON valide :
       userMessage = `Génère un exercice de type "${exercise_type}" sur le thème "${prompt_text}".
 Niveau : ${user_level}
 Langue de l'apprenant : ${language || "inconnue"}`;
+    } else if (action === "onboarding_chat") {
+      const { phase, question, user_answer, next_question, language: userLang, conversation_summary } = body;
+
+      const langName: Record<string, string> = {
+        fr: "français", en: "anglais", ar: "arabe", es: "espagnol", pt: "portugais", ru: "russe",
+      };
+      const speakLang = langName[userLang] || "français";
+
+      systemPrompt = `Tu es Marianne, une conseillère bienveillante et chaleureuse qui aide les personnes primo-arrivantes en France à s'orienter vers la bonne formation ou le bon emploi.
+
+Tu mènes un entretien d'orientation sous forme de conversation naturelle et détendue.
+
+LANGUE : Parle en ${speakLang}. Utilise des mots simples et des phrases courtes.
+
+RÈGLES STRICTES :
+- Sois TRÈS concise : 1-2 phrases max pour réagir, 1 phrase pour poser la question
+- Ton chaleureux, empathique, jamais administratif
+- Ne répète JAMAIS la question mot pour mot du questionnaire : reformule naturellement
+- Quand tu poses une question avec des choix, présente-les naturellement dans ta phrase (pas de liste numérotée)
+- Si la question a des choix, aide l'utilisateur en mentionnant les options principales
+- Pour les questions multiChoice, précise qu'on peut choisir plusieurs réponses
+
+RÉPONSE JSON STRICTE :
+{
+  "marianne_message": "string - ce que Marianne dit (réaction + question suivante)",
+  "matched_choice_ids": ["string"] | null,
+  "extracted_text": "string" | null,
+  "needs_clarification": false
+}
+
+EXTRACTION DES RÉPONSES :
+- Pour les questions à choix : analyse la réponse libre de l'utilisateur et identifie le(s) choix correspondant(s) par leur ID
+- Si la réponse ne correspond à aucun choix clairement, mets needs_clarification à true
+- Pour les questions texte : mets la réponse dans extracted_text
+- Sois TOLÉRANT dans l'interprétation : accepte les synonymes, les réponses partielles, etc.`;
+
+      if (phase === "greet") {
+        // Greeting + first question
+        const qText = question?.question?.[userLang] || question?.question?.fr || "";
+        const choicesDesc = question?.choices?.map((c: any) => `${c.id}: ${c.label?.[userLang] || c.label?.fr}`).join(", ") || "";
+
+        userMessage = `C'est le début de l'entretien. Accueille chaleureusement l'utilisateur et pose-lui la PREMIÈRE question.
+
+Première question à poser (reformule naturellement) : "${qText}"
+${choicesDesc ? `Choix possibles : ${choicesDesc}` : "Question ouverte (texte libre)"}
+Type de question : ${question?.type || "text"}
+ID de la question : ${question?.id || ""}
+
+${conversation_summary ? `Contexte : ${conversation_summary}` : ""}
+
+Réponds en JSON. matched_choice_ids et extracted_text doivent être null (c'est juste le début).`;
+      } else if (phase === "parse") {
+        // Parse user answer + transition to next question
+        const qText = question?.question?.[userLang] || question?.question?.fr || "";
+        const choicesDesc = question?.choices?.map((c: any) => `${c.id}: ${c.label?.[userLang] || c.label?.fr}`).join(", ") || "";
+        const questionType = question?.type || "text";
+
+        let nextQPart = "";
+        if (next_question) {
+          const nqText = next_question.question?.[userLang] || next_question.question?.fr || "";
+          const nqChoices = next_question.choices?.map((c: any) => `${c.id}: ${c.label?.[userLang] || c.label?.fr}`).join(", ") || "";
+          nextQPart = `\n\nQuestion SUIVANTE à enchaîner naturellement : "${nqText}"
+${nqChoices ? `Choix possibles : ${nqChoices}` : "Question ouverte"}
+Type : ${next_question.type || "text"}`;
+        } else {
+          nextQPart = "\n\nC'est la DERNIÈRE question. Après extraction, ne pose pas de nouvelle question. Dis simplement quelque chose d'encourageant comme 'Merci pour vos réponses !'";
+        }
+
+        userMessage = `Question posée : "${qText}" (type: ${questionType}, id: ${question?.id})
+${choicesDesc ? `Choix possibles : ${choicesDesc}` : "Question ouverte (texte libre)"}
+
+L'utilisateur a répondu : "${user_answer}"
+
+${conversation_summary ? `Résumé de la conversation jusqu'ici : ${conversation_summary}` : ""}
+
+TÂCHE :
+1. Analyse la réponse et extrais le(s) choix correspondant(s) (matched_choice_ids) ou le texte libre (extracted_text)
+2. Réagis brièvement à la réponse (1 phrase max)
+3. ${next_question ? "Enchaîne naturellement sur la question suivante" : "Remercie l'utilisateur"}
+${nextQPart}
+
+Réponds en JSON.`;
+      } else {
+        throw new Error("Phase onboarding_chat invalide: " + phase);
+      }
     } else {
       throw new Error("Action non reconnue : " + action);
     }
@@ -119,7 +208,6 @@ Langue de l'apprenant : ${language || "inconnue"}`;
     // Try to parse as JSON, fallback to raw content
     let parsed;
     try {
-      // Remove markdown code blocks if present
       const cleaned = content.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
       parsed = JSON.parse(cleaned);
     } catch {
