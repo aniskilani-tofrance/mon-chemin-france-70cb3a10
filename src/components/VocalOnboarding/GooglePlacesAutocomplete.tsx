@@ -75,6 +75,7 @@ export function GooglePlacesAutocomplete({
     if (!isLoaded || !containerRef.current || elementRef.current) return;
 
     const google = (window as any).google;
+    let rafId = 0;
 
     if (!google.maps.places.PlaceAutocompleteElement) {
       setUseNativeInput(true);
@@ -142,9 +143,15 @@ export function GooglePlacesAutocomplete({
       containerRef.current.appendChild(el);
       elementRef.current = el;
 
+      let innerInput: HTMLInputElement | null = null;
+      let pollInterval: number | null = null;
+      let probeAttempts = 0;
+
       const tryStyle = () => {
+        probeAttempts += 1;
         const inner = el.querySelector?.("input") || el.shadowRoot?.querySelector?.("input");
         if (inner) {
+          innerInput = inner as HTMLInputElement;
           inner.placeholder = placeholder;
           inner.setAttribute("aria-label", placeholder);
           inner.dir = isRTL ? "rtl" : "ltr";
@@ -158,7 +165,7 @@ export function GooglePlacesAutocomplete({
             onChangeRef.current(inner.value);
           });
 
-          const pollInterval = setInterval(() => {
+          pollInterval = window.setInterval(() => {
             const currentValue = inner.value;
             if (currentValue) {
               onChangeRef.current(currentValue);
@@ -167,11 +174,29 @@ export function GooglePlacesAutocomplete({
 
           (el as any).__pollInterval = pollInterval;
         } else {
-          requestAnimationFrame(tryStyle);
+          if (probeAttempts >= 10) {
+            setUseNativeInput(true);
+            return;
+          }
+          rafId = requestAnimationFrame(tryStyle);
         }
       };
 
-      requestAnimationFrame(tryStyle);
+      rafId = requestAnimationFrame(tryStyle);
+
+      return () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        if (pollInterval) clearInterval(pollInterval);
+        if (innerInput) {
+          innerInput.replaceWith(innerInput.cloneNode(true));
+        }
+        if (containerRef.current?.contains(el)) {
+          containerRef.current.removeChild(el);
+        }
+        if (elementRef.current === el) {
+          elementRef.current = null;
+        }
+      };
     } catch (err) {
       console.warn("PlaceAutocompleteElement failed:", err);
       setUseNativeInput(true);
