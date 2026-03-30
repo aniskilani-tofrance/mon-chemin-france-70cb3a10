@@ -33,7 +33,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
   className,
   autoFocus,
   onKeyDown,
-}: GooglePlacesAutocompleteProps) {
+}: GooglePlacesAutocompleteProps, ref) {
   const { language } = useLanguage();
   const isRTL = language === "ar";
   const placeholder = LOCATION_PLACEHOLDERS[language] || LOCATION_PLACEHOLDERS.fr;
