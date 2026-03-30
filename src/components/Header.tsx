@@ -103,7 +103,7 @@ export function Header() {
                 className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Building2 className="h-4 w-4" />
+                <Handshake className="h-4 w-4" />
                 Devenir partenaire
               </Link>
               <Link
@@ -111,7 +111,7 @@ export function Header() {
                 className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                <Building2 className="h-4 w-4" />
+                <Server className="h-4 w-4" />
                 Héberger la plateforme
               </Link>
               {isAdmin && (
