@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
 import { useLanguage } from "@/hooks/useLanguage";
 
@@ -13,6 +13,10 @@ interface GooglePlacesAutocompleteProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
+export interface GooglePlacesAutocompleteHandle {
+  getValue: () => string;
+}
+
 const LOCATION_PLACEHOLDERS: Record<string, string> = {
   fr: "Ville ou code postal",
   en: "City or postal code",
@@ -22,7 +26,7 @@ const LOCATION_PLACEHOLDERS: Record<string, string> = {
   ru: "Город или почтовый индекс",
 };
 
-export function GooglePlacesAutocomplete({
+export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandle, GooglePlacesAutocompleteProps>(function GooglePlacesAutocomplete({
   value,
   onChange,
   onPlaceSelected,
@@ -36,6 +40,7 @@ export function GooglePlacesAutocomplete({
 
   const containerRef = useRef<HTMLDivElement>(null);
   const elementRef = useRef<any>(null);
+  const lastKnownValueRef = useRef(value);
   const [isLoaded, setIsLoaded] = useState(false);
   const [useNativeInput, setUseNativeInput] = useState(false);
 
@@ -43,6 +48,22 @@ export function GooglePlacesAutocomplete({
   const onPlaceSelectedRef = useRef(onPlaceSelected);
   onChangeRef.current = onChange;
   onPlaceSelectedRef.current = onPlaceSelected;
+  lastKnownValueRef.current = value;
+
+  useImperativeHandle(ref, () => ({
+    getValue: () => {
+      if (lastKnownValueRef.current?.trim()) return lastKnownValueRef.current.trim();
+
+      const host = elementRef.current;
+      const hostValue = host?.value || host?.getAttribute?.("value");
+      if (typeof hostValue === "string" && hostValue.trim()) return hostValue.trim();
+
+      const inner = host?.querySelector?.("input") || host?.shadowRoot?.querySelector?.("input");
+      if (inner?.value?.trim()) return inner.value.trim();
+
+      return "";
+    },
+  }), []);
 
   useEffect(() => {
     const checkGoogle = () => {
@@ -90,12 +111,27 @@ export function GooglePlacesAutocomplete({
 
       el.setAttribute("dir", isRTL ? "rtl" : "ltr");
 
+      const syncValue = (nextValue: string) => {
+        lastKnownValueRef.current = nextValue;
+        onChangeRef.current(nextValue);
+      };
+
+      el.addEventListener("input", (event: any) => {
+        const nextValue = event?.target?.value || event?.detail?.value || "";
+        if (typeof nextValue === "string") syncValue(nextValue);
+      });
+
+      el.addEventListener("change", (event: any) => {
+        const nextValue = event?.target?.value || event?.detail?.value || "";
+        if (typeof nextValue === "string") syncValue(nextValue);
+      });
+
       el.addEventListener("gmp-select", async (event: any) => {
         const place = event?.place;
         if (!place) {
           const inner = el.querySelector?.("input") || el.shadowRoot?.querySelector?.("input");
           if (inner?.value) {
-            onChangeRef.current(inner.value);
+            syncValue(inner.value);
           }
           return;
         }
@@ -136,7 +172,7 @@ export function GooglePlacesAutocomplete({
         }
 
         const formatted = postalCode ? `${postalCode} ${city}` : city;
-        onChangeRef.current(formatted);
+        syncValue(formatted);
         onPlaceSelectedRef.current?.({ city, postalCode, formatted });
       });
 
@@ -159,16 +195,28 @@ export function GooglePlacesAutocomplete({
           inner.style.paddingInlineStart = isRTL ? "16px" : "44px";
           inner.style.paddingInlineEnd = isRTL ? "44px" : "16px";
 
+          if (value && inner.value !== value) {
+            inner.value = value;
+          }
+
           if (autoFocus) inner.focus();
 
           inner.addEventListener("input", () => {
-            onChangeRef.current(inner.value);
+            syncValue(inner.value);
+          });
+
+          inner.addEventListener("change", () => {
+            syncValue(inner.value);
+          });
+
+          inner.addEventListener("blur", () => {
+            syncValue(inner.value);
           });
 
           pollInterval = window.setInterval(() => {
             const currentValue = inner.value;
-            if (currentValue) {
-              onChangeRef.current(currentValue);
+            if (currentValue !== lastKnownValueRef.current) {
+              syncValue(currentValue);
             }
           }, 300);
 
@@ -243,4 +291,4 @@ export function GooglePlacesAutocomplete({
       <MapPin className={`pointer-events-none absolute top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`} />
     </div>
   );
-}
+});

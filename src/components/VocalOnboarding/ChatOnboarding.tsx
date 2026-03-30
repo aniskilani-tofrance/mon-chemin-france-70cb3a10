@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import marianneAvatar from "@/assets/marianne-avatar.png";
-import { GooglePlacesAutocomplete } from "./GooglePlacesAutocomplete";
+import { GooglePlacesAutocomplete, type GooglePlacesAutocompleteHandle } from "./GooglePlacesAutocomplete";
 import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -56,6 +56,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
@@ -293,6 +294,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const getLocationValue = (): string => {
     if (inputText.trim()) return inputText.trim();
+    const refValue = locationInputRef.current?.getValue();
+    if (refValue?.trim()) return refValue.trim();
     try {
       const el = document.querySelector("gmp-place-autocomplete");
       if (el) {
@@ -405,6 +408,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           {currentQuestionId === "location" && (
             <div className="mb-2">
               <GooglePlacesAutocomplete
+                ref={locationInputRef}
                 value={inputText}
                 onChange={setInputText}
                 onKeyDown={(e) => {
