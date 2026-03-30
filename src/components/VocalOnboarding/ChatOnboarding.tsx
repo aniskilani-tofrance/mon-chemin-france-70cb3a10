@@ -316,7 +316,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const questionProgress = questionHistory.length + 1;
 
   return (
-    <div className="flex flex-col h-full max-h-[calc(100vh-10rem)]" dir={isRTL ? "rtl" : "ltr"}>
+    <div className="flex flex-col h-full" dir={isRTL ? "rtl" : "ltr"}>
       <div className="flex items-center gap-3 mb-3 px-1">
         <AnimatedAgent state={agentState} size="sm" />
         <div className="flex-1">
