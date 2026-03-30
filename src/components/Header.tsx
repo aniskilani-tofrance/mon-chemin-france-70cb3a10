@@ -21,7 +21,7 @@ export function Header() {
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-primary/10 bg-card/80 px-4 py-3 shadow-soft backdrop-blur-xl sm:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
-            <img src={logoTofrance} alt="ToFrance" className="h-24 w-auto" width={96} height={96} />
+            <img src={logoTofrance} alt="ToFrance" className="h-12 w-auto" width={48} height={48} />
           </Link>
 
           {/* Desktop Navigation */}
