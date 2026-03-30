@@ -8,7 +8,7 @@ interface SpeechRecognitionWindow extends Window {
 const LANGUAGE_TO_BCP47: Record<string, string> = {
   fr: "fr-FR",
   en: "en-US",
-  ar: "ar-SA",
+  ar: "ar",
   es: "es-ES",
   pt: "pt-BR",
   ru: "ru-RU",
