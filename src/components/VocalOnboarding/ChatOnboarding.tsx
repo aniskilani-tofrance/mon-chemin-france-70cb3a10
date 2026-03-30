@@ -30,7 +30,7 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["contact_email"]);
+const WIDGET_QUESTIONS = new Set(["location", "contact_email"]);
 // Questions where we accept free text directly (no AI parsing needed)
 const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country"]);
 
