@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import marianneAvatar from "@/assets/marianne-avatar.png";
-import { GooglePlacesAutocomplete, type GooglePlacesAutocompleteHandle } from "./GooglePlacesAutocomplete";
+
 import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -30,7 +30,7 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["location", "contact_email"]);
+const WIDGET_QUESTIONS = new Set(["contact_email"]);
 // Questions where we accept free text directly (no AI parsing needed)
 const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country"]);
 
@@ -56,7 +56,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
+  
   const hasGreeted = useRef(false);
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
@@ -292,36 +292,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
 
-  const getLocationValue = (): string => {
-    if (inputText.trim()) return inputText.trim();
-    const refValue = locationInputRef.current?.getValue();
-    if (refValue?.trim()) return refValue.trim();
-    try {
-      const el = document.querySelector("gmp-place-autocomplete");
-      if (el) {
-        const sr = (el as any).shadowRoot;
-        if (sr) {
-          const input = sr.querySelector("input");
-          if (input?.value) return input.value;
-        }
-      }
-      const wrapper = document.querySelector(".google-places-wrapper");
-      if (wrapper) {
-        const inputs = wrapper.querySelectorAll("input");
-        for (const input of inputs) {
-          if ((input as HTMLInputElement).value) return (input as HTMLInputElement).value;
-        }
-      }
-    } catch { /* ignore */ }
-    return inputText;
-  };
 
-  const handleLocationSubmit = () => {
-    const value = getLocationValue();
-    console.log("[DEBUG-LOC] handleLocationSubmit:", { value, inputText, isProcessing, isComplete });
-    if (value.trim()) processAnswer(value.trim());
-    else console.warn("[DEBUG-LOC] Location value is empty, cannot submit");
-  };
 
   const questionProgress = questionHistory.length + 1;
 
@@ -405,18 +376,6 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       {!isComplete && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3">
-          {currentQuestionId === "location" && (
-            <div className="mb-2">
-              <GooglePlacesAutocomplete
-                ref={locationInputRef}
-                value={inputText}
-                onChange={setInputText}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") handleLocationSubmit();
-                }}
-              />
-            </div>
-          )}
 
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
@@ -435,30 +394,28 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               </Button>
             )}
 
-            {currentQuestionId !== "location" && (
-              <Input
-                type={isEmail ? "email" : "text"}
-                value={inputText}
-                onChange={(e) => {
-                  setInputText(e.target.value);
-                  if (emailError) setEmailError(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && inputText.trim()) handleSubmit();
-                }}
-                placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
-                  isEmail ? "email@exemple.com" :
-                  (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
-                className="flex-1"
-                disabled={isProcessing}
-                dir={isRTL && !isEmail ? "rtl" : "ltr"}
-              />
-            )}
+            <Input
+              type={isEmail ? "email" : "text"}
+              value={inputText}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                if (emailError) setEmailError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && inputText.trim()) handleSubmit();
+              }}
+              placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
+                isEmail ? "email@exemple.com" :
+                (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+              className="flex-1"
+              disabled={isProcessing}
+              dir={isRTL && !isEmail ? "rtl" : "ltr"}
+            />
 
             <Button
               size="icon"
-              onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-              disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
+              onClick={handleSubmit}
+              disabled={isProcessing || !inputText.trim()}
               className="shrink-0"
             >
               <Send className="h-4 w-4" />
