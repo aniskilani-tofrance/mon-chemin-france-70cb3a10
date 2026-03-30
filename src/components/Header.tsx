@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Menu, X, Building2, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, Handshake, Server, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
