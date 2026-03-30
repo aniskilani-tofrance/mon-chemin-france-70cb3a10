@@ -414,8 +414,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
             <Button
               size="icon"
-              onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-              disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
+              onClick={handleSubmit}
+              disabled={isProcessing || !inputText.trim()}
               className="shrink-0"
             >
               <Send className="h-4 w-4" />
