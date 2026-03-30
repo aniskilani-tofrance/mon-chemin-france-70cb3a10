@@ -339,13 +339,17 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
-      if (transcript) setInputText(transcript);
+      // In vocal mode, auto-submit happens via the useEffect
+      if (!vocalMode && transcript) setInputText(transcript);
     } else {
+      resetSTT();
+      pendingTranscriptRef.current = "";
       startListening();
     }
   };
 
   const handleSubmit = () => {
+    pendingTranscriptRef.current = "";
     processAnswer(inputText);
   };
 
