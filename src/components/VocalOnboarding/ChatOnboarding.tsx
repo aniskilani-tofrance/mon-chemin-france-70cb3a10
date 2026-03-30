@@ -56,6 +56,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const hasGreeted = useRef(false);
   const shouldAutoListen = useRef(false);
   const pendingTranscriptRef = useRef<string>("");
+  const currentQuestionIdRef = useRef(currentQuestionId);
+  currentQuestionIdRef.current = currentQuestionId;
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
   const isDirectText = DIRECT_TEXT_QUESTIONS.has(currentQuestionId);
@@ -67,7 +69,9 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const { speak, isSpeaking } = useTTS({
     language,
     onEnd: () => {
-      if (shouldAutoListen.current && vocalMode && sttSupported && !isEmail) {
+      const qId = currentQuestionIdRef.current;
+      const skipMic = qId === "contact_email";
+      if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
       }
