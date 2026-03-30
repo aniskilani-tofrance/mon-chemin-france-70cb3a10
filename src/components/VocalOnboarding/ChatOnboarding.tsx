@@ -234,7 +234,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
           const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
           setMessages(prev => [...prev, marianneMsg]);
-          speak(response.marianne_message);
+          speakAndListen(response.marianne_message);
 
           if (nextQId) {
             setQuestionHistory(prev => [...prev, currentQuestionId]);
