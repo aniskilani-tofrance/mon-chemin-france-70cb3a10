@@ -542,8 +542,26 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && inputText.trim()) handleSubmit();
                   }}
-                  placeholder={isEmail ? "email@exemple.com" :
-                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+                  placeholder={
+                    isEmail ? "email@exemple.com" :
+                    currentQuestionId === "contact_firstname" ? (
+                      language === "ar" ? "اسمك الأول..." :
+                      language === "en" ? "Your first name..." :
+                      language === "es" ? "Tu nombre..." :
+                      language === "pt" ? "Seu primeiro nome..." :
+                      language === "ru" ? "Ваше имя..." :
+                      "Votre prénom..."
+                    ) :
+                    currentQuestionId === "contact_lastname" ? (
+                      language === "ar" ? "اسم العائلة..." :
+                      language === "en" ? "Your last name..." :
+                      language === "es" ? "Tu apellido..." :
+                      language === "pt" ? "Seu sobrenome..." :
+                      language === "ru" ? "Ваша фамилия..." :
+                      "Votre nom de famille..."
+                    ) :
+                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")
+                  }
                   className="flex-1"
                   disabled={isProcessing}
                   dir={isRTL && !isEmail ? "rtl" : "ltr"}
