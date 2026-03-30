@@ -27,11 +27,11 @@ export function Header() {
           {/* Desktop Navigation */}
           <nav className="hidden items-center gap-6 lg:flex">
             <Link to="/devenir-partenaire" className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              <Building2 className="h-4 w-4" />
+              <Handshake className="h-4 w-4" />
               Devenir partenaire
             </Link>
             <Link to="/heberger" className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              <Building2 className="h-4 w-4" />
+              <Server className="h-4 w-4" />
               Héberger la plateforme
             </Link>
             {isAdmin && (
