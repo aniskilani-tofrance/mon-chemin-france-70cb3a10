@@ -314,6 +314,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     processAnswer(inputText);
   };
 
+  const getLocationValue = (): string => {
+    if (inputText.trim()) return inputText.trim();
+    const refValue = locationInputRef.current?.getValue();
+    if (refValue?.trim()) return refValue.trim();
+    return "";
+  };
+
+  const handleLocationSubmit = () => {
+    const value = getLocationValue();
+    if (value.trim()) processAnswer(value.trim());
+  };
+
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
 
 
