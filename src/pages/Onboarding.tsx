@@ -174,8 +174,8 @@ const Onboarding = () => {
         </motion.button>
       )}
 
-      <div className="flex-1 flex items-center justify-center px-4 py-20 sm:py-24">
-        <div className="w-full max-w-2xl">
+      <div className="flex-1 flex items-start justify-center px-4 pt-6 pb-4 sm:pt-10 overflow-hidden">
+        <div className="w-full max-w-2xl h-full">
           <AnimatePresence mode="wait">
             {step === "language" && (
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
