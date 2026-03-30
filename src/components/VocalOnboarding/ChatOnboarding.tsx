@@ -30,7 +30,7 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["location", "contact_email"]);
+const WIDGET_QUESTIONS = new Set(["location", "contact_email", "contact_firstname", "contact_lastname"]);
 // Questions where we accept free text directly (no AI parsing needed)
 const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country"]);
 
@@ -70,7 +70,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
-      const skipMic = qId === "contact_email";
+      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname";
       if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
@@ -97,7 +97,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   // Auto-submit when STT stops (final result) in vocal mode
   useEffect(() => {
-    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail) {
+    const isNameField = currentQuestionIdRef.current === "contact_firstname" || currentQuestionIdRef.current === "contact_lastname";
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isNameField) {
       const value = pendingTranscriptRef.current.trim();
       pendingTranscriptRef.current = "";
       if (value) {
@@ -472,8 +473,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          {/* Vocal-first: big mic button for all questions except email */}
-          {vocalMode && sttSupported && !isEmail && (
+          {/* Vocal-first: big mic button for all questions except email and name fields */}
+          {vocalMode && sttSupported && !isEmail && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
@@ -516,7 +517,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Fallback text input for email or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isEmail) && (
+          {(!vocalMode || !sttSupported || isEmail || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
