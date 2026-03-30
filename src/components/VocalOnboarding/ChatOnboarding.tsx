@@ -179,7 +179,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             "Cet email ne semble pas correct. Pouvez-vous réessayer ?"
         };
         setMessages(prev => [...prev, errorMsg]);
-        speak(errorMsg.content);
+        speakAndListen(errorMsg.content);
         return;
       }
     }
