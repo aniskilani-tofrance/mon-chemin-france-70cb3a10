@@ -450,7 +450,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       </div>
 
       {!isComplete && (
-        <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3">
+        <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
           {currentQuestionId === "location" && (
             <div className="mb-2">
               <GooglePlacesAutocomplete
@@ -468,50 +468,95 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          <div className="flex items-center gap-2">
-            {sttSupported && !isWidget && (
-              <Button
-                variant={isListening ? "destructive" : "outline"}
-                size="icon"
+          {/* Vocal-first: big mic button when not a widget question */}
+          {vocalMode && sttSupported && !isWidget && (
+            <div className="flex flex-col items-center gap-2">
+              <motion.button
                 onClick={handleMicToggle}
-                disabled={isProcessing}
+                disabled={isProcessing || isSpeaking}
+                className={`flex h-16 w-16 items-center justify-center rounded-full transition-all shadow-lg ${
+                  isListening
+                    ? "bg-destructive text-destructive-foreground animate-pulse"
+                    : isSpeaking
+                    ? "bg-muted text-muted-foreground cursor-wait"
+                    : "bg-primary text-primary-foreground hover:bg-primary/90"
+                }`}
+                whileTap={{ scale: 0.9 }}
+              >
+                {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
+              </motion.button>
+              <p className="text-xs text-muted-foreground">
+                {isListening
+                  ? (language === "ar" ? "🎤 أتحدث..." : "🎤 Je vous écoute...")
+                  : isSpeaking
+                  ? (language === "ar" ? "🔊 ماريان تتحدث..." : "🔊 Marianne parle...")
+                  : (language === "ar" ? "اضغط للتحدث" : "Appuyez pour parler")}
+              </p>
+              {inputText && !isListening && (
+                <div className="flex items-center gap-2 w-full">
+                  <Input
+                    value={inputText}
+                    onChange={(e) => setInputText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                    }}
+                    className="flex-1 text-sm"
+                    dir={isRTL ? "rtl" : "ltr"}
+                  />
+                  <Button size="icon" onClick={handleSubmit} disabled={isProcessing || !inputText.trim()} className="shrink-0">
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Fallback text input for widget questions or non-vocal mode */}
+          {(!vocalMode || !sttSupported || isWidget) && (
+            <div className="flex items-center gap-2">
+              {sttSupported && !isWidget && (
+                <Button
+                  variant={isListening ? "destructive" : "outline"}
+                  size="icon"
+                  onClick={handleMicToggle}
+                  disabled={isProcessing}
+                  className="shrink-0"
+                >
+                  {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                </Button>
+              )}
+
+              {currentQuestionId !== "location" && (
+                <Input
+                  type={isEmail ? "email" : "text"}
+                  value={inputText}
+                  onChange={(e) => {
+                    setInputText(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                  }}
+                  placeholder={isEmail ? "email@exemple.com" :
+                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+                  className="flex-1"
+                  disabled={isProcessing}
+                  dir={isRTL && !isEmail ? "rtl" : "ltr"}
+                />
+              )}
+
+              <Button
+                size="icon"
+                onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
+                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
                 className="shrink-0"
               >
-                {isListening ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                <Send className="h-4 w-4" />
               </Button>
-            )}
-
-            {currentQuestionId !== "location" && (
-              <Input
-                type={isEmail ? "email" : "text"}
-                value={inputText}
-                onChange={(e) => {
-                  setInputText(e.target.value);
-                  if (emailError) setEmailError(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && inputText.trim()) handleSubmit();
-                }}
-                placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
-                  isEmail ? "email@exemple.com" :
-                  (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
-                className="flex-1"
-                disabled={isProcessing}
-                dir={isRTL && !isEmail ? "rtl" : "ltr"}
-              />
-            )}
-
-            <Button
-              size="icon"
-              onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-              disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
-              className="shrink-0"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
-          </div>
+            </div>
+          )}
           
-          <div className="flex items-center space-x-2 mt-3 px-1">
+          <div className="flex items-center space-x-2 px-1">
             <Checkbox 
               id="rgpd" 
               checked={rgpdAccepted} 
