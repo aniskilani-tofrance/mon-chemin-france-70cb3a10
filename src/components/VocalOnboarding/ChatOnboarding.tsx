@@ -56,7 +56,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
+  
   const hasGreeted = useRef(false);
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
