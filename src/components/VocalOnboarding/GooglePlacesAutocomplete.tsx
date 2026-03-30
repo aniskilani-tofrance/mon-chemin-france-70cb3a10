@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState } from "react";
 import { MapPin } from "lucide-react";
+import { useLanguage } from "@/hooks/useLanguage";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -12,6 +13,15 @@ interface GooglePlacesAutocompleteProps {
   onKeyDown?: (e: React.KeyboardEvent) => void;
 }
 
+const LOCATION_PLACEHOLDERS: Record<string, string> = {
+  fr: "Ville ou code postal",
+  en: "City or postal code",
+  ar: "المدينة أو الرمز البريدي",
+  es: "Ciudad o código postal",
+  pt: "Cidade ou código postal",
+  ru: "Город или почтовый индекс",
+};
+
 export function GooglePlacesAutocomplete({
   value,
   onChange,
@@ -20,12 +30,15 @@ export function GooglePlacesAutocomplete({
   autoFocus,
   onKeyDown,
 }: GooglePlacesAutocompleteProps) {
+  const { language } = useLanguage();
+  const isRTL = language === "ar";
+  const placeholder = LOCATION_PLACEHOLDERS[language] || LOCATION_PLACEHOLDERS.fr;
+
   const containerRef = useRef<HTMLDivElement>(null);
   const elementRef = useRef<any>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [useNativeInput, setUseNativeInput] = useState(false);
 
-  // Store latest callbacks in refs to avoid stale closures
   const onChangeRef = useRef(onChange);
   const onPlaceSelectedRef = useRef(onPlaceSelected);
   onChangeRef.current = onChange;
@@ -74,10 +87,11 @@ export function GooglePlacesAutocomplete({
         types: ["(cities)"],
       });
 
+      el.setAttribute("dir", isRTL ? "rtl" : "ltr");
+
       el.addEventListener("gmp-select", async (event: any) => {
         const place = event?.place;
         if (!place) {
-          // Fallback: read value from the input directly
           const inner = el.querySelector?.("input") || el.shadowRoot?.querySelector?.("input");
           if (inner?.value) {
             onChangeRef.current(inner.value);
@@ -115,14 +129,12 @@ export function GooglePlacesAutocomplete({
           }
         }
 
-        // If still no city, read from the input directly
         if (!city) {
           const inner = el.querySelector?.("input") || el.shadowRoot?.querySelector?.("input");
           city = inner?.value || "Lieu sélectionné";
         }
 
         const formatted = postalCode ? `${postalCode} ${city}` : city;
-        console.log("Place selected:", { city, postalCode, formatted });
         onChangeRef.current(formatted);
         onPlaceSelectedRef.current?.({ city, postalCode, formatted });
       });
@@ -130,19 +142,22 @@ export function GooglePlacesAutocomplete({
       containerRef.current.appendChild(el);
       elementRef.current = el;
 
-      // Style, focus, and poll the inner input value
       const tryStyle = () => {
         const inner = el.querySelector?.("input") || el.shadowRoot?.querySelector?.("input");
         if (inner) {
-          inner.placeholder = "Paris, Lyon, Marseille...";
+          inner.placeholder = placeholder;
+          inner.setAttribute("aria-label", placeholder);
+          inner.dir = isRTL ? "rtl" : "ltr";
+          inner.style.textAlign = isRTL ? "right" : "left";
+          inner.style.paddingInlineStart = isRTL ? "16px" : "44px";
+          inner.style.paddingInlineEnd = isRTL ? "44px" : "16px";
+
           if (autoFocus) inner.focus();
-          
-          // Sync typed text to React state via event listener
+
           inner.addEventListener("input", () => {
             onChangeRef.current(inner.value);
           });
 
-          // Also poll the value as fallback (shadow DOM may not fire events)
           const pollInterval = setInterval(() => {
             const currentValue = inner.value;
             if (currentValue) {
@@ -150,20 +165,19 @@ export function GooglePlacesAutocomplete({
             }
           }, 300);
 
-          // Store interval for cleanup
           (el as any).__pollInterval = pollInterval;
         } else {
           requestAnimationFrame(tryStyle);
         }
       };
+
       requestAnimationFrame(tryStyle);
     } catch (err) {
       console.warn("PlaceAutocompleteElement failed:", err);
       setUseNativeInput(true);
     }
-  }, [isLoaded, autoFocus]);
+  }, [isLoaded, autoFocus, placeholder, isRTL]);
 
-  // Cleanup
   useEffect(() => {
     return () => {
       if (elementRef.current) {
@@ -178,13 +192,14 @@ export function GooglePlacesAutocomplete({
 
   if (useNativeInput) {
     return (
-      <div className="relative">
-        <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+      <div className="relative" dir={isRTL ? "rtl" : "ltr"}>
+        <MapPin className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`} />
         <input
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder="Paris, Lyon, Marseille..."
-          className={`flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-center text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all focus:ring-2 focus:ring-primary/30 ${className ?? ""}`}
+          placeholder={placeholder}
+          dir={isRTL ? "rtl" : "ltr"}
+          className={`flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all focus:ring-2 focus:ring-primary/30 ${isRTL ? "pr-10 text-right" : "pl-10 text-center"} ${className ?? ""}`}
           autoFocus={autoFocus}
           autoComplete="off"
           onKeyDown={onKeyDown as any}
@@ -194,8 +209,13 @@ export function GooglePlacesAutocomplete({
   }
 
   return (
-    <div className="relative google-places-wrapper" ref={containerRef} data-location-value={value}>
-      <MapPin className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground z-10 pointer-events-none" />
+    <div
+      className="relative google-places-wrapper"
+      ref={containerRef}
+      data-location-value={value}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
+      <MapPin className={`pointer-events-none absolute top-1/2 z-10 h-5 w-5 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`} />
     </div>
   );
 }
