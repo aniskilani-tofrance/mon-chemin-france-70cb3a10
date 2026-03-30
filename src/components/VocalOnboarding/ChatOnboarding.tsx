@@ -56,6 +56,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const hasGreeted = useRef(false);
   const shouldAutoListen = useRef(false);
   const pendingTranscriptRef = useRef<string>("");
+  const currentQuestionIdRef = useRef(currentQuestionId);
+  currentQuestionIdRef.current = currentQuestionId;
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
   const isDirectText = DIRECT_TEXT_QUESTIONS.has(currentQuestionId);
@@ -67,7 +69,9 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const { speak, isSpeaking } = useTTS({
     language,
     onEnd: () => {
-      if (shouldAutoListen.current && vocalMode && sttSupported && !isWidget) {
+      const qId = currentQuestionIdRef.current;
+      const skipMic = qId === "contact_email";
+      if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
       }
@@ -93,7 +97,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   // Auto-submit when STT stops (final result) in vocal mode
   useEffect(() => {
-    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isWidget) {
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail) {
       const value = pendingTranscriptRef.current.trim();
       pendingTranscriptRef.current = "";
       if (value) {
@@ -468,8 +472,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          {/* Vocal-first: big mic button when not a widget question */}
-          {vocalMode && sttSupported && !isWidget && (
+          {/* Vocal-first: big mic button for all questions except email */}
+          {vocalMode && sttSupported && !isEmail && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
@@ -511,8 +515,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             </div>
           )}
 
-          {/* Fallback text input for widget questions or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isWidget) && (
+          {/* Fallback text input for email or non-vocal mode */}
+          {(!vocalMode || !sttSupported || isEmail) && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
