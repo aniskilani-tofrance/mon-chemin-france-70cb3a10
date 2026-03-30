@@ -18,7 +18,7 @@ export function Header() {
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mt-4 flex items-center justify-between rounded-2xl border border-primary/10 bg-card/80 px-4 py-3 shadow-soft backdrop-blur-xl sm:px-6">
+        <div className="mt-2 flex items-center justify-between rounded-2xl border border-primary/10 bg-card/80 px-4 py-1.5 shadow-soft backdrop-blur-xl sm:px-6">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3">
             <img src={logoTofrance} alt="ToFrance" className="h-12 w-auto" width={48} height={48} />
