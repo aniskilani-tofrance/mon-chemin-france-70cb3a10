@@ -212,6 +212,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               language,
               conversation_summary: buildSummary(),
             });
+            const marianneMsg: ChatMessage = { role: "marianne", content: shortAck.marianne_message };
             setMessages(prev => [...prev, marianneMsg]);
             // For location, speak the ack but don't auto-listen (next Q needs widget or voice)
             speakAndListen(shortAck.marianne_message);
