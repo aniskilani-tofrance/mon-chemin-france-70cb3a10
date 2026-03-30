@@ -473,8 +473,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          {/* Vocal-first: big mic button for all questions except email */}
-          {vocalMode && sttSupported && !isEmail && (
+          {/* Vocal-first: big mic button for all questions except email and name fields */}
+          {vocalMode && sttSupported && !isEmail && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
