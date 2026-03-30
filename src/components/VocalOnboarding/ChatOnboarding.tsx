@@ -317,9 +317,24 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   return (
     <div className="flex flex-col h-full" dir={isRTL ? "rtl" : "ltr"}>
-      <div className="flex items-center gap-3 mb-3 px-1">
-        <AnimatedAgent state={agentState} size="sm" />
-        <div className="flex-1">
+      <div className="flex items-center gap-3 mb-3 px-4 py-3 rounded-xl bg-card border border-border shrink-0">
+        <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
+          <img
+            src={marianneAvatar}
+            alt="Marianne"
+            className="h-12 w-12 rounded-full object-cover object-top border-2 border-primary/30"
+          />
+          <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card text-[8px]"
+            style={{
+              backgroundColor: agentState === "listening" ? "hsl(0,84%,60%)" :
+                agentState === "processing" || agentState === "thinking" ? "hsl(45,93%,47%)" :
+                "hsl(142,76%,36%)"
+            }}
+          >
+            {agentState === "listening" ? "🎤" : agentState === "speaking" ? "🔊" : agentState === "processing" || agentState === "thinking" ? "⏳" : "✓"}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-medium text-foreground">Marianne</p>
           <div className="flex items-center gap-2">
             <div className="flex h-1.5 flex-1 overflow-hidden rounded-full bg-muted max-w-[120px]">
