@@ -149,7 +149,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         language === "en" ? "Hello! I'm Marianne. Where do you live in France?" :
         "Bonjour ! Je suis Marianne, votre conseillère. Où habitez-vous en France ?";
       setMessages([{ role: "marianne", content: fallback }]);
-      speak(fallback);
+      speakAndListen(fallback);
     } finally {
       setIsProcessing(false);
       console.log("[DEBUG-LOC] greet done, isProcessing set to false");
