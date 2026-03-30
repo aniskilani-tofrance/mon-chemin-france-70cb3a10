@@ -4,26 +4,22 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
-import { MarianneIntroStep } from "@/components/VocalOnboarding/MarianneIntroStep";
 import { ConsentStep } from "@/components/VocalOnboarding/ConsentStep";
-import { DecisionQuestion } from "@/components/VocalOnboarding/DecisionQuestion";
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
+import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
 import { useLanguage } from "@/hooks/useLanguage";
-import { useTTS, isTTSSupportedForLanguage } from "@/hooks/useTTS";
+import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import {
-  ONBOARDING_TREE,
-  getNextQuestion,
-  estimateTotalQuestions,
   calculateLeadScore,
   determineRoute,
   OnboardingAnswers as TreeOnboardingAnswers,
   LeadRoute,
 } from "@/lib/decisionTree";
 
-type OnboardingStep = "language" | "intro" | "consent" | "questions" | "complete";
+type OnboardingStep = "language" | "consent" | "chat" | "complete";
 
 interface OnboardingAnswers extends TreeOnboardingAnswers {
   leadRoute?: LeadRoute;
@@ -47,30 +43,19 @@ const Onboarding = () => {
   const tts = useTTS({ language });
   const { track } = useAnalytics();
   const [step, setStep] = useState<OnboardingStep>("language");
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>(ONBOARDING_TREE.startQuestion);
-  const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [answers, setAnswers] = useState<OnboardingAnswers>({ tags: [] });
   const [onboardingStartedAt] = useState(() => Date.now());
 
-  const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
-  const estimatedTotal = estimateTotalQuestions(answers);
-  const currentQuestionNumber = questionHistory.length + 1;
-  const currentRoute = determineRoute(answers);
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
 
-  // Track step changes
   useEffect(() => {
-    track("onboarding_step", { step, question_number: currentQuestionNumber }, "/onboarding", language);
-  }, [step, currentQuestionId]);
+    track("onboarding_step", { step }, "/onboarding", language);
+  }, [step]);
 
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
-    setStep("intro");
-  };
-
-  const handleIntroComplete = () => {
     setStep("consent");
   };
 
@@ -81,7 +66,7 @@ const Onboarding = () => {
       consent_lead_sharing: leadSharing,
       consent_marketing: marketing,
     }));
-    setStep("questions");
+    setStep("chat");
   }, [language, track]);
 
   const handleConsentDecline = useCallback(() => {
@@ -91,58 +76,21 @@ const Onboarding = () => {
       consent_marketing: false,
       tags: [...prev.tags, "consent_declined"],
     }));
-    setStep("questions");
+    setStep("chat");
   }, []);
 
-  const handleAnswer = useCallback((answer: string | number | string[], tags?: string[]) => {
-    const answerValue = Array.isArray(answer) ? answer.join(",") : answer;
-
-    let allTags = tags ? [...tags] : [];
-    if (Array.isArray(answer)) {
-      const question = ONBOARDING_TREE.questions[currentQuestionId];
-      if (question?.choices) {
-        answer.forEach(choiceId => {
-          const choice = question.choices?.find(c => c.id === choiceId);
-          if (choice?.tags) {
-            allTags = [...allTags, ...choice.tags];
-          }
-        });
-      }
-    }
-
-    const newAnswers: OnboardingAnswers = {
+  const handleChatComplete = useCallback((chatAnswers: TreeOnboardingAnswers) => {
+    const route = determineRoute(chatAnswers);
+    const score = calculateLeadScore(chatAnswers);
+    const finalAnswers: OnboardingAnswers = {
       ...answers,
-      [currentQuestionId]: answerValue,
-      tags: allTags.length > 0 ? [...answers.tags, ...allTags] : answers.tags,
+      ...chatAnswers,
+      leadRoute: route,
+      leadScore: score.total,
     };
-    setAnswers(newAnswers);
-
-    const nextQuestionId = getNextQuestion(currentQuestionId, answerValue, newAnswers);
-
-    if (nextQuestionId) {
-      setQuestionHistory(prev => [...prev, currentQuestionId]);
-      setCurrentQuestionId(nextQuestionId);
-    } else {
-      const route = determineRoute(newAnswers);
-      const score = calculateLeadScore(newAnswers);
-      setAnswers({
-        ...newAnswers,
-        leadRoute: route,
-        leadScore: score.total,
-      });
-      setStep("complete");
-    }
-  }, [currentQuestionId, answers]);
-
-  const handleSkip = useCallback(() => {
-    const nextQuestionId = getNextQuestion(currentQuestionId, "", answers);
-    if (nextQuestionId) {
-      setQuestionHistory(prev => [...prev, currentQuestionId]);
-      setCurrentQuestionId(nextQuestionId);
-    } else {
-      setStep("complete");
-    }
-  }, [currentQuestionId, answers]);
+    setAnswers(finalAnswers);
+    setStep("complete");
+  }, [answers]);
 
   const handleComplete = useCallback(async () => {
     track("onboarding_completed", { route: answers.leadRoute ?? "unknown", score: answers.leadScore ?? 0 }, "/onboarding", language);
@@ -158,14 +106,14 @@ const Onboarding = () => {
             consent_type: "lead_sharing" as const,
             consented: answers.consent_lead_sharing ?? false,
             consented_at: answers.consent_lead_sharing ? new Date().toISOString() : null,
-            consent_text_version: "3.0",
+            consent_text_version: "4.0",
           },
           {
             email,
             consent_type: "marketing" as const,
             consented: answers.consent_marketing ?? false,
             consented_at: answers.consent_marketing ? new Date().toISOString() : null,
-            consent_text_version: "3.0",
+            consent_text_version: "4.0",
           },
         ];
 
@@ -183,7 +131,7 @@ const Onboarding = () => {
 
     localStorage.setItem("onboarding_answers", JSON.stringify(answers));
     navigate("/confirmation");
-  }, [answers, navigate]);
+  }, [answers, navigate, language, track, onboardingStartedAt]);
 
   // Convert answers for CompletionStep display
   const displayAnswers: Record<string, string> = {};
@@ -206,7 +154,7 @@ const Onboarding = () => {
       lang={language}
     >
       <Header />
-      
+
       {step !== "language" && tts.isSupported && (
         <motion.button
           initial={{ opacity: 0, y: -10 }}
@@ -233,10 +181,6 @@ const Onboarding = () => {
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
             )}
 
-            {step === "intro" && (
-              <MarianneIntroStep key="intro" onContinue={handleIntroComplete} />
-            )}
-
             {step === "consent" && (
               <ConsentStep
                 key="consent"
@@ -245,16 +189,19 @@ const Onboarding = () => {
               />
             )}
 
-            {step === "questions" && currentQuestion && (
-              <DecisionQuestion
-                key={`question-${currentQuestionId}`}
-                question={currentQuestion}
-                questionNumber={currentQuestionNumber}
-                totalQuestions={estimatedTotal}
-                currentRoute={currentRoute}
-                onAnswer={handleAnswer}
-                onSkip={handleSkip}
-              />
+            {step === "chat" && (
+              <motion.div
+                key="chat"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                className="h-[calc(100vh-12rem)]"
+              >
+                <ChatOnboarding
+                  onComplete={handleChatComplete}
+                  initialAnswers={answers}
+                />
+              </motion.div>
             )}
 
             {step === "complete" && (
