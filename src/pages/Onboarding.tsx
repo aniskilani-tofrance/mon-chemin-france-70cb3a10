@@ -195,7 +195,7 @@ const Onboarding = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="h-[calc(100vh-12rem)]"
+                className="h-[calc(100vh-8rem)]"
               >
                 <ChatOnboarding
                   onComplete={handleChatComplete}

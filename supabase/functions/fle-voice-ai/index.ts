@@ -181,7 +181,7 @@ Réponds en JSON.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
         ],
-        max_tokens: 500,
+        max_completion_tokens: 500,
       }),
     });
 
