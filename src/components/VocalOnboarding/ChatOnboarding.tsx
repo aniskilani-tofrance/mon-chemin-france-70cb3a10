@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { AnimatedAgent } from "./AnimatedAgent";
+import marianneAvatar from "@/assets/marianne-avatar.png";
 import { GooglePlacesAutocomplete } from "./GooglePlacesAutocomplete";
 import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
@@ -327,11 +327,11 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card text-[8px]"
             style={{
               backgroundColor: agentState === "listening" ? "hsl(0,84%,60%)" :
-                agentState === "processing" || agentState === "thinking" ? "hsl(45,93%,47%)" :
+                agentState === "thinking" ? "hsl(45,93%,47%)" :
                 "hsl(142,76%,36%)"
             }}
           >
-            {agentState === "listening" ? "🎤" : agentState === "speaking" ? "🔊" : agentState === "processing" || agentState === "thinking" ? "⏳" : "✓"}
+            {agentState === "listening" ? "🎤" : agentState === "speaking" ? "🔊" : agentState === "thinking" ? "⏳" : "✓"}
           </span>
         </div>
         <div className="flex-1 min-w-0">
