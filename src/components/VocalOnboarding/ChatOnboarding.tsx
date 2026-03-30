@@ -79,7 +79,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   });
 
   const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening, reset: resetSTT } = useSpeechRecognition({
-    language: language === "ar" ? "ar-SA" : language === "es" ? "es-ES" : language === "pt" ? "pt-BR" : language === "ru" ? "ru-RU" : language === "en" ? "en-US" : "fr-FR",
+    language,
   });
 
   // Auto-scroll
