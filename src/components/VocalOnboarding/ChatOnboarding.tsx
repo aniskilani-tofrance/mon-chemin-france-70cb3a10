@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import marianneAvatar from "@/assets/marianne-avatar.png";
-
+import { GooglePlacesAutocomplete, type GooglePlacesAutocompleteHandle } from "./GooglePlacesAutocomplete";
 import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -30,7 +30,7 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["contact_email"]);
+const WIDGET_QUESTIONS = new Set(["location", "contact_email"]);
 // Questions where we accept free text directly (no AI parsing needed)
 const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country"]);
 
@@ -56,6 +56,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   
   const hasGreeted = useRef(false);
 
@@ -165,26 +166,49 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         const nextQId = getNextQuestion(currentQuestionId, answerValue, newAnswers);
         const nextQ = nextQId ? ONBOARDING_TREE.questions[nextQId] : null;
 
-        const response = await callOnboardingChat({
-          action: "onboarding_chat",
-          phase: "parse",
-          question: currentQuestion,
-          user_answer: answerValue,
-          next_question: nextQ,
-          language,
-          conversation_summary: buildSummary(),
-        });
-
-        const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
-        setMessages(prev => [...prev, marianneMsg]);
-        speak(response.marianne_message);
-
-        if (nextQId) {
-          setQuestionHistory(prev => [...prev, currentQuestionId]);
-          setCurrentQuestionId(nextQId);
+        // For location, skip AI vocal repeat (hard to transcribe city names across languages)
+        if (currentQuestionId === "location") {
+          if (nextQId && nextQ) {
+            const shortAck = await callOnboardingChat({
+              action: "onboarding_chat",
+              phase: "parse",
+              question: currentQuestion,
+              user_answer: answerValue,
+              next_question: nextQ,
+              language,
+              conversation_summary: buildSummary(),
+            });
+            const marianneMsg: ChatMessage = { role: "marianne", content: shortAck.marianne_message };
+            setMessages(prev => [...prev, marianneMsg]);
+            // Don't speak the location back — just show text
+            setQuestionHistory(prev => [...prev, currentQuestionId]);
+            setCurrentQuestionId(nextQId);
+          } else {
+            setIsComplete(true);
+            setTimeout(() => onComplete(newAnswers), 1500);
+          }
         } else {
-          setIsComplete(true);
-          setTimeout(() => onComplete(newAnswers), 1500);
+          const response = await callOnboardingChat({
+            action: "onboarding_chat",
+            phase: "parse",
+            question: currentQuestion,
+            user_answer: answerValue,
+            next_question: nextQ,
+            language,
+            conversation_summary: buildSummary(),
+          });
+
+          const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
+          setMessages(prev => [...prev, marianneMsg]);
+          speak(response.marianne_message);
+
+          if (nextQId) {
+            setQuestionHistory(prev => [...prev, currentQuestionId]);
+            setCurrentQuestionId(nextQId);
+          } else {
+            setIsComplete(true);
+            setTimeout(() => onComplete(newAnswers), 1500);
+          }
         }
       } else {
         const nextQIdPreview = getNextQuestion(currentQuestionId, "", newAnswers);
@@ -290,6 +314,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     processAnswer(inputText);
   };
 
+  const getLocationValue = (): string => {
+    if (inputText.trim()) return inputText.trim();
+    const refValue = locationInputRef.current?.getValue();
+    if (refValue?.trim()) return refValue.trim();
+    return "";
+  };
+
+  const handleLocationSubmit = () => {
+    const value = getLocationValue();
+    if (value.trim()) processAnswer(value.trim());
+  };
+
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
 
 
@@ -376,6 +412,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       {!isComplete && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3">
+          {currentQuestionId === "location" && (
+            <div className="mb-2">
+              <GooglePlacesAutocomplete
+                ref={locationInputRef}
+                value={inputText}
+                onChange={setInputText}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleLocationSubmit();
+                }}
+              />
+            </div>
+          )}
 
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
@@ -394,28 +442,30 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               </Button>
             )}
 
-            <Input
-              type={isEmail ? "email" : "text"}
-              value={inputText}
-              onChange={(e) => {
-                setInputText(e.target.value);
-                if (emailError) setEmailError(null);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && inputText.trim()) handleSubmit();
-              }}
-              placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
-                isEmail ? "email@exemple.com" :
-                (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
-              className="flex-1"
-              disabled={isProcessing}
-              dir={isRTL && !isEmail ? "rtl" : "ltr"}
-            />
+            {currentQuestionId !== "location" && (
+              <Input
+                type={isEmail ? "email" : "text"}
+                value={inputText}
+                onChange={(e) => {
+                  setInputText(e.target.value);
+                  if (emailError) setEmailError(null);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                }}
+                placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
+                  isEmail ? "email@exemple.com" :
+                  (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+                className="flex-1"
+                disabled={isProcessing}
+                dir={isRTL && !isEmail ? "rtl" : "ltr"}
+              />
+            )}
 
             <Button
               size="icon"
-              onClick={handleSubmit}
-              disabled={isProcessing || !inputText.trim()}
+              onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
+              disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
               className="shrink-0"
             >
               <Send className="h-4 w-4" />
