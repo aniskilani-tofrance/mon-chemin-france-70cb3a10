@@ -67,7 +67,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const { speak, isSpeaking } = useTTS({
     language,
     onEnd: () => {
-      if (shouldAutoListen.current && vocalMode && sttSupported && !isWidget) {
+      if (shouldAutoListen.current && vocalMode && sttSupported && !isEmail) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
       }
