@@ -261,7 +261,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         if (response.needs_clarification) {
           const marianneMsg: ChatMessage = { role: "marianne", content: response.marianne_message };
           setMessages(prev => [...prev, marianneMsg]);
-          speak(response.marianne_message);
+          speakAndListen(response.marianne_message);
           setIsProcessing(false);
           return;
         }
