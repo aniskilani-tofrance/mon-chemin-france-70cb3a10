@@ -31,8 +31,8 @@ export function Header() {
               Devenir partenaire
             </Link>
             <Link to="/heberger" className="flex items-center gap-1 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
-              <Server className="h-4 w-4" />
-              Héberger la plateforme
+              <Home className="h-4 w-4" />
+              Accueillir la plateforme
             </Link>
             {isAdmin && (
               <Link to="/admin" className="flex items-center gap-1 text-sm font-medium text-destructive transition-colors hover:text-destructive/80">
