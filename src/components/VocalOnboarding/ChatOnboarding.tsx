@@ -41,11 +41,6 @@ interface ChatOnboardingProps {
 
 export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
   const { language } = useLanguage();
-  const { speak, isSpeaking } = useTTS({ language });
-  const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening } = useSpeechRecognition({
-    language: language === "ar" ? "ar-SA" : language === "es" ? "es-ES" : language === "pt" ? "pt-BR" : language === "ru" ? "ru-RU" : language === "en" ? "en-US" : "fr-FR",
-  });
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -55,10 +50,12 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [isComplete, setIsComplete] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
+  const [vocalMode, setVocalMode] = useState(true); // full vocal by default
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
-  
   const hasGreeted = useRef(false);
+  const shouldAutoListen = useRef(false);
+  const pendingTranscriptRef = useRef<string>("");
 
   const currentQuestion = ONBOARDING_TREE.questions[currentQuestionId];
   const isDirectText = DIRECT_TEXT_QUESTIONS.has(currentQuestionId);
@@ -66,15 +63,44 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isEmail = currentQuestionId === "contact_email";
   const isRTL = language === "ar";
 
+  // TTS with onEnd to auto-start mic
+  const { speak, isSpeaking } = useTTS({
+    language,
+    onEnd: () => {
+      if (shouldAutoListen.current && vocalMode && sttSupported && !isWidget) {
+        shouldAutoListen.current = false;
+        setTimeout(() => startListening(), 300);
+      }
+    },
+  });
+
+  const { isListening, transcript, isSupported: sttSupported, start: startListening, stop: stopListening, reset: resetSTT } = useSpeechRecognition({
+    language: language === "ar" ? "ar-SA" : language === "es" ? "es-ES" : language === "pt" ? "pt-BR" : language === "ru" ? "ru-RU" : language === "en" ? "en-US" : "fr-FR",
+  });
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isProcessing]);
 
-  // Sync transcript
+  // Sync transcript to input
   useEffect(() => {
-    if (transcript) setInputText(transcript);
+    if (transcript) {
+      setInputText(transcript);
+      pendingTranscriptRef.current = transcript;
+    }
   }, [transcript]);
+
+  // Auto-submit when STT stops (final result) in vocal mode
+  useEffect(() => {
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isWidget) {
+      const value = pendingTranscriptRef.current.trim();
+      pendingTranscriptRef.current = "";
+      if (value) {
+        setTimeout(() => processAnswer(value), 200);
+      }
+    }
+  }, [isListening]);
 
   // Build conversation summary for AI context
   const buildSummary = useCallback(() => {
