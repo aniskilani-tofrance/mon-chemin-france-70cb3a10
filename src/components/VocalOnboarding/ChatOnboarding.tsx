@@ -394,25 +394,23 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               </Button>
             )}
 
-            {currentQuestionId !== "location" && (
-              <Input
-                type={isEmail ? "email" : "text"}
-                value={inputText}
-                onChange={(e) => {
-                  setInputText(e.target.value);
-                  if (emailError) setEmailError(null);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && inputText.trim()) handleSubmit();
-                }}
-                placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
-                  isEmail ? "email@exemple.com" :
-                  (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
-                className="flex-1"
-                disabled={isProcessing}
-                dir={isRTL && !isEmail ? "rtl" : "ltr"}
-              />
-            )}
+            <Input
+              type={isEmail ? "email" : "text"}
+              value={inputText}
+              onChange={(e) => {
+                setInputText(e.target.value);
+                if (emailError) setEmailError(null);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && inputText.trim()) handleSubmit();
+              }}
+              placeholder={isListening ? (language === "ar" ? "🎤 أنا أستمع..." : "🎤 Je vous écoute...") : 
+                isEmail ? "email@exemple.com" :
+                (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")}
+              className="flex-1"
+              disabled={isProcessing}
+              dir={isRTL && !isEmail ? "rtl" : "ltr"}
+            />
 
             <Button
               size="icon"
