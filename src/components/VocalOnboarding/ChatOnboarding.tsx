@@ -116,11 +116,16 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       speak(fallback);
     } finally {
       setIsProcessing(false);
+      console.log("[DEBUG-LOC] greet done, isProcessing set to false");
     }
   };
 
   const processAnswer = useCallback(async (userText: string) => {
-    if (!userText.trim() || isProcessing || isComplete) return;
+    console.log("[DEBUG-LOC] processAnswer called:", { userText, isProcessing, isComplete, currentQuestionId });
+    if (!userText.trim() || isProcessing || isComplete) {
+      console.warn("[DEBUG-LOC] processAnswer BLOCKED:", { emptyText: !userText.trim(), isProcessing, isComplete });
+      return;
+    }
 
     const userMsg: ChatMessage = { role: "user", content: userText.trim() };
     setMessages(prev => [...prev, userMsg]);
@@ -310,7 +315,9 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const handleLocationSubmit = () => {
     const value = getLocationValue();
+    console.log("[DEBUG-LOC] handleLocationSubmit:", { value, inputText, isProcessing, isComplete });
     if (value.trim()) processAnswer(value.trim());
+    else console.warn("[DEBUG-LOC] Location value is empty, cannot submit");
   };
 
   const questionProgress = questionHistory.length + 1;
