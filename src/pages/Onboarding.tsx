@@ -160,7 +160,7 @@ const Onboarding = () => {
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           onClick={tts.toggle}
-          className="fixed top-24 right-4 z-50 flex items-center gap-2 rounded-full border border-primary/20 bg-card/90 px-4 py-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-secondary sm:right-8"
+          className="fixed top-16 right-4 z-50 flex items-center gap-2 rounded-full border border-primary/20 bg-card/90 px-4 py-2 shadow-lg backdrop-blur-sm transition-colors hover:bg-secondary sm:right-8"
           aria-label={tts.isEnabled ? soundText.disable : soundText.enable}
         >
           {tts.isEnabled ? (
@@ -174,7 +174,7 @@ const Onboarding = () => {
         </motion.button>
       )}
 
-      <div className="flex-1 flex items-start justify-center px-4 pt-6 pb-4 sm:pt-10 overflow-hidden">
+      <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-4 sm:pt-24 overflow-hidden">
         <div className="w-full max-w-2xl h-full">
           <AnimatePresence mode="wait">
             {step === "language" && (
@@ -195,7 +195,7 @@ const Onboarding = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -20 }}
-                className="h-[calc(100vh-8rem)]"
+                className="h-[calc(100vh-7rem)]"
               >
                 <ChatOnboarding
                   onComplete={handleChatComplete}
