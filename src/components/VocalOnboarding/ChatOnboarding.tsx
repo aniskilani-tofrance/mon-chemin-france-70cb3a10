@@ -142,7 +142,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       const msg: ChatMessage = { role: "marianne", content: response.marianne_message };
       setMessages([msg]);
-      speak(response.marianne_message);
+      speakAndListen(response.marianne_message);
     } catch (err) {
       console.error("Greet error:", err);
       const fallback = language === "ar" ? "مرحباً! أنا ماريان. أين تسكن في فرنسا؟" :
