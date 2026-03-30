@@ -292,36 +292,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
 
-  const getLocationValue = (): string => {
-    if (inputText.trim()) return inputText.trim();
-    const refValue = locationInputRef.current?.getValue();
-    if (refValue?.trim()) return refValue.trim();
-    try {
-      const el = document.querySelector("gmp-place-autocomplete");
-      if (el) {
-        const sr = (el as any).shadowRoot;
-        if (sr) {
-          const input = sr.querySelector("input");
-          if (input?.value) return input.value;
-        }
-      }
-      const wrapper = document.querySelector(".google-places-wrapper");
-      if (wrapper) {
-        const inputs = wrapper.querySelectorAll("input");
-        for (const input of inputs) {
-          if ((input as HTMLInputElement).value) return (input as HTMLInputElement).value;
-        }
-      }
-    } catch { /* ignore */ }
-    return inputText;
-  };
 
-  const handleLocationSubmit = () => {
-    const value = getLocationValue();
-    console.log("[DEBUG-LOC] handleLocationSubmit:", { value, inputText, isProcessing, isComplete });
-    if (value.trim()) processAnswer(value.trim());
-    else console.warn("[DEBUG-LOC] Location value is empty, cannot submit");
-  };
 
   const questionProgress = questionHistory.length + 1;
 
