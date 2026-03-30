@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import marianneAvatar from "@/assets/marianne-avatar.png";
-
+import { GooglePlacesAutocomplete, type GooglePlacesAutocompleteHandle } from "./GooglePlacesAutocomplete";
 import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
