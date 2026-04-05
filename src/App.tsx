@@ -36,7 +36,7 @@ const PitchRegion = lazy(() => import("./pages/PitchRegion"));
 const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
-const VoiceTest = lazy(() => import("./pages/VoiceTest"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
