@@ -32,7 +32,9 @@ interface ChatMessage {
 // Questions that need a special inline widget instead of free text
 const WIDGET_QUESTIONS = new Set(["location", "contact_email", "contact_firstname", "contact_lastname"]);
 // Questions where we accept free text directly (no AI parsing needed)
-const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country"]);
+const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country", "previous_job"]);
+// Minimum length for free text answers to avoid empty/meaningless submissions
+const MIN_TEXT_LENGTH = 1;
 
 interface ChatOnboardingProps {
   onComplete: (answers: OnboardingAnswers) => void;
