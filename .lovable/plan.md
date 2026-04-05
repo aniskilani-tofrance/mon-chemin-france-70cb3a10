@@ -1,76 +1,57 @@
 
 
-## Plan : Modèle freemium leads (aperçu → achat → déblocage)
+# Audit MVP — ToFrance
 
-### Concept
+## Ce qui est déjà construit (acquis)
 
-Le partenaire voit une **carte teaser** par lead (secteur, niveau de français, ville, score de match, date) mais **pas** le nom, le téléphone, l'email ni les détails de profil. Un bouton "Débloquer ce lead" permet d'acheter le lead ; une fois acheté, toutes les informations apparaissent.
+| Module | État | Détails |
+|--------|------|---------|
+| **Landing page** | ✅ Complet | Hero, features, CTA, SEO, footer |
+| **Onboarding vocal Marianne** | ✅ Complet | Chat hybride, arbre de décision, TTS OpenAI, 6 langues, RTL arabe |
+| **Scoring & orientation** | ✅ Complet | Score de qualification, parcours (FLE/Formation/Emploi/SAS), moteur d'orientation v2 |
+| **Gestion des leads** | ✅ Complet | Matching automatique, profils, statuts détaillés (14 statuts), prix dynamique par score |
+| **Partenaires (OF/Employeurs)** | ✅ Complet | Inscription, dashboard, achat leads, profil, Stripe paiement |
+| **Admin** | ✅ Complet | Dashboard analytics, gestion users, leads, emails, rôles (admin/provider/user) |
+| **Module FLE** | ✅ Structure | Tables DB, modules, exercices, progression, dialogue vocal |
+| **Auth** | ✅ Complet | Login/signup, reset password, OAuth, routes protégées |
+| **Conformité** | ✅ Complet | RGPD, consentements, mentions légales, page "mes données" |
+| **i18n** | ✅ 6 langues | FR, EN, AR, ES, PT, RU |
 
-### 1. Migration base de données
+## Ce qui manque pour un vrai MVP
 
-Ajouter une colonne `purchased_at` (timestamp, nullable) sur la table `leads` :
+### 1. Priorité haute — Expérience utilisateur post-onboarding
 
-```sql
-ALTER TABLE public.leads ADD COLUMN purchased_at timestamptz DEFAULT NULL;
-```
+- **Email de confirmation automatique** : Après l'onboarding, l'utilisateur ne reçoit aucun email. Un email récapitulatif avec le parcours recommandé et les prochaines étapes est essentiel pour le MVP.
+- **Page de confirmation enrichie** : La page `/confirmation` est basique. Ajouter un récapitulatif clair du parcours, un CTA vers l'inscription, et les contacts utiles.
 
-Cette colonne sert de flag : si `purchased_at IS NOT NULL`, le lead est débloqué.
+### 2. Priorité haute — Contenu FLE réel
 
-### 2. Sécuriser l'accès aux données profil (RLS)
+- Les tables `fle_modules` et `fle_exercises` existent mais sont probablement vides en base. Le module FLE ne fonctionne pas sans contenu seedé. Il faut au minimum 2-3 modules avec des exercices réels pour démontrer la valeur.
 
-Actuellement le `SELECT` sur `leads` joint `profiles(*)` côté client — le profil complet est renvoyé. Deux options :
+### 3. Priorité moyenne — Mobile & UX
 
-**Option retenue** : ne pas changer le RLS (le provider a déjà accès via la policy existante), mais **masquer côté client** les champs sensibles tant que `purchased_at` est null. C'est acceptable car les données profil (nom, téléphone) ne sont pas des secrets critiques dans ce contexte B2B, et le partenaire est un utilisateur authentifié avec un rôle vérifié.
+- **Responsive testing** : Le parcours onboarding et le header doivent être vérifiés sur mobile (le logo agrandi peut poser problème).
+- **Loading states** : Certaines pages manquent peut-être d'états de chargement cohérents.
+- **Error handling vocal** : Que se passe-t-il si le micro est refusé ? Message clair à l'utilisateur.
 
-> Si on veut un masquage côté serveur plus tard, on pourra créer une edge function qui retourne un profil filtré.
+### 4. Priorité moyenne — Fiabilité backend
 
-### 3. Hook `usePurchaseLead`
+- **Edge function match-leads** : Vérifier qu'elle fonctionne avec des partenaires réels en base.
+- **Webhook Stripe** : Tester le flux complet achat lead → notification partenaire.
+- **Rate limiting** : Le hook `useRateLimit` existe, vérifier qu'il est bien appliqué sur l'onboarding.
 
-Nouveau hook dans `src/hooks/useProviderData.tsx` :
+### 5. Priorité basse — Nice-to-have MVP
 
-```ts
-export function usePurchaseLead() {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: async ({ leadId }: { leadId: string }) => {
-      const { error } = await supabase
-        .from("leads")
-        .update({ purchased_at: new Date().toISOString() })
-        .eq("id", leadId);
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["provider-leads"] });
-    },
-  });
-}
-```
+- **Notifications email partenaire** : Quand un nouveau lead matche, le partenaire devrait être notifié (edge function `notify-partner-lead` existe, vérifier le branchement).
+- **Analytics dashboard** : Les events sont trackés, mais le dashboard admin pourrait afficher des métriques clés (taux de complétion onboarding, conversion).
 
-### 4. Refonte du composant `LeadCard`
+---
 
-Deux modes d'affichage selon `lead.purchased_at` :
+## Prochaines améliorations recommandées (post-MVP)
 
-**Mode teaser** (`purchased_at` est null) :
-- Affiche : secteur cible, niveau de français (CECRL), ville, score de match, date de création
-- Nom masqué → "Candidat · [secteur]"
-- Téléphone/email masqués → icônes avec "●●●●"
-- Bouton "Débloquer ce lead — X €" (prix issu de `lead.price_charged`)
-- Pas d'accès au changement de statut ni aux notes
-
-**Mode débloqué** (`purchased_at` renseigné) :
-- Tout le contenu actuel (nom complet, téléphone cliquable, email, détails profil, statut, notes)
-
-### 5. Indicateur visuel
-
-- Badge "🔒 Verrouillé" sur les leads non achetés
-- Badge "✓ Débloqué" sur les leads achetés
-- KPI supplémentaire : "Leads achetés" dans la ligne de stats
-
-### 6. Fichiers modifiés
-
-| Fichier | Modification |
-|---|---|
-| Migration SQL | Ajout colonne `purchased_at` |
-| `src/hooks/useProviderData.tsx` | Ajout `usePurchaseLead` |
-| `src/pages/PartnerDashboard.tsx` | LeadCard en mode teaser/débloqué, nouveau KPI |
+1. **Email automatique post-onboarding** — Envoyer un récapitulatif via Resend après complétion
+2. **Seed du contenu FLE** — Injecter 3 modules de base avec exercices pour démo
+3. **Notification temps réel partenaires** — Alerter les partenaires quand un lead matche
+4. **PWA / mode offline** — Pour les utilisateurs avec connexion instable
+5. **Dashboard utilisateur enrichi** — Suivi de la progression, historique, documents
 
