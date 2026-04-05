@@ -338,7 +338,6 @@ TÂCHE :
 ${nextQPart}
 
 Réponds en JSON.`;
-Réponds en JSON.`;
       } else {
         throw new Error("Phase onboarding_chat invalide: " + phase);
       }
