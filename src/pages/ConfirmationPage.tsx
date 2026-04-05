@@ -3,9 +3,10 @@ import {
   Check, Sparkles, ArrowRight, MapPin, Mail, User, Languages, 
   GraduationCap, Briefcase, Users, Clock, MessageCircle, UserPlus,
   Globe, Shield, Target, Wrench, Car, Banknote, CalendarCheck,
-  BookOpen, Phone, ChevronRight
+  BookOpen, Phone, ChevronRight, Download
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { generateOnboardingPDF } from "@/lib/generateOnboardingPDF";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
@@ -344,6 +345,16 @@ const ConfirmationPage = () => {
             >
               <UserPlus className="h-5 w-5" />
               {texts.signupCta}
+            </Button>
+
+            <Button
+              variant="outline"
+              size="lg"
+              className="w-full"
+              onClick={() => generateOnboardingPDF(storedAnswers)}
+            >
+              <Download className="h-5 w-5" />
+              Télécharger le récapitulatif PDF
             </Button>
 
             <div className="grid grid-cols-2 gap-3">
