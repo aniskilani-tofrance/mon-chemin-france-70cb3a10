@@ -107,16 +107,85 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     }
   }, [isListening]);
 
-  // Build conversation summary for AI context
+  // Build rich conversational summary for AI context
   const buildSummary = useCallback(() => {
     const parts: string[] = [];
-    if (answers.location) parts.push(`Ville: ${answers.location}`);
-    if (answers.origin_country) parts.push(`Pays: ${answers.origin_country}`);
-    if (answers.main_goal) parts.push(`Objectif: ${answers.main_goal}`);
-    if (answers.french_level_cecrl) parts.push(`Niveau français: ${answers.french_level_cecrl}`);
-    if (answers.work_right) parts.push(`Droit travail: ${answers.work_right}`);
-    if (answers.contact_firstname) parts.push(`Prénom: ${answers.contact_firstname}`);
-    return parts.join(", ");
+
+    // Location & origin — geographic context
+    if (answers.location) parts.push(`Habite à : ${answers.location}`);
+    if (answers.origin_country) parts.push(`Vient de : ${answers.origin_country}`);
+
+    // Identity
+    if (answers.contact_firstname) parts.push(`Prénom : ${answers.contact_firstname}`);
+
+    // Goals & motivation
+    if (answers.main_goal) {
+      const goalLabels: Record<string, string> = {
+        learn_french: "apprendre le français",
+        find_job: "trouver un emploi",
+        get_training: "suivre une formation professionnelle",
+        need_help: "a besoin d'aide pour se décider",
+      };
+      parts.push(`Objectif principal : ${goalLabels[answers.main_goal] || answers.main_goal}`);
+    }
+
+    // French level
+    if (answers.french_level_cecrl) {
+      const levelLabels: Record<string, string> = {
+        alpha: "ne parle pas français (alpha)",
+        post_alpha: "quelques mots (post-alpha)",
+        a1: "niveau débutant (A1)",
+        a2: "se débrouille (A2)",
+        b1: "niveau intermédiaire (B1)",
+      };
+      parts.push(`Niveau de français : ${levelLabels[answers.french_level_cecrl] || answers.french_level_cecrl}`);
+    }
+
+    // Literacy
+    if (answers.literacy) {
+      const litLabels: Record<string, string> = {
+        reads_writes_latin: "sait lire et écrire en alphabet latin",
+        reads_writes_other: "sait lire et écrire dans un autre alphabet",
+        no_read_write: "ne sait pas lire ni écrire",
+      };
+      parts.push(`Alphabétisation : ${litLabels[answers.literacy] || answers.literacy}`);
+    }
+
+    // Work situation
+    if (answers.work_right) {
+      const workLabels: Record<string, string> = {
+        has_right: "a le droit de travailler",
+        pending: "demande en cours",
+        no_right: "pas encore le droit de travailler",
+        not_sure: "ne sait pas",
+      };
+      parts.push(`Droit de travail : ${workLabels[answers.work_right] || answers.work_right}`);
+    }
+    if (answers.previous_job) parts.push(`Métier précédent : ${answers.previous_job}`);
+
+    // Target sector & training preferences
+    if (answers.target_sector) parts.push(`Secteur visé : ${answers.target_sector}`);
+    if (answers.training_duration) parts.push(`Durée de formation souhaitée : ${answers.training_duration}`);
+    if (answers.fle_type) parts.push(`Type de cours FLE souhaité : ${answers.fle_type}`);
+    if (answers.fle_format) parts.push(`Format FLE : ${answers.fle_format}`);
+
+    // Constraints & barriers
+    if (answers.barriers) {
+      const b = Array.isArray(answers.barriers) ? answers.barriers.join(", ") : answers.barriers;
+      parts.push(`Freins identifiés : ${b}`);
+    }
+    if (answers.mobility) parts.push(`Mobilité : ${answers.mobility}`);
+    if (answers.mobility_km) parts.push(`Distance max : ${answers.mobility_km}`);
+    if (answers.funding_status) parts.push(`Financement : ${answers.funding_status}`);
+    if (answers.immediate_availability) parts.push(`Disponibilité immédiate : ${answers.immediate_availability}`);
+    if (answers.work_schedule) parts.push(`Horaires de travail : ${answers.work_schedule}`);
+
+    // Contact preferences
+    if (answers.contact_48h) parts.push(`Joignable sous 48h : ${answers.contact_48h}`);
+
+    if (parts.length === 0) return "";
+
+    return `PROFIL DE L'UTILISATEUR (utilise ces infos pour personnaliser tes réactions et faire des liens pertinents entre les réponses) :\n${parts.join("\n")}`;
   }, [answers]);
 
   // Speak and auto-start mic after
