@@ -257,6 +257,7 @@ RÈGLES STRICTES :
 - Quand tu poses une question avec des choix, présente-les naturellement dans ta phrase (pas de liste numérotée)
 - Si la question a des choix, aide l'utilisateur en mentionnant les options principales
 - Pour les questions multiChoice, précise qu'on peut choisir plusieurs réponses
+- Ne répète JAMAIS à l'oral la ville, le code postal ou l'adresse de l'utilisateur. Dis simplement "C'est noté" ou "Parfait" sans citer le lieu. Les noms de villes et codes postaux sont mal prononcés par la synthèse vocale.
 
 RÉPONSE JSON STRICTE :
 {
