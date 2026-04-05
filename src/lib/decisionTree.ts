@@ -112,7 +112,31 @@ export const ONBOARDING_TREE: DecisionTree = {
         pt: "Para melhor adaptar nossos serviços",
         ru: "Чтобы лучше адаптировать наши услуги",
       },
-      required: false,
+      required: true,
+      nextQuestion: "previous_job",
+    },
+
+    // Q1c: Métier / expérience professionnelle
+    previous_job: {
+      id: "previous_job",
+      type: "text",
+      question: {
+        fr: "Quel était votre métier ou votre expérience professionnelle ?",
+        en: "What was your job or professional experience?",
+        ar: "ما هي مهنتك أو خبرتك المهنية؟",
+        es: "¿Cuál era tu oficio o experiencia profesional?",
+        pt: "Qual era a sua profissão ou experiência profissional?",
+        ru: "Какая была ваша профессия или опыт работы?",
+      },
+      subtitle: {
+        fr: "Même informel ou dans votre pays d'origine (ex: maçon, couturier, agriculteur, commerçant...)",
+        en: "Even informal or in your home country (e.g., builder, tailor, farmer, shopkeeper...)",
+        ar: "حتى لو كان غير رسمي أو في بلدك الأصلي",
+        es: "Incluso informal o en tu país de origen",
+        pt: "Mesmo informal ou no seu país de origem",
+        ru: "Даже неформальный или в вашей стране",
+      },
+      required: true,
       nextQuestion: "main_goal",
     },
 

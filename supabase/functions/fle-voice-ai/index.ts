@@ -294,12 +294,19 @@ RÉPONSE JSON STRICTE :
   "needs_clarification": false
 }
 
-EXTRACTION DES RÉPONSES (sois très tolérante) :
+RÈGLE D'OR — NE JAMAIS AVANCER SANS RÉPONSE :
+- Si l'utilisateur ne répond pas à la question posée (change de sujet, dit quelque chose de hors-sujet, ou donne une réponse vide), remets needs_clarification à true et REPOSE la question autrement, avec bienveillance
+- N'accepte PAS de passer à la question suivante tant que la réponse actuelle n'est pas exploitable
+- Si l'utilisateur dit "je ne sais pas" ou hésite, aide-le avec des exemples concrets puis repose la question
+- Sois patiente : reformule, donne des exemples, mais ne saute JAMAIS une question
+
+EXTRACTION DES RÉPONSES (sois tolérante sur la forme, stricte sur le fond) :
 - Pour les questions à choix : identifie le(s) choix par leur ID même si la réponse est approximative
 - Accepte les synonymes ("boulot" = "emploi", "apprendre la langue" = "français"), les abréviations, le franglais
 - Si la réponse est ambiguë mais qu'un choix est probable à >60%, sélectionne-le plutôt que de demander une clarification
-- Ne demande une clarification (needs_clarification: true) qu'en dernier recours
-- Pour les questions texte libre : mets la réponse brute dans extracted_text`;
+- Ne demande une clarification (needs_clarification: true) que si tu ne peux VRAIMENT pas identifier de choix
+- Pour les questions texte libre : mets la réponse brute dans extracted_text — mais si la réponse est vide ou ne correspond pas du tout à la question, mets needs_clarification à true
+- Pour le métier/expérience : accepte tout (même "rien", "au foyer", "étudiant") — c'est une info importante pour l'orientation`;
 
       if (phase === "greet") {
         const qText = question?.question?.[userLang] || question?.question?.fr || "";
