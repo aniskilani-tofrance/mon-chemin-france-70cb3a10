@@ -7,7 +7,7 @@ const corsHeaders = {
 
 // Best OpenAI TTS voice per language for Marianne (female advisor)
 const VOICE_MAP: Record<string, string> = {
-  fr: "fable",     // European/Parisian French accent
+  fr: "shimmer",   // Neutral Parisian French, expressive female
   en: "shimmer",   // Expressive English female
   ar: "nova",      // Best female for Arabic
   es: "nova",      // Warm natural Spanish female
