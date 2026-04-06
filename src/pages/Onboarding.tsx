@@ -19,7 +19,7 @@ import {
   LeadRoute,
 } from "@/lib/decisionTree";
 
-type OnboardingStep = "language" | "consent" | "chat" | "complete";
+type OnboardingStep = "language" | "chat" | "complete";
 
 interface OnboardingAnswers extends TreeOnboardingAnswers {
   leadRoute?: LeadRoute;
