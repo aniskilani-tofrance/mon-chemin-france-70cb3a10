@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Volume2, Mic, MicOff, RotateCcw, ArrowRight, ArrowLeft, 
-  CheckCircle2, XCircle, Lightbulb, Loader2 
+  CheckCircle2, XCircle, Lightbulb, Loader2, Send
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
@@ -119,9 +119,7 @@ const FLEExercise = () => {
     stt.start();
   }, [stt]);
 
-  const handleStopAndEvaluate = useCallback(async () => {
-    stt.stop();
-    const userAnswer = stt.transcript || stt.interimTranscript;
+  const submitOralAnswer = useCallback(async (userAnswer: string) => {
     if (!userAnswer.trim() || !currentExercise) return;
 
     setIsLoadingAI(true);
@@ -148,12 +146,10 @@ const FLEExercise = () => {
       setAnswered(true);
       if (feedback.score >= 60) setCorrectCount((c) => c + 1);
 
-      // Read feedback aloud
       if (tts.isEnabled) {
         tts.speak(feedback.feedback);
       }
 
-      // Save result
       if (user) {
         await supabase.from("fle_exercise_results").insert({
           user_id: user.id,
@@ -170,7 +166,18 @@ const FLEExercise = () => {
     } finally {
       setIsLoadingAI(false);
     }
-  }, [stt, currentExercise, moduleInfo, user, moduleId, tts]);
+  }, [currentExercise, moduleInfo, user, moduleId, tts]);
+
+  const handleStopAndEvaluate = useCallback(async () => {
+    stt.stop();
+    const userAnswer = stt.transcript || stt.interimTranscript;
+    await submitOralAnswer(userAnswer);
+  }, [stt, submitOralAnswer]);
+
+  const handleValidateAnswer = useCallback(async () => {
+    const userAnswer = stt.transcript || stt.interimTranscript;
+    await submitOralAnswer(userAnswer);
+  }, [stt, submitOralAnswer]);
 
   const handleChoiceSelect = useCallback(async (choice: string) => {
     if (answered) return;
@@ -390,6 +397,18 @@ const FLEExercise = () => {
                 <p className="text-xs text-muted-foreground">
                   {stt.isListening ? "🎤 Je vous écoute… Appuyez pour terminer" : "Appuyez pour parler"}
                 </p>
+
+                {/* Validate button — shown when there's a transcript and mic is not active */}
+                {!stt.isListening && (stt.transcript || stt.interimTranscript) && !isLoadingAI && (
+                  <Button
+                    size="lg"
+                    onClick={handleValidateAnswer}
+                    className="w-full max-w-xs gap-2 mt-2"
+                  >
+                    <Send className="h-5 w-5" />
+                    Valider ma réponse
+                  </Button>
+                )}
 
                 {stt.error && (
                   <p className="text-xs text-destructive">{stt.error}</p>
