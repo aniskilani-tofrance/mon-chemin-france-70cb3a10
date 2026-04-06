@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
-import { ConsentStep } from "@/components/VocalOnboarding/ConsentStep";
+
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
 import { useLanguage } from "@/hooks/useLanguage";
