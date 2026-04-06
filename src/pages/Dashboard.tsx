@@ -27,6 +27,7 @@ import {
   BookOpen,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { FLEDashboardCard } from "@/components/FLE/FLEDashboardCard";
 
 const DEMO_EMAIL = "demo@tofrance.fr";
 
