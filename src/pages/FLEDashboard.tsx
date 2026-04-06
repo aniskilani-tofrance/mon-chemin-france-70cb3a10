@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
