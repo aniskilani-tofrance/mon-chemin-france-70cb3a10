@@ -655,7 +655,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
               {currentQuestionId !== "location" && (
                 <Input
-                  type={isEmail ? "email" : "text"}
+                  type={isEmail ? "email" : isPhone ? "tel" : "text"}
                   value={inputText}
                   onChange={(e) => {
                     setInputText(e.target.value);
