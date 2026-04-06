@@ -278,6 +278,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
     training: { title: string; description: string };
     community: { title: string; description: string };
   };
+  howItWorks: {
+    title: string;
+    subtitle: string;
+    step1Title: string;
+    step1Desc: string;
+    step2Title: string;
+    step2Desc: string;
+    step3Title: string;
+    step3Desc: string;
+  };
+  featuresSection: {
+    title: string;
+    subtitle: string;
+    marianne: { title: string; description: string; cta: string };
+    fle: { title: string; description: string; cta: string };
+    local: { title: string; description: string; cta: string };
+  };
+  cta: {
+    title: string;
+    subtitle: string;
+    badge: string;
+    availableIn: string;
+  };
   onboarding: typeof ONBOARDING_FR;
 }> = {
   fr: {
@@ -292,6 +315,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       career: { title: "Orientation Personnalisée", description: "Un parcours sur-mesure basé sur votre profil" },
       training: { title: "Formations Locales", description: "Des organismes partenaires près de chez vous" },
       community: { title: "Accompagnement", description: "Un suivi pour réussir votre intégration" },
+    },
+    howItWorks: {
+      title: "Comment ça marche ?",
+      subtitle: "Un parcours simple en 3 étapes, entièrement gratuit",
+      step1Title: "Parlez avec Marianne",
+      step1Desc: "5 minutes de conversation vocale dans votre langue. Marianne évalue votre profil et vos besoins.",
+      step2Title: "Recevez votre orientation",
+      step2Desc: "Parcours personnalisé : cours de français, formation professionnelle ou aide à l'emploi.",
+      step3Title: "Commencez votre parcours",
+      step3Desc: "Accédez aux modules FLE ou soyez mis en relation avec un organisme partenaire près de chez vous.",
+    },
+    featuresSection: {
+      title: "Tout ce qu'il vous faut pour réussir",
+      subtitle: "Trois piliers pour votre intégration en France",
+      marianne: { title: "Marianne, votre conseillère IA", description: "Onboarding vocal en 6 langues. Marianne évalue votre situation et vous oriente en 5 minutes.", cta: "Discuter avec Marianne" },
+      fle: { title: "Apprenez le français (FLE)", description: "Modules interactifs du niveau Alpha à B1. Apprentissage oral-first adapté à votre secteur professionnel.", cta: "Commencer les cours" },
+      local: { title: "Formations près de chez vous", description: "Mise en relation directe avec des organismes de formation et associations partenaires dans votre ville.", cta: "Voir les partenaires" },
+    },
+    cta: {
+      title: "Prêt à commencer ?",
+      subtitle: "Discutez avec Marianne et recevez votre orientation personnalisée en 5 minutes.",
+      badge: "Gratuit · Sans inscription · 5 minutes",
+      availableIn: "Disponible en",
     },
     onboarding: ONBOARDING_FR,
   },
@@ -308,6 +354,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       training: { title: "Local Training", description: "Partner organizations near you" },
       community: { title: "Support", description: "Follow-up to help you succeed" },
     },
+    howItWorks: {
+      title: "How does it work?",
+      subtitle: "A simple 3-step process, completely free",
+      step1Title: "Talk to Marianne",
+      step1Desc: "5 minutes of voice conversation in your language. Marianne assesses your profile and needs.",
+      step2Title: "Receive your guidance",
+      step2Desc: "Personalized path: French courses, professional training, or employment support.",
+      step3Title: "Start your journey",
+      step3Desc: "Access FLE modules or get connected with a local partner organization near you.",
+    },
+    featuresSection: {
+      title: "Everything you need to succeed",
+      subtitle: "Three pillars for your integration in France",
+      marianne: { title: "Marianne, your AI advisor", description: "Vocal onboarding in 6 languages. Marianne assesses your situation and guides you in 5 minutes.", cta: "Chat with Marianne" },
+      fle: { title: "Learn French (FLE)", description: "Interactive modules from Alpha to B1 level. Oral-first learning adapted to your professional sector.", cta: "Start learning" },
+      local: { title: "Training near you", description: "Direct connection with training organizations and partner associations in your city.", cta: "View partners" },
+    },
+    cta: {
+      title: "Ready to start?",
+      subtitle: "Chat with Marianne and receive your personalized guidance in 5 minutes.",
+      badge: "Free · No sign-up · 5 minutes",
+      availableIn: "Available in",
+    },
     onboarding: ONBOARDING_EN,
   },
   ar: {
@@ -322,6 +391,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       career: { title: "توجيه مخصص", description: "مسار مخصص بناءً على ملفك الشخصي" },
       training: { title: "تدريبات محلية", description: "منظمات شريكة بالقرب منك" },
       community: { title: "المرافقة", description: "متابعة لنجاح اندماجك" },
+    },
+    howItWorks: {
+      title: "كيف يعمل؟",
+      subtitle: "مسار بسيط في 3 خطوات، مجاني بالكامل",
+      step1Title: "تحدث مع ماريان",
+      step1Desc: "5 دقائق من المحادثة الصوتية بلغتك. تقيّم ماريان ملفك واحتياجاتك.",
+      step2Title: "احصل على توجيهك",
+      step2Desc: "مسار مخصص: دروس فرنسية، تدريب مهني أو مساعدة في التوظيف.",
+      step3Title: "ابدأ مسارك",
+      step3Desc: "الوصول إلى وحدات FLE أو التواصل مع منظمة شريكة بالقرب منك.",
+    },
+    featuresSection: {
+      title: "كل ما تحتاجه للنجاح",
+      subtitle: "ثلاث ركائز لاندماجك في فرنسا",
+      marianne: { title: "ماريان، مستشارتك بالذكاء الاصطناعي", description: "تسجيل صوتي بـ 6 لغات. تقيّم ماريان وضعك وتوجهك في 5 دقائق.", cta: "تحدث مع ماريان" },
+      fle: { title: "تعلّم الفرنسية (FLE)", description: "وحدات تفاعلية من المستوى Alpha إلى B1. تعلّم شفهي يتكيف مع قطاعك المهني.", cta: "ابدأ الدروس" },
+      local: { title: "تدريبات بالقرب منك", description: "ربط مباشر مع منظمات التدريب والجمعيات الشريكة في مدينتك.", cta: "عرض الشركاء" },
+    },
+    cta: {
+      title: "مستعد للبدء؟",
+      subtitle: "تحدث مع ماريان واحصل على توجيهك الشخصي في 5 دقائق.",
+      badge: "مجاني · بدون تسجيل · 5 دقائق",
+      availableIn: "متوفر بـ",
     },
     onboarding: ONBOARDING_AR,
   },
@@ -338,6 +430,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       training: { title: "Formaciones Locales", description: "Organismos asociados cerca de ti" },
       community: { title: "Acompañamiento", description: "Seguimiento para tu integración" },
     },
+    howItWorks: {
+      title: "¿Cómo funciona?",
+      subtitle: "Un proceso simple en 3 pasos, totalmente gratuito",
+      step1Title: "Habla con Marianne",
+      step1Desc: "5 minutos de conversación vocal en tu idioma. Marianne evalúa tu perfil y necesidades.",
+      step2Title: "Recibe tu orientación",
+      step2Desc: "Recorrido personalizado: cursos de francés, formación profesional o ayuda al empleo.",
+      step3Title: "Comienza tu camino",
+      step3Desc: "Accede a los módulos FLE o conecta con un organismo asociado cerca de ti.",
+    },
+    featuresSection: {
+      title: "Todo lo que necesitas para triunfar",
+      subtitle: "Tres pilares para tu integración en Francia",
+      marianne: { title: "Marianne, tu asesora IA", description: "Onboarding vocal en 6 idiomas. Marianne evalúa tu situación y te orienta en 5 minutos.", cta: "Hablar con Marianne" },
+      fle: { title: "Aprende francés (FLE)", description: "Módulos interactivos del nivel Alpha a B1. Aprendizaje oral adaptado a tu sector profesional.", cta: "Empezar los cursos" },
+      local: { title: "Formaciones cerca de ti", description: "Conexión directa con organismos de formación y asociaciones en tu ciudad.", cta: "Ver los socios" },
+    },
+    cta: {
+      title: "¿Listo para empezar?",
+      subtitle: "Habla con Marianne y recibe tu orientación personalizada en 5 minutos.",
+      badge: "Gratis · Sin registro · 5 minutos",
+      availableIn: "Disponible en",
+    },
     onboarding: ONBOARDING_ES,
   },
   pt: {
@@ -353,6 +468,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       training: { title: "Formações Locais", description: "Organizações parceiras perto de você" },
       community: { title: "Acompanhamento", description: "Apoio para o sucesso da sua integração" },
     },
+    howItWorks: {
+      title: "Como funciona?",
+      subtitle: "Um processo simples em 3 etapas, totalmente gratuito",
+      step1Title: "Fale com Marianne",
+      step1Desc: "5 minutos de conversa vocal no seu idioma. Marianne avalia seu perfil e necessidades.",
+      step2Title: "Receba sua orientação",
+      step2Desc: "Percurso personalizado: aulas de francês, formação profissional ou apoio ao emprego.",
+      step3Title: "Comece seu percurso",
+      step3Desc: "Acesse os módulos FLE ou conecte-se com uma organização parceira perto de você.",
+    },
+    featuresSection: {
+      title: "Tudo o que você precisa para ter sucesso",
+      subtitle: "Três pilares para sua integração na França",
+      marianne: { title: "Marianne, sua conselheira IA", description: "Onboarding vocal em 6 idiomas. Marianne avalia sua situação e orienta você em 5 minutos.", cta: "Falar com Marianne" },
+      fle: { title: "Aprenda francês (FLE)", description: "Módulos interativos do nível Alpha ao B1. Aprendizado oral adaptado ao seu setor profissional.", cta: "Começar as aulas" },
+      local: { title: "Formações perto de você", description: "Conexão direta com organizações de formação e associações parceiras na sua cidade.", cta: "Ver parceiros" },
+    },
+    cta: {
+      title: "Pronto para começar?",
+      subtitle: "Converse com Marianne e receba sua orientação personalizada em 5 minutos.",
+      badge: "Gratuito · Sem cadastro · 5 minutos",
+      availableIn: "Disponível em",
+    },
     onboarding: ONBOARDING_PT,
   },
   ru: {
@@ -367,6 +505,29 @@ export const TRANSLATIONS: Record<LanguageCode, {
       career: { title: "Персональное руководство", description: "Путь, подобранный под ваш профиль" },
       training: { title: "Местное обучение", description: "Организации-партнёры рядом с вами" },
       community: { title: "Сопровождение", description: "Поддержка вашей интеграции" },
+    },
+    howItWorks: {
+      title: "Как это работает?",
+      subtitle: "Простой процесс в 3 шага, полностью бесплатный",
+      step1Title: "Поговорите с Марианной",
+      step1Desc: "5 минут голосового разговора на вашем языке. Марианна оценит ваш профиль и потребности.",
+      step2Title: "Получите ориентацию",
+      step2Desc: "Индивидуальный маршрут: курсы французского, профессиональное обучение или помощь в трудоустройстве.",
+      step3Title: "Начните свой путь",
+      step3Desc: "Получите доступ к модулям FLE или свяжитесь с партнёрской организацией рядом с вами.",
+    },
+    featuresSection: {
+      title: "Всё, что нужно для успеха",
+      subtitle: "Три столпа для вашей интеграции во Франции",
+      marianne: { title: "Марианна, ваш ИИ-консультант", description: "Голосовой онбординг на 6 языках. Марианна оценит вашу ситуацию и направит за 5 минут.", cta: "Поговорить с Марианной" },
+      fle: { title: "Учите французский (FLE)", description: "Интерактивные модули от уровня Alpha до B1. Устное обучение, адаптированное к вашему сектору.", cta: "Начать обучение" },
+      local: { title: "Обучение рядом с вами", description: "Прямая связь с учебными организациями и ассоциациями-партнёрами в вашем городе.", cta: "Смотреть партнёров" },
+    },
+    cta: {
+      title: "Готовы начать?",
+      subtitle: "Поговорите с Марианной и получите персональную ориентацию за 5 минут.",
+      badge: "Бесплатно · Без регистрации · 5 минут",
+      availableIn: "Доступно на",
     },
     onboarding: ONBOARDING_RU,
   },
