@@ -56,28 +56,8 @@ const Onboarding = () => {
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
-    setStep("consent");
+    setStep("chat");
   };
-
-  const handleConsentAccept = useCallback((leadSharing: boolean, marketing: boolean) => {
-    track("onboarding_consent", { lead_sharing: leadSharing, marketing, accepted: true }, "/onboarding", language);
-    setAnswers(prev => ({
-      ...prev,
-      consent_lead_sharing: leadSharing,
-      consent_marketing: marketing,
-    }));
-    setStep("chat");
-  }, [language, track]);
-
-  const handleConsentDecline = useCallback(() => {
-    setAnswers(prev => ({
-      ...prev,
-      consent_lead_sharing: false,
-      consent_marketing: false,
-      tags: [...prev.tags, "consent_declined"],
-    }));
-    setStep("chat");
-  }, []);
 
   const handleChatComplete = useCallback((chatAnswers: TreeOnboardingAnswers) => {
     const route = determineRoute(chatAnswers);
