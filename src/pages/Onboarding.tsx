@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
-import { ConsentStep } from "@/components/VocalOnboarding/ConsentStep";
+
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -19,7 +19,7 @@ import {
   LeadRoute,
 } from "@/lib/decisionTree";
 
-type OnboardingStep = "language" | "consent" | "chat" | "complete";
+type OnboardingStep = "language" | "chat" | "complete";
 
 interface OnboardingAnswers extends TreeOnboardingAnswers {
   leadRoute?: LeadRoute;
@@ -56,28 +56,8 @@ const Onboarding = () => {
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
-    setStep("consent");
+    setStep("chat");
   };
-
-  const handleConsentAccept = useCallback((leadSharing: boolean, marketing: boolean) => {
-    track("onboarding_consent", { lead_sharing: leadSharing, marketing, accepted: true }, "/onboarding", language);
-    setAnswers(prev => ({
-      ...prev,
-      consent_lead_sharing: leadSharing,
-      consent_marketing: marketing,
-    }));
-    setStep("chat");
-  }, [language, track]);
-
-  const handleConsentDecline = useCallback(() => {
-    setAnswers(prev => ({
-      ...prev,
-      consent_lead_sharing: false,
-      consent_marketing: false,
-      tags: [...prev.tags, "consent_declined"],
-    }));
-    setStep("chat");
-  }, []);
 
   const handleChatComplete = useCallback((chatAnswers: TreeOnboardingAnswers) => {
     const route = determineRoute(chatAnswers);
@@ -179,14 +159,6 @@ const Onboarding = () => {
           <AnimatePresence mode="wait">
             {step === "language" && (
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
-            )}
-
-            {step === "consent" && (
-              <ConsentStep
-                key="consent"
-                onAccept={handleConsentAccept}
-                onDecline={handleConsentDecline}
-              />
             )}
 
             {step === "chat" && (
