@@ -89,6 +89,30 @@ export const ONBOARDING_TREE: DecisionTree = {
         ur: "مکمل پتہ: نمبر، گلی، شہر",
       },
       required: true,
+      nextQuestion: "postal_code",
+    },
+
+    // Q1bis: Code postal
+    postal_code: {
+      id: "postal_code",
+      type: "text",
+      question: {
+        fr: "Quel est votre code postal ?",
+        en: "What is your postal code?",
+        ar: "ما هو رمزك البريدي؟",
+        es: "¿Cuál es tu código postal?",
+        pt: "Qual é o seu código postal?",
+        ru: "Какой у вас почтовый индекс?",
+      },
+      subtitle: {
+        fr: "5 chiffres (ex: 75001)",
+        en: "5 digits (e.g., 75001)",
+        ar: "5 أرقام (مثال: 75001)",
+        es: "5 dígitos (ej: 75001)",
+        pt: "5 dígitos (ex: 75001)",
+        ru: "5 цифр (например: 75001)",
+      },
+      required: true,
       nextQuestion: "origin_country",
     },
 
