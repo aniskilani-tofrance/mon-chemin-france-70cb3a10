@@ -14,6 +14,12 @@ export function Header() {
   const { t } = useLanguage();
   const { isAdmin } = useAdminCheck();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
