@@ -33,6 +33,7 @@ interface ResultData {
 
 export default function PlacementTestResults() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [result, setResult] = useState<ResultData | null>(null);
   const [showReview, setShowReview] = useState(false);
 
@@ -44,6 +45,51 @@ export default function PlacementTestResults() {
     }
     setResult(JSON.parse(stored));
   }, []);
+
+  // Sync level to fle_user_progress when result + user are available
+  useEffect(() => {
+    if (!result || !user) return;
+
+    // Map test level (A1-C2) to cecrl_level enum (alpha, post_alpha, a1, a2, b1)
+    const levelMap: Record<string, string> = {
+      A1: "a1",
+      A2: "a2",
+      B1: "b1",
+      B2: "b1", // cap at b1 (max in enum)
+      C1: "b1",
+      C2: "b1",
+    };
+    const cecrlLevel = levelMap[result.level] || "a1";
+
+    const syncLevel = async () => {
+      // Try upsert: update if exists, insert if not
+      const { data: existing } = await supabase
+        .from("fle_user_progress")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        await supabase
+          .from("fle_user_progress")
+          .update({
+            estimated_level: cecrlLevel as any,
+            placement_completed: true,
+          })
+          .eq("user_id", user.id);
+      } else {
+        await supabase
+          .from("fle_user_progress")
+          .insert({
+            user_id: user.id,
+            estimated_level: cecrlLevel as any,
+            placement_completed: true,
+          });
+      }
+    };
+
+    syncLevel();
+  }, [result, user]);
 
   if (!result) return null;
 
