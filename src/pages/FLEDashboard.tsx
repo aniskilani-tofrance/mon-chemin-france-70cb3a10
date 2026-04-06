@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle, Target } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle, Target, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
