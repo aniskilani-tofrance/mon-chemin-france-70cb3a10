@@ -1,9 +1,19 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { LanguageCode } from "@/lib/translations";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const SUPPORTED_TTS_LANGUAGES: LanguageCode[] = ["fr", "en", "ar", "es", "pt", "ru"];
 const TTS_ENABLED_KEY = "tts_enabled";
+
+const MANUAL_PLAYBACK_MESSAGE: Record<LanguageCode, string> = {
+  fr: "Le navigateur a bloqué le démarrage automatique de la voix. Appuyez sur « Réécouter Marianne ».",
+  en: "Your browser blocked autoplay for voice. Press “Replay Marianne” to start it.",
+  ar: "حظر المتصفح تشغيل الصوت تلقائيًا. اضغطوا على «إعادة تشغيل ماريان». ",
+  es: "El navegador bloqueó el inicio automático de la voz. Pulsa «Volver a escuchar a Marianne».",
+  pt: "O navegador bloqueou o início automático da voz. Toque em «Ouvir Marianne novamente».",
+  ru: "Браузер заблокировал автозапуск голоса. Нажмите «Прослушать Марианну ещё раз».",
+};
 
 export function isTTSSupportedForLanguage(language: LanguageCode): boolean {
   return SUPPORTED_TTS_LANGUAGES.includes(language);
@@ -33,11 +43,22 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const manualPlaybackHintShownRef = useRef(false);
   const langSupported = isTTSSupportedForLanguage(language);
+
+  const notifyManualPlaybackNeeded = useCallback(() => {
+    if (manualPlaybackHintShownRef.current) return;
+    manualPlaybackHintShownRef.current = true;
+    toast.info(MANUAL_PLAYBACK_MESSAGE[language] || MANUAL_PLAYBACK_MESSAGE.fr);
+  }, [language]);
 
   useEffect(() => {
     stop();
   // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [language]);
+
+  useEffect(() => {
+    manualPlaybackHintShownRef.current = false;
   }, [language]);
 
   useEffect(() => {
@@ -67,6 +88,7 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
   const fallbackSpeak = useCallback((text: string) => {
     if (typeof window === "undefined" || !("speechSynthesis" in window)) {
       setIsSpeaking(false);
+      notifyManualPlaybackNeeded();
       onEnd?.();
       return;
     }
@@ -88,6 +110,7 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     if (candidates.length > 0) utterance.voice = candidates[0];
 
     utterance.onstart = () => {
+      manualPlaybackHintShownRef.current = false;
       setIsSpeaking(true);
       onStart?.();
     };
@@ -97,10 +120,18 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     };
     utterance.onerror = () => {
       setIsSpeaking(false);
+      notifyManualPlaybackNeeded();
+      onEnd?.();
     };
 
-    window.speechSynthesis.speak(utterance);
-  }, [language, onStart, onEnd]);
+    try {
+      window.speechSynthesis.speak(utterance);
+    } catch {
+      setIsSpeaking(false);
+      notifyManualPlaybackNeeded();
+      onEnd?.();
+    }
+  }, [language, notifyManualPlaybackNeeded, onStart, onEnd]);
 
   const speak = useCallback(async (text: string) => {
     if (!isEnabled || !langSupported || !text.trim()) return;
@@ -137,6 +168,10 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
       const audio = new Audio(url);
       audioRef.current = audio;
 
+      audio.onplay = () => {
+        manualPlaybackHintShownRef.current = false;
+      };
+
       audio.onended = () => {
         setIsSpeaking(false);
         URL.revokeObjectURL(url);
@@ -155,10 +190,13 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
       await audio.play();
     } catch (err: any) {
       if (controller.signal.aborted) return;
+      if (err?.name === "NotAllowedError" || /user gesture|gesture|interact/i.test(err?.message || "")) {
+        notifyManualPlaybackNeeded();
+      }
       console.warn("[TTS] OpenAI TTS failed, using fallback:", err.message);
       fallbackSpeak(text);
     }
-  }, [isEnabled, langSupported, stop, onStart, onEnd, fallbackSpeak]);
+  }, [isEnabled, langSupported, stop, onStart, onEnd, fallbackSpeak, notifyManualPlaybackNeeded]);
 
   const toggle = useCallback(() => {
     setIsEnabled((prev) => {
