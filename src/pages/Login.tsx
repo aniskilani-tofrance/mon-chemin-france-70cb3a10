@@ -252,6 +252,28 @@ export default function Login() {
               )}
               Continuer avec Apple
             </Button>
+            <div className="flex items-center gap-3 w-full">
+              <Separator className="flex-1" />
+              <span className="text-xs text-muted-foreground">ou</span>
+              <Separator className="flex-1" />
+            </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full"
+              disabled={loading}
+              onClick={() => {
+                setEmail("demo@tofrance.fr");
+                setPassword("Demo2025!");
+                const form = document.querySelector("form");
+                if (form) {
+                  setTimeout(() => form.requestSubmit(), 100);
+                }
+              }}
+            >
+              <UserCheck className="mr-2 h-4 w-4" />
+              Compte démo
+            </Button>
             <p className="text-sm text-muted-foreground text-center">
               Pas encore de compte ?{" "}
               <Link to="/signup" className="text-primary hover:underline">
