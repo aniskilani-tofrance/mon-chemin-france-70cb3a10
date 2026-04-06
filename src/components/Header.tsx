@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Handshake, Home, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LanguageSelector } from "@/components/LanguageSelector";
@@ -14,6 +14,12 @@ export function Header() {
   const { t } = useLanguage();
   const { isAdmin } = useAdminCheck();
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50">
@@ -53,7 +59,7 @@ export function Header() {
                     {user.email?.split("@")[0]}
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1" onClick={signOut}>
+                <Button variant="outline" size="sm" className="gap-1" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                   Déconnexion
                 </Button>
@@ -134,7 +140,7 @@ export function Header() {
                     <User className="h-4 w-4" />
                     {user.email?.split("@")[0]}
                   </Link>
-                  <Button variant="outline" className="mt-2 gap-2" onClick={() => { signOut(); setMobileMenuOpen(false); }}>
+                  <Button variant="outline" className="mt-2 gap-2" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}>
                     <LogOut className="h-4 w-4" />
                     Déconnexion
                   </Button>
