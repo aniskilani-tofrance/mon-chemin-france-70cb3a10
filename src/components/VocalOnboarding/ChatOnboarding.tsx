@@ -675,7 +675,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               onCheckedChange={(checked) => setRgpdAccepted(!!checked)} 
             />
             <Label htmlFor="rgpd" className="text-xs text-muted-foreground">
-              {language === "ar" ? "أوافق على معالجة بياناتي وفقاً لسياسة الخصوصية" : "J'accepte le traitement de mes données conformément à la politique de confidentialité"}
+              {language === "ar" ? "أوافق على معالجة بياناتي الشخصية وفقًا لسياسة الخصوصية" : "J'accepte le traitement de mes données conformément à la politique de confidentialité"}
             </Label>
           </div>
         </div>
