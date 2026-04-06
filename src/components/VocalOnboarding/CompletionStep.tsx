@@ -204,11 +204,18 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
                 <span className="truncate">{leadPackInfo.email}</span>
               </div>
             )}
+            {leadPackInfo.phone && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>{leadPackInfo.phone}</span>
+              </div>
+            )}
             {leadPackInfo.location && (
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
                 <span>{leadPackInfo.location}</span>
               </div>
+            )}
             )}
           </div>
 
