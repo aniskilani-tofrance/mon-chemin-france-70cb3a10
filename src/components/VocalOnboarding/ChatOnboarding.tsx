@@ -76,6 +76,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isWidget = WIDGET_QUESTIONS.has(currentQuestionId);
   const isEmail = currentQuestionId === "contact_email";
   const isPhone = currentQuestionId === "contact_phone";
+  const isPostalCode = currentQuestionId === "postal_code";
   const isRTL = language === "ar";
 
   // TTS with onEnd to auto-start mic
