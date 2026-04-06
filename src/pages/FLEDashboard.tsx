@@ -33,14 +33,7 @@ const FLEDashboard = () => {
 
   const isLoading = modulesLoading || progressLoading;
 
-  // Redirect to placement if not completed
-  useEffect(() => {
-    if (!progressLoading && user) {
-      if (!userProgress || !userProgress.placement_completed) {
-        navigate("/fle/placement", { replace: true });
-      }
-    }
-  }, [userProgress, progressLoading, user, navigate]);
+  // No placement gate — direct access to courses
 
   const progress = userProgress || {
     estimated_level: "a1",
