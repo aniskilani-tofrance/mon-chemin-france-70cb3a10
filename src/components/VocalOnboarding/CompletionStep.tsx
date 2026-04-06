@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Sparkles, Loader2, Mail, User, MapPin, Clock, Star, Copy, AlertTriangle, CheckCircle } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Loader2, Mail, User, MapPin, Phone, Star, Copy, AlertTriangle, CheckCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
