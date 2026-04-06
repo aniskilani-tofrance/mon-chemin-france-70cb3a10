@@ -1761,6 +1761,7 @@ export const ONBOARDING_TREE: DecisionTree = {
 
 export interface OnboardingAnswers {
   location?: string;
+  postal_code?: string;
   main_goal?: string;
   contact_48h?: string;
   origin_country?: string;
