@@ -137,6 +137,70 @@ export const ONBOARDING_TREE: DecisionTree = {
         ru: "Даже неформальный или в вашей стране",
       },
       required: true,
+      nextQuestion: "worked_in_france",
+    },
+
+    // Q1d: Expérience en France
+    worked_in_france: {
+      id: "worked_in_france",
+      type: "choice",
+      question: {
+        fr: "Avez-vous déjà travaillé en France ?",
+        en: "Have you ever worked in France?",
+        ar: "هل سبق لك العمل في فرنسا؟",
+        es: "¿Has trabajado alguna vez en Francia?",
+        pt: "Você já trabalhou na França?",
+        ru: "Вы когда-нибудь работали во Франции?",
+      },
+      subtitle: {
+        fr: "Même un stage, du bénévolat ou un petit boulot",
+        en: "Even an internship, volunteering or a small job",
+        ar: "حتى تدريب أو تطوع أو عمل صغير",
+        es: "Incluso una pasantía, voluntariado o un pequeño trabajo",
+        pt: "Mesmo um estágio, voluntariado ou um pequeno trabalho",
+        ru: "Даже стажировка, волонтёрство или подработка",
+      },
+      choices: [
+        {
+          id: "yes",
+          label: {
+            fr: "Oui",
+            en: "Yes",
+            ar: "نعم",
+            es: "Sí",
+            pt: "Sim",
+            ru: "Да",
+          },
+          icon: "✅",
+          tags: ["exp_france"],
+        },
+        {
+          id: "no",
+          label: {
+            fr: "Non",
+            en: "No",
+            ar: "لا",
+            es: "No",
+            pt: "Não",
+            ru: "Нет",
+          },
+          icon: "❌",
+          tags: ["no_exp_france"],
+        },
+        {
+          id: "partial",
+          label: {
+            fr: "Un peu (stage, bénévolat)",
+            en: "A little (internship, volunteering)",
+            ar: "قليلاً (تدريب، تطوع)",
+            es: "Un poco (pasantía, voluntariado)",
+            pt: "Um pouco (estágio, voluntariado)",
+            ru: "Немного (стажировка, волонтёрство)",
+          },
+          icon: "📝",
+          tags: ["partial_exp_france"],
+        },
+      ],
       nextQuestion: "main_goal",
     },
 
