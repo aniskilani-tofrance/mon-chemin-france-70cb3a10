@@ -1,11 +1,10 @@
 import { Badge } from "@/components/ui/badge";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
-import { Building2, Users, GraduationCap, Briefcase } from "lucide-react";
+import { Building2, GraduationCap, Briefcase, Globe } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
 export function EmployersSection() {
-  // Fetch real stats from database
   const { data: providerCount } = useQuery({
     queryKey: ["provider-count"],
     queryFn: async () => {
@@ -62,9 +61,9 @@ export function EmployersSection() {
       icon: Briefcase 
     },
     { 
-      value: "10 000+", 
-      label: "Personnes accompagnées",
-      icon: Users 
+      value: "6", 
+      label: "Langues supportées",
+      icon: Globe 
     },
   ];
 

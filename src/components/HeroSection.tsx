@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
-import { Mic, ArrowRight, Sparkles } from "lucide-react";
+import { Mic, ArrowRight, Sparkles, BookOpen } from "lucide-react";
 import heroImage from "@/assets/hero-welcome.jpg";
 import logoTofrance from "@/assets/logo-tofrance.png";
 import marianneAvatar from "@/assets/marianne-avatar.png";
@@ -31,7 +31,7 @@ export function HeroSection() {
         <AnimatedContainer delay={0.1}>
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
             <Sparkles className="h-4 w-4 text-accent" />
-            <span>Votre guide pour réussir en France</span>
+            <span>IA multilingue — 6 langues</span>
           </div>
         </AnimatedContainer>
 
@@ -54,6 +54,12 @@ export function HeroSection() {
                 <Mic className="h-5 w-5" />
                 {t.startJourney}
                 <ArrowRight className="h-5 w-5" />
+              </Link>
+            </Button>
+            <Button variant="glass" size="xl" className="border-white/30 bg-white/20 text-white hover:bg-white/30" asChild>
+              <Link to="/fle" className="gap-3">
+                <BookOpen className="h-5 w-5" />
+                {t.learnFrench}
               </Link>
             </Button>
           </div>
@@ -89,5 +95,4 @@ export function HeroSection() {
         </div>
       </div>
     </section>);
-
 }
