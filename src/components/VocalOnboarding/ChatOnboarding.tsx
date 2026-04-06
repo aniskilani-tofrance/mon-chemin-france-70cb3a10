@@ -581,10 +581,10 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               </motion.button>
               <p className="text-xs text-muted-foreground">
                 {isListening
-                  ? (language === "ar" ? "🎤 أتحدث..." : "🎤 Je vous écoute...")
+                  ? (language === "ar" ? "🎤 أستمع إليكم..." : "🎤 Je vous écoute...")
                   : isSpeaking
-                  ? (language === "ar" ? "🔊 ماريان تتحدث..." : "🔊 Marianne parle...")
-                  : (language === "ar" ? "اضغط للتحدث" : "Appuyez pour parler")}
+                  ? (language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle...")
+                  : (language === "ar" ? "انقروا للتحدّث" : "Appuyez pour parler")}
               </p>
               {inputText && !isListening && (
                 <div className="flex items-center gap-2 w-full">
