@@ -688,7 +688,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center"
         >
           <p className="text-sm font-medium text-foreground">
-            {language === "ar" ? "🎉 شكراً! جاري تحليل ملفك..." : "🎉 Merci ! Analyse de votre profil en cours..."}
+            {language === "ar" ? "🎉 شكرًا لكم! جارٍ تحليل ملفكم الشخصي..." : "🎉 Merci ! Analyse de votre profil en cours..."}
           </p>
         </motion.div>
       )}
