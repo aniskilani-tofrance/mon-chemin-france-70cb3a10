@@ -396,9 +396,11 @@ Réponds en JSON.`;
     }
 
     const data = await response.json();
+    console.log("AI response status:", response.status, "choices:", data.choices?.length);
     const content = extractContent(data.choices?.[0]?.message?.content) || extractContent(data.output_text);
 
     if (!content) {
+      console.warn("Empty AI content, returning fallback for action:", action);
       if (action === "onboarding_chat") {
         return new Response(
           JSON.stringify(buildOnboardingFallback(body)),
@@ -406,7 +408,17 @@ Réponds en JSON.`;
         );
       }
 
-      throw new Error("Empty AI response");
+      // Fallback for feedback/dialogue/generate
+      const fallback = action === "feedback"
+        ? { score: 50, feedback: "Bien essayé ! Continuez à pratiquer.", correction: null, encouragement: "Vous progressez !", pronunciation_tip: null }
+        : action === "dialogue"
+        ? { response: "Je n'ai pas bien compris, pouvez-vous reformuler ?", suggestion: null, is_end: false }
+        : { raw: "Impossible de générer l'exercice pour le moment." };
+
+      return new Response(
+        JSON.stringify(fallback),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Try to parse as JSON, fallback to raw content
