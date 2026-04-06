@@ -692,7 +692,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Fallback text input for email or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isEmail || isPhone || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
+          {(!vocalMode || !sttSupported || isEmail || isPhone || isPostalCode || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
