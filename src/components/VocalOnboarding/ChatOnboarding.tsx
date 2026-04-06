@@ -713,46 +713,49 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
-          {/* Vocal-first: big mic button for all questions except email and name fields */}
+          {/* Vocal-first: mic button + always-visible text input */}
           {vocalMode && sttSupported && !isEmail && !isPhone && !isPostalCode && currentQuestionId !== "location" && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
-            <div className="flex flex-col items-center gap-2">
-              <motion.button
-                onClick={handleMicToggle}
-                disabled={isProcessing || isSpeaking}
-                className={`flex h-16 w-16 items-center justify-center rounded-full transition-all shadow-lg ${
-                  isListening
-                    ? "bg-destructive text-destructive-foreground animate-pulse"
-                    : isSpeaking
-                    ? "bg-muted text-muted-foreground cursor-wait"
-                    : "bg-primary text-primary-foreground hover:bg-primary/90"
-                }`}
-                whileTap={{ scale: 0.9 }}
-              >
-                {isListening ? <MicOff className="h-7 w-7" /> : <Mic className="h-7 w-7" />}
-              </motion.button>
-              <p className="text-xs text-muted-foreground">
-                {isListening
-                  ? (language === "ar" ? "🎤 أستمع إليكم..." : "🎤 Je vous écoute...")
-                  : isSpeaking
-                  ? (language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle...")
-                  : (language === "ar" ? "انقروا للتحدّث" : "Appuyez pour parler")}
-              </p>
-              {inputText && !isListening && (
-                <div className="flex items-center gap-2 w-full">
-                  <Input
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && inputText.trim()) handleSubmit();
-                    }}
-                    className="flex-1 text-sm"
-                    dir={isRTL ? "rtl" : "ltr"}
-                  />
-                  <Button size="icon" onClick={handleSubmit} disabled={isProcessing || !inputText.trim()} className="shrink-0">
-                    <Send className="h-4 w-4" />
-                  </Button>
-                </div>
+            <div className="flex flex-col items-center gap-3">
+              {isListening && (
+                <p className="text-xs text-muted-foreground animate-pulse">
+                  {language === "ar" ? "🎤 أستمع إليكم..." : "🎤 Je vous écoute..."}
+                </p>
               )}
+              {isSpeaking && !isListening && (
+                <p className="text-xs text-muted-foreground">
+                  {language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle..."}
+                </p>
+              )}
+              <div className="flex items-center gap-2 w-full">
+                <motion.button
+                  onClick={handleMicToggle}
+                  disabled={isProcessing || isSpeaking}
+                  className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all shadow-md ${
+                    isListening
+                      ? "bg-destructive text-destructive-foreground animate-pulse"
+                      : isSpeaking
+                      ? "bg-muted text-muted-foreground cursor-wait"
+                      : "bg-primary text-primary-foreground hover:bg-primary/90"
+                  }`}
+                  whileTap={{ scale: 0.9 }}
+                >
+                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </motion.button>
+                <Input
+                  value={inputText}
+                  onChange={(e) => setInputText(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && inputText.trim()) handleSubmit();
+                  }}
+                  placeholder={language === "ar" ? "أو اكتبوا إجابتكم هنا..." : language === "en" ? "Or type your answer here..." : "Ou tapez votre réponse ici..."}
+                  className="flex-1 text-sm"
+                  dir={isRTL ? "rtl" : "ltr"}
+                  disabled={isProcessing}
+                />
+                <Button size="icon" onClick={handleSubmit} disabled={isProcessing || !inputText.trim()} className="shrink-0">
+                  <Send className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
 
