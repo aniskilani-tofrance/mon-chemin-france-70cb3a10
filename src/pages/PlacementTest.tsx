@@ -66,11 +66,18 @@ export default function PlacementTest() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [currentIndex]);
 
-  // Reset selection on question change
+  // Reset selection on question change + auto-play audio
   useEffect(() => {
     setSelectedOption(answers[currentQuestion.id] || null);
     setWrittenAnswer(answers[currentQuestion.id] || "");
     setOralTranscript(answers[currentQuestion.id] || "");
+    // Auto-play audio for oral comprehension questions
+    if (currentQuestion.audioText) {
+      const timer = setTimeout(() => {
+        playAudioRef.current(currentQuestion.audioText!);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [currentIndex]);
 
   const playAudio = useCallback(async (text: string) => {
