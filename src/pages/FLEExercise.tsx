@@ -398,6 +398,18 @@ const FLEExercise = () => {
                   {stt.isListening ? "🎤 Je vous écoute… Appuyez pour terminer" : "Appuyez pour parler"}
                 </p>
 
+                {/* Validate button — shown when there's a transcript and mic is not active */}
+                {!stt.isListening && (stt.transcript || stt.interimTranscript) && !isLoadingAI && (
+                  <Button
+                    size="lg"
+                    onClick={handleValidateAnswer}
+                    className="w-full max-w-xs gap-2 mt-2"
+                  >
+                    <Send className="h-5 w-5" />
+                    Valider ma réponse
+                  </Button>
+                )}
+
                 {stt.error && (
                   <p className="text-xs text-destructive">{stt.error}</p>
                 )}
