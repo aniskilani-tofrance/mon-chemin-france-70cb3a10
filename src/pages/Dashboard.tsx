@@ -342,6 +342,7 @@ const Dashboard = () => {
                 </CardContent>
               </Card>
             </AnimatedContainer>
+          </div>
 
           {/* Tags */}
           {(profile.skills?.length || profile.barriers?.length) && (
