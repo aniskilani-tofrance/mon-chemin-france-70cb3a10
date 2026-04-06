@@ -31,7 +31,7 @@ interface OnboardingAnswers extends TreeOnboardingAnswers {
 const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string; disable: string }> = {
   fr: { on: "Son ON", off: "Son OFF", enable: "Activer le son", disable: "Désactiver le son" },
   en: { on: "Sound ON", off: "Sound OFF", enable: "Enable sound", disable: "Disable sound" },
-  ar: { on: "الصوت يعمل", off: "الصوت متوقف", enable: "تفعيل الصوت", disable: "إيقاف الصوت" },
+  ar: { on: "الصوت مُفعَّل", off: "الصوت مُعطَّل", enable: "تفعيل الصوت", disable: "إيقاف الصوت" },
   es: { on: "Sonido ON", off: "Sonido OFF", enable: "Activar sonido", disable: "Desactivar sonido" },
   pt: { on: "Som ON", off: "Som OFF", enable: "Ativar som", disable: "Desativar som" },
   ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },

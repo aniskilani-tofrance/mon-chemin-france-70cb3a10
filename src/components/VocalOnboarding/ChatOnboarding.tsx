@@ -221,7 +221,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       speakAndListen(response.marianne_message);
     } catch (err) {
       console.error("Greet error:", err);
-      const fallback = language === "ar" ? "مرحباً! أنا ماريان. أين تسكن في فرنسا؟" :
+      const fallback = language === "ar" ? "مرحبًا بكم! أنا ماريان، مستشارتكم. أين تقيمون في فرنسا؟" :
         language === "en" ? "Hello! I'm Marianne. Where do you live in France?" :
         "Bonjour ! Je suis Marianne, votre conseillère. Où habitez-vous en France ?";
       setMessages([{ role: "marianne", content: fallback }]);
@@ -250,7 +250,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         setEmailError("Format email invalide");
         const errorMsg: ChatMessage = {
           role: "marianne",
-          content: language === "ar" ? "هذا البريد الإلكتروني غير صحيح، يرجى المحاولة مرة أخرى." :
+          content: language === "ar" ? "يبدو أنَّ هذا البريد الإلكتروني غير صحيح. هل يمكنكم المحاولة مرّةً أخرى؟" :
             language === "en" ? "This email doesn't look right. Could you try again?" :
             "Cet email ne semble pas correct. Pouvez-vous réessayer ?"
         };
@@ -502,7 +502,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                     onClick={() => speak(msg.content)}
                     className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Volume2 className="h-3 w-3" /> {language === "ar" ? "استمع" : "Écouter"}
+                    <Volume2 className="h-3 w-3" /> {language === "ar" ? "استمعوا" : "Écouter"}
                   </button>
                 )}
               </div>
@@ -539,7 +539,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   <MapPin className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
-                  {language === "ar" ? "📍 أين تسكن في فرنسا؟" :
+                  {language === "ar" ? "📍 أين تقيمون في فرنسا؟" :
                    language === "en" ? "📍 Where do you live in France?" :
                    language === "es" ? "📍 ¿Dónde vives en Francia?" :
                    language === "pt" ? "📍 Onde você mora na França?" :
@@ -581,10 +581,10 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               </motion.button>
               <p className="text-xs text-muted-foreground">
                 {isListening
-                  ? (language === "ar" ? "🎤 أتحدث..." : "🎤 Je vous écoute...")
+                  ? (language === "ar" ? "🎤 أستمع إليكم..." : "🎤 Je vous écoute...")
                   : isSpeaking
-                  ? (language === "ar" ? "🔊 ماريان تتحدث..." : "🔊 Marianne parle...")
-                  : (language === "ar" ? "اضغط للتحدث" : "Appuyez pour parler")}
+                  ? (language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle...")
+                  : (language === "ar" ? "انقروا للتحدّث" : "Appuyez pour parler")}
               </p>
               {inputText && !isListening && (
                 <div className="flex items-center gap-2 w-full">
@@ -634,7 +634,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   placeholder={
                     isEmail ? "email@exemple.com" :
                     currentQuestionId === "contact_firstname" ? (
-                      language === "ar" ? "اسمك الأول..." :
+                      language === "ar" ? "اسمكم الأوّل..." :
                       language === "en" ? "Your first name..." :
                       language === "es" ? "Tu nombre..." :
                       language === "pt" ? "Seu primeiro nome..." :
@@ -642,14 +642,14 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                       "Votre prénom..."
                     ) :
                     currentQuestionId === "contact_lastname" ? (
-                      language === "ar" ? "اسم العائلة..." :
+                      language === "ar" ? "اسم عائلتكم..." :
                       language === "en" ? "Your last name..." :
                       language === "es" ? "Tu apellido..." :
                       language === "pt" ? "Seu sobrenome..." :
                       language === "ru" ? "Ваша фамилия..." :
                       "Votre nom de famille..."
                     ) :
-                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")
+                    (language === "ar" ? "اكتبوا إجابتكم..." : "Tapez votre réponse...")
                   }
                   className="flex-1"
                   disabled={isProcessing}
@@ -675,7 +675,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               onCheckedChange={(checked) => setRgpdAccepted(!!checked)} 
             />
             <Label htmlFor="rgpd" className="text-xs text-muted-foreground">
-              {language === "ar" ? "أوافق على معالجة بياناتي وفقاً لسياسة الخصوصية" : "J'accepte le traitement de mes données conformément à la politique de confidentialité"}
+              {language === "ar" ? "أوافق على معالجة بياناتي الشخصية وفقًا لسياسة الخصوصية" : "J'accepte le traitement de mes données conformément à la politique de confidentialité"}
             </Label>
           </div>
         </div>
@@ -688,7 +688,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center"
         >
           <p className="text-sm font-medium text-foreground">
-            {language === "ar" ? "🎉 شكراً! جاري تحليل ملفك..." : "🎉 Merci ! Analyse de votre profil en cours..."}
+            {language === "ar" ? "🎉 شكرًا لكم! جارٍ تحليل ملفكم الشخصي..." : "🎉 Merci ! Analyse de votre profil en cours..."}
           </p>
         </motion.div>
       )}

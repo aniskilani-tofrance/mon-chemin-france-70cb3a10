@@ -1,112 +1,251 @@
 {
   "questionnaire": {
-    "location": { "question": "أين تسكن؟", "subtitle": "الرمز البريدي أو المدينة" },
-    "origin_country": { "question": "من أي بلد أنت؟", "subtitle": "لتكييف خدماتنا بشكل أفضل" },
+    "location": {
+      "question": "أين تسكنون؟",
+      "subtitle": "الرمز البريدي أو المدينة"
+    },
+    "origin_country": {
+      "question": "من أي بلد أنتم؟",
+      "subtitle": "لتحسين تكييف خدماتنا"
+    },
     "main_goal": {
-      "question": "ما هو هدفك الرئيسي؟",
-      "choices": { "learn_french": "تعلم / تحسين لغتي الفرنسية", "find_job": "إيجاد عمل بسرعة", "job_training": "الحصول على تدريب مهني", "need_help": "لا أعرف / أحتاج مساعدة" }
+      "question": "ما هدفكم الرئيسي؟",
+      "choices": {
+        "learn_french": "تعلّم/تحسين لغتكم الفرنسية",
+        "find_job": "إيجاد عمل بسرعة",
+        "job_training": "الحصول على تدريب مهني",
+        "need_help": "غير متأكّدين/بحاجة إلى مساعدة"
+      }
     },
     "contact_48h": {
-      "question": "هل أنت متاح للاتصال خلال 48 ساعة؟", "subtitle": "سيتصل بك مستشار للمساعدة",
-      "choices": { "yes": "نعم، أنا متاح", "no": "لا، ليس الآن" }
+      "question": "هل أنتم متاحون للتواصل خلال 48 ساعة؟",
+      "subtitle": "سيتواصل معكم مستشار للمساعدة",
+      "choices": {
+        "yes": "نعم، متاحون",
+        "no": "لا، ليس في الوقت الحالي"
+      }
     },
     "literacy": {
-      "question": "هل تستطيع القراءة والكتابة بلغتك؟",
-      "choices": { "yes": "نعم، بطلاقة", "partial": "قليلاً", "no": "لا" }
+      "question": "هل تستطيعون القراءة والكتابة بلغتكم؟",
+      "choices": {
+        "yes": "نعم، بطلاقة",
+        "partial": "قليلاً",
+        "no": "لا"
+      }
     },
     "french_level_cecrl": {
-      "question": "في اللغة الفرنسية، أنت:", "subtitle": "كن صادقًا، هذا يساعدنا على توجيهك",
-      "choices": { "alpha": "مبتدئ تماماً / لا أتحدث الفرنسية", "a1": "A1 - أعرف بعض الكلمات والعبارات", "a2": "A2 - أستطيع التعامل مع الأشياء البسيطة", "b1": "B1+ - أنا مرتاح بالفرنسية" }
+      "question": "في اللغة الفرنسية، ما مستواكم؟",
+      "subtitle": "كونوا صادقين، فهذا يساعدنا على توجيهكم",
+      "choices": {
+        "alpha": "مبتدئون تماماً/لا تتحدّثون الفرنسية",
+        "a1": "A1 - تعرفون بعض الكلمات والعبارات",
+        "a2": "A2 - تستطيعون التعامل مع الأمور البسيطة",
+        "b1": "B1+ - تتواصلون بارتياح بالفرنسية"
+      }
     },
     "work_right": {
-      "question": "هل لديك الحق في العمل في فرنسا؟", "subtitle": "تصريح إقامة مع إذن عمل",
-      "choices": { "yes": "نعم", "no": "لا", "unknown": "لا أعرف" }
+      "question": "هل لديكم حقّ العمل في فرنسا؟",
+      "subtitle": "تصريح إقامة يتضمّن إذن عمل",
+      "choices": {
+        "yes": "نعم",
+        "no": "لا",
+        "unknown": "غير متأكّدين"
+      }
     },
     "barriers": {
-      "question": "هل لديك تحديات للتغلب عليها؟", "subtitle": "حدد كل ما ينطبق",
-      "choices": { "childcare": "رعاية الأطفال", "transport": "النقل / التنقل", "health": "الصحة", "housing": "السكن", "admin": "إداري (أوراق)", "schedule": "قيود الجدول الزمني", "none": "لا عوائق" }
+      "question": "هل لديكم تحدّيات ينبغي تجاوزها؟",
+      "subtitle": "حدّدوا كل ما ينطبق",
+      "choices": {
+        "childcare": "رعاية الأطفال",
+        "transport": "النقل/التنقّل",
+        "health": "الصحة",
+        "housing": "السكن",
+        "admin": "إجراءات إدارية (المستندات)",
+        "schedule": "قيود في الجدول الزمني",
+        "none": "لا عوائق"
+      }
     },
     "sector_satisfaction": {
-      "question": "هل تريد الاستمرار في مجالك أم تغيير مسارك المهني؟", "subtitle": "إذا كنت تريد تغيير مهنتك، سنوجهك إلى تدريب",
-      "choices": { "continue": "الاستمرار في مجالي", "reconvert": "التحول إلى مجال آخر" }
+      "question": "هل تودّون الاستمرار في مجالكم أم تغيير مساركم المهني؟",
+      "subtitle": "إذا كنتم تريدون تغيير مهنتكم، سنوجّهكم إلى تدريب",
+      "choices": {
+        "continue": "الاستمرار في نفس المجال",
+        "reconvert": "التحوّل إلى مجال آخر"
+      }
     },
     "fle_type": {
-      "question": "ما نوع دورة اللغة الفرنسية التي تهمك؟",
-      "choices": { "general": "فرنسية عامة (الحياة اليومية)", "professional": "الفرنسية المهنية (للعمل)" }
+      "question": "ما نوع دورة اللغة الفرنسية التي تهمّكم؟",
+      "choices": {
+        "general": "فرنسية عامة (الحياة اليومية)",
+        "professional": "فرنسية مهنية (للعمل)"
+      }
     },
     "fle_format": {
-      "question": "متى تفضل حضور الدروس؟",
-      "choices": { "daytime": "خلال النهار", "evening": "في المساء", "flexible": "أنا مرن" }
+      "question": "متى تفضّلون حضور الدروس؟",
+      "choices": {
+        "daytime": "خلال النهار",
+        "evening": "في المساء",
+        "flexible": "أوقات مرنة"
+      }
     },
     "target_sector": {
-      "question": "ما هو القطاع الذي يهمك؟", "subtitle": "قطاعات مطلوبة مع وظائف متاحة",
-      "choices": { "logistique": "اللوجستيات / المستودع", "transport": "النقل / التوصيل", "btp": "البناء / الأشغال العامة", "proprete": "النظافة", "hotellerie": "الضيافة / صناعة الطعام", "sante": "الصحة / الرعاية الاجتماعية", "commerce": "التجارة / المبيعات", "admin_accueil": "الإدارة / الاستقبال", "industrie": "الصناعة / الإنتاج / الصيانة", "securite": "الأمن / السلامة", "transversal": "شامل (جميع القطاعات)" }
+      "question": "ما القطاع الذي يهمّكم؟",
+      "subtitle": "قطاعات مطلوبة مع وظائف متاحة",
+      "choices": {
+        "logistique": "اللوجستيات/المستودعات",
+        "transport": "النقل/التوصيل",
+        "btp": "البناء/الأشغال العامة",
+        "proprete": "خدمات النظافة",
+        "hotellerie": "الضيافة/الفندقة",
+        "sante": "الصحة/الرعاية الاجتماعية",
+        "commerce": "التجارة/المبيعات",
+        "admin_accueil": "الإدارة/الاستقبال",
+        "industrie": "الصناعة/الإنتاج/الصيانة",
+        "securite": "الأمن/السلامة",
+        "transversal": "شامل (جميع القطاعات)"
+      }
     },
     "training_duration": {
-      "question": "ما هي مدة التدريب التي يمكنك القيام بها؟",
-      "choices": { "short": "قصيرة (1-2 أشهر)", "medium": "متوسطة (3-6 أشهر)", "long": "طويلة (6+ أشهر)" }
+      "question": "ما مدة التدريب التي يمكنكم الالتزام بها؟",
+      "choices": {
+        "short": "قصيرة (شهر إلى شهرين)",
+        "medium": "متوسطة (3-6 أشهر)",
+        "long": "طويلة (أكثر من 6 أشهر)"
+      }
     },
     "mobility": {
-      "question": "ما هي قدرتك على التنقل الجغرافي؟",
-      "choices": { "local": "محلية (< 30 كم)", "regional": "إقليمية (30-100 كم)", "national": "وطنية" }
+      "question": "ما قدرتكم على التنقّل الجغرافي؟",
+      "choices": {
+        "local": "محلية (< 30 كم)",
+        "regional": "إقليمية (30-100 كم)",
+        "national": "وطنية"
+      }
     },
     "funding_status": {
-      "question": "هل لديك تمويل للتدريب؟", "subtitle": "فرنسا ترافيل، OPCO، المنطقة، CPF...",
-      "choices": { "yes": "نعم، لدي تمويل", "pending": "قيد التنفيذ", "no": "لا، ليس بعد", "unknown": "لا أعرف" }
+      "question": "هل لديكم تمويل للتدريب؟",
+      "subtitle": "France Travail، OPCO، الجهة، CPF...",
+      "choices": {
+        "yes": "نعم، لديكم تمويل",
+        "pending": "قيد الإجراء",
+        "no": "لا، ليس بعد",
+        "unknown": "غير متأكّدين"
+      }
     },
     "work_schedule": {
-      "question": "ما هي ساعات العمل التي تقبلها؟",
-      "choices": { "standard": "نهار عادي", "flexible": "ساعات مرنة (ليلي/نهاية الأسبوع)", "any": "أي جدول" }
+      "question": "ما ساعات العمل التي تقبلونها؟",
+      "choices": {
+        "standard": "دوام نهاري اعتيادي",
+        "flexible": "ساعات مرنة (ليلاً/نهاية الأسبوع)",
+        "any": "أيّ جدول"
+      }
     },
     "mobility_km": {
-      "question": "ما هو نطاق التنقل الذي تقبله؟",
-      "choices": { "close": "< 10 كم", "medium": "10-30 كم", "far": "> 30 كم" }
+      "question": "ما نطاق التنقّل الذي تقبلونه؟",
+      "choices": {
+        "close": "< 10 كم",
+        "medium": "10-30 كم",
+        "far": "> 30 كم"
+      }
     },
     "immediate_availability": {
-      "question": "هل أنت متاح فوراً؟",
-      "choices": { "yes": "نعم، فوراً", "soon": "خلال 1-2 أسبوع", "later": "لاحقاً" }
+      "question": "هل أنتم متاحون فوراً؟",
+      "choices": {
+        "yes": "نعم، فوراً",
+        "soon": "خلال أسبوع إلى أسبوعين",
+        "later": "لاحقاً"
+      }
     },
-    "contact_firstname": { "question": "ما هو اسمك الأول؟" },
-    "contact_lastname": { "question": "ما هو اسم عائلتك؟" },
-    "contact_email": { "question": "ما هو بريدك الإلكتروني؟", "subtitle": "لتلقي توجيهك الشخصي" }
+    "contact_firstname": {
+      "question": "ما اسمكم الأول؟"
+    },
+    "contact_lastname": {
+      "question": "ما اسم عائلتكم؟"
+    },
+    "contact_email": {
+      "question": "ما بريدكم الإلكتروني؟",
+      "subtitle": "لتلقّي توجيهكم الشخصي"
+    }
   },
   "completion": {
     "profileCreated": "تم إنشاء الملف الشخصي بنجاح!",
-    "profileSubtitle": "تم إنشاء ملفك الشخصي بنجاح",
+    "profileSubtitle": "تم إنشاء ملفكم الشخصي بنجاح",
     "summary": "ملخص",
     "score": "درجة التأهيل",
     "scoreQualified": "عميل مؤهل",
-    "scoreToComplete": "عميل للإكمال",
-    "scoreToQualify": "عميل للتأهيل",
+    "scoreToComplete": "عميل بحاجة إلى استكمال",
+    "scoreToQualify": "عميل بحاجة إلى تأهيل",
     "completeness": "الاكتمال",
     "fit": "الملاءمة",
-    "reactivity": "التفاعل",
-    "yourProfile": "ملفك الشخصي",
+    "reactivity": "سرعة الاستجابة",
+    "yourProfile": "ملفكم الشخصي",
     "availability": "التوفر",
     "immediate": "فوري",
-    "oneToTwoWeeks": "1-2 أسابيع",
+    "oneToTwoWeeks": "أسبوع إلى أسبوعين",
     "later": "لاحقاً",
-    "finalizing": "جاري الإنهاء...",
-    "discoverPath": "اكتشف مساري"
+    "finalizing": "جارٍ الإنهاء...",
+    "discoverPath": "اكتشفوا مساركم"
   },
   "tags": {
-    "route_a": "مسار FLE", "route_b": "مسار التكوين", "route_c": "مسار التوظيف",
-    "alpha": "مستوى ألفا", "a1": "مستوى A1", "a2": "مستوى A2", "b1": "مستوى B1+",
-    "work_permit": "حق العمل", "no_work_permit": "بدون حق عمل",
-    "reactive": "متاح بسرعة", "contact_ok": "يمكن الوصول إليه 48 ساعة", "available_now": "متاح فوراً",
-    "sector_btp": "البناء", "sector_logistics": "اللوجستيات", "sector_cleaning": "النظافة",
-    "sector_care": "رعاية الأشخاص", "sector_hospitality": "الضيافة", "sector_security": "الأمن", "sector_transport": "النقل",
-    "barrier_childcare": "رعاية الأطفال", "barrier_transport": "التنقل", "barrier_health": "الصحة",
-    "barrier_housing": "السكن", "barrier_admin": "إداري", "no_barriers": "لا عوائق",
-    "fle_general": "فرنسية عامة", "fle_pro": "فرنسية مهنية",
-    "daytime_classes": "دروس نهارية", "evening_classes": "دروس مسائية",
-    "schedule_day": "جدول نهاري", "schedule_flexible": "جدول مرن", "night_ok": "ليل ممكن", "weekend_ok": "نهاية الأسبوع ممكنة"
+    "route_a": "مسار FLE",
+    "route_b": "مسار التكوين",
+    "route_c": "مسار التوظيف",
+    "alpha": "مستوى ألفا",
+    "a1": "مستوى A1",
+    "a2": "مستوى A2",
+    "b1": "مستوى B1+",
+    "work_permit": "حقّ العمل",
+    "no_work_permit": "من دون حقّ عمل",
+    "reactive": "سريع الاستجابة",
+    "contact_ok": "قابل للاتصال خلال 48 ساعة",
+    "available_now": "متاح فوراً",
+    "sector_btp": "البناء",
+    "sector_logistics": "اللوجستيات",
+    "sector_cleaning": "خدمات النظافة",
+    "sector_care": "رعاية الأشخاص",
+    "sector_hospitality": "الضيافة/الفندقة",
+    "sector_security": "الأمن",
+    "sector_transport": "النقل",
+    "barrier_childcare": "رعاية الأطفال",
+    "barrier_transport": "التنقّل",
+    "barrier_health": "الصحة",
+    "barrier_housing": "السكن",
+    "barrier_admin": "إجراءات إدارية",
+    "no_barriers": "لا عوائق",
+    "fle_general": "فرنسية عامة",
+    "fle_pro": "فرنسية مهنية",
+    "daytime_classes": "دروس نهارية",
+    "evening_classes": "دروس مسائية",
+    "schedule_day": "جدول نهاري",
+    "schedule_flexible": "جدول مرن",
+    "night_ok": "العمل الليلي ممكن",
+    "weekend_ok": "العمل في عطلة نهاية الأسبوع ممكن"
   },
   "routes": {
-    "route_a": { "label": "مسار FLE", "description": "تعلم الفرنسية كلغة أجنبية", "icon": "📖" },
-    "route_b": { "label": "مسار التكوين", "description": "تكوين مهني مؤهل", "icon": "🎓" },
-    "route_c": { "label": "مسار التوظيف", "description": "جاهز للعمل — ربط مباشر مع أصحاب العمل", "icon": "💼" },
-    "sas": { "label": "مسار المرافقة", "description": "توجيه ومرافقة شخصية", "icon": "🤝" }
+    "route_a": {
+      "label": "مسار FLE",
+      "description": "تعلّم الفرنسية كلغة أجنبية",
+      "icon": "📖"
+    },
+    "route_b": {
+      "label": "مسار التكوين",
+      "description": "تدريب مهني مؤهِّل",
+      "icon": "🎓"
+    },
+    "route_c": {
+      "label": "مسار التوظيف",
+      "description": "جاهزية للعمل — ربط مباشر بأصحاب العمل",
+      "icon": "💼"
+    },
+    "sas": {
+      "label": "مسار المرافقة",
+      "description": "توجيه ومرافقة شخصية",
+      "icon": "🤝"
+    }
   },
-  "ui": { "next": "التالي", "skip": "تخطي", "finish": "إنهاء", "copyWhatsapp": "نسخ رسالة واتساب" }
+  "ui": {
+    "next": "التالي",
+    "skip": "تخطي",
+    "finish": "إنهاء",
+    "copyWhatsapp": "نسخ رسالة واتساب"
+  }
 }
