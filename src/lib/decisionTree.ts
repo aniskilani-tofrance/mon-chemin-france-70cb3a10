@@ -1766,40 +1766,45 @@ export interface OnboardingAnswers {
   [key: string]: unknown;
 }
 
-// Determine the route based on answers
+// Calculate distance to job (0-4)
+export function calculateDistanceToJob(answers: OnboardingAnswers): number {
+  const level = answers.french_level_cecrl;
+  const workedInFrance = answers.worked_in_france;
+
+  if (level === "alpha") return 4;
+  if (level === "a1") return 3;
+  if (level === "a2") {
+    if (workedInFrance === "yes") return 1;
+    return 2;
+  }
+  if (level === "b1") return 0;
+  return 3; // default
+}
+
+// Determine the route based on answers (smart routing with distance_to_job)
 export function determineRoute(answers: OnboardingAnswers): LeadRoute {
   const mainGoal = answers.main_goal as string | undefined;
   const frenchLevel = answers.french_level_cecrl as string | undefined;
   const workRight = answers.work_right as string | undefined;
+  const distanceToJob = calculateDistanceToJob(answers);
 
-  // Route C: Emploi direct — personne prête à travailler immédiatement
-  // Conditions: veut un emploi + droit de travailler + niveau A2 minimum
-  // Pas besoin de formation, juste mise en relation avec employeurs
-  if (mainGoal === "find_job" && workRight === "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_c";
-  }
+  // Route A: FLE — niveau trop faible
+  if (mainGoal === "learn_french") return "route_a";
+  if (frenchLevel === "alpha" || frenchLevel === "a1") return "route_a";
 
-  // Route A: FLE — besoin d'apprendre le français d'abord
-  // Conditions: veut apprendre OU niveau trop faible (alpha/A1)
-  if (mainGoal === "learn_french") {
-    return "route_a";
-  }
-  if (frenchLevel === "alpha" || frenchLevel === "a1") {
-    return "route_a";
-  }
+  // Route B: Formation — distance à l'emploi >= 2
+  if (distanceToJob >= 2) return "route_b";
 
-  // Route B: Formation qualifiante — a le niveau de français, veut un métier
-  // Conditions: veut une formation + niveau A2 minimum
-  if (mainGoal === "job_training" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_b";
-  }
+  // Route C: Emploi direct — prêt à travailler
+  if (workRight === "yes" && distanceToJob <= 1) return "route_c";
 
-  // Route B aussi: veut un emploi mais pas de droit de travail → formation d'abord
-  if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_b";
-  }
+  // Route B: veut une formation
+  if (mainGoal === "job_training" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
 
-  // SAS: besoin d'aide / cas mixtes / orientation nécessaire
+  // Route B: veut un emploi mais pas de droit de travail
+  if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
+
+  // SAS: besoin d'aide / cas mixtes
   return "sas";
 }
 
