@@ -1888,16 +1888,30 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
   const workRight = answers.work_right;
 
   // Match niveau langue avec prérequis
-  if (frenchLevel === "b1") fit += 20;
-  else if (frenchLevel === "a2") fit += 15;
-  else if (frenchLevel === "a1") fit += 10;
-  else if (frenchLevel === "alpha") fit += 5;
+  if (frenchLevel === "b1") fit += 15;
+  else if (frenchLevel === "a2") fit += 10;
+  else if (frenchLevel === "a1") fit += 5;
+  else if (frenchLevel === "alpha") fit += 2;
+
+  // Distance to job bonus/malus
+  const distanceToJob = calculateDistanceToJob(answers);
+  if (distanceToJob === 0) fit += 15;
+  else if (distanceToJob === 1) fit += 10;
+  else if (distanceToJob === 2) fit += 5;
+  else if (distanceToJob >= 3) fit -= 5;
+
+  // Worked in France bonus
+  if (answers.worked_in_france === "yes") fit += 10;
+  else if (answers.worked_in_france === "partial") fit += 5;
+
+  // Real comprehension bonus
+  if (answers.real_comprehension_score === "yes") fit += 5;
 
   // Match zone géographique (si localisation fournie)
-  if (answers.location) fit += 15;
+  if (answers.location) fit += 10;
 
   // Match secteur/compétences
-  if (answers.target_sector || answers.fle_type) fit += 15;
+  if (answers.target_sector || answers.fle_type) fit += 10;
 
   // Réactivité (0-20 points)
   if (answers.contact_48h === "yes") reactivite += 10;
@@ -1907,7 +1921,6 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
 
   // Work right bonus for Route C
   if (mainGoal === "find_job" && workRight === "yes") fit += 5;
-
   // Cap at max values
   completude = Math.min(completude, 30);
   fit = Math.min(fit, 50);
