@@ -85,6 +85,24 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             {t.onboarding.profileCreated}
           </h2>
 
+          {/* Personalized Plan */}
+          <div className="mb-6 rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-5 text-left">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold uppercase text-primary">
+                Ton plan personnalisé
+              </h3>
+            </div>
+            <PersonalizedPlanSteps
+              route={result.parcours}
+              distanceToJob={answers.distance_to_job ? parseInt(answers.distance_to_job) : undefined}
+              adminStatus={answers.admin_status}
+            />
+            <p className="mt-3 text-sm font-medium text-primary">
+              Tu es sur le bon chemin 💪
+            </p>
+          </div>
+
           {/* Parcours indicator */}
           <div className="mb-6 rounded-xl bg-secondary/50 p-4">
             <div className="mb-2 text-3xl">{PARCOURS_META[result.parcours].emoji}</div>
