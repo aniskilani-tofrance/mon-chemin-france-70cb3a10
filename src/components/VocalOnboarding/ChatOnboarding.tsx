@@ -592,6 +592,58 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             </motion.div>
           )}
 
+          {isPostalCode && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="mb-2 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {language === "ar" ? "📮 الرمز البريدي" :
+                   language === "en" ? "📮 Your postal code" :
+                   language === "es" ? "📮 Tu código postal" :
+                   language === "pt" ? "📮 Seu código postal" :
+                   language === "ru" ? "📮 Ваш почтовый индекс" :
+                   "📮 Votre code postal"}
+                </p>
+              </div>
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={5}
+                value={inputText}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setInputText(v);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && /^\d{5}$/.test(inputText)) {
+                    processAnswer(inputText);
+                  }
+                }}
+                placeholder="75001"
+                className="text-center text-lg font-mono tracking-widest"
+              />
+              {inputText && !/^\d{5}$/.test(inputText) && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-xs text-destructive font-medium"
+                >
+                  {language === "ar" ? "يُرجى إدخال 5 أرقام" :
+                   language === "en" ? "Please enter 5 digits" :
+                   "Veuillez entrer 5 chiffres"}
+                </motion.p>
+              )}
+            </motion.div>
+          )}
+
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
