@@ -59,7 +59,7 @@ export function Header() {
                     {user.email?.split("@")[0]}
                   </Link>
                 </Button>
-                <Button variant="outline" size="sm" className="gap-1" onClick={signOut}>
+                <Button variant="outline" size="sm" className="gap-1" onClick={handleSignOut}>
                   <LogOut className="h-4 w-4" />
                   Déconnexion
                 </Button>
