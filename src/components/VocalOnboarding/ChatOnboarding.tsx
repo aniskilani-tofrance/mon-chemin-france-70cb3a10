@@ -250,7 +250,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         setEmailError("Format email invalide");
         const errorMsg: ChatMessage = {
           role: "marianne",
-          content: language === "ar" ? "هذا البريد الإلكتروني غير صحيح، يرجى المحاولة مرة أخرى." :
+          content: language === "ar" ? "يبدو أنَّ هذا البريد الإلكتروني غير صحيح. هل يمكنكم المحاولة مرّةً أخرى؟" :
             language === "en" ? "This email doesn't look right. Could you try again?" :
             "Cet email ne semble pas correct. Pouvez-vous réessayer ?"
         };
