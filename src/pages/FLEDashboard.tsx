@@ -30,10 +30,34 @@ const FLEDashboard = () => {
   const { data: userProgress, isLoading: progressLoading } = useFLEUserProgress();
   const { data: moduleProgress } = useFLEModuleProgress();
   const [filter, setFilter] = useState<CategoryFilter>("all");
+  const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
+  const hasCheckedLevel = useRef(false);
 
   const isLoading = modulesLoading || progressLoading;
 
-  // No placement gate — direct access to courses
+  // Detect level change after test
+  useEffect(() => {
+    if (progressLoading || !userProgress || hasCheckedLevel.current) return;
+    hasCheckedLevel.current = true;
+
+    const storageKey = `fle-level-${user?.id}`;
+    const previousLevel = localStorage.getItem(storageKey);
+    const currentLevel = userProgress.estimated_level;
+
+    if (previousLevel && previousLevel !== currentLevel) {
+      const prevIdx = LEVEL_ORDER.indexOf(previousLevel);
+      const currIdx = LEVEL_ORDER.indexOf(currentLevel);
+      setLevelChange({
+        from: previousLevel,
+        to: currentLevel,
+        direction: currIdx > prevIdx ? "up" : "down",
+      });
+      // Auto-dismiss after 8s
+      setTimeout(() => setLevelChange(null), 8000);
+    }
+
+    localStorage.setItem(storageKey, currentLevel);
+  }, [progressLoading, userProgress, user?.id]);
 
   const progress = userProgress || {
     estimated_level: "a1",
