@@ -605,6 +605,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   {locationError}
                 </motion.p>
               )}
+              <Button
+                onClick={handleLocationSubmit}
+                disabled={isProcessing || !inputText.trim()}
+                className="w-full mt-3"
+                size="lg"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تأكيد" :
+                 language === "en" ? "Confirm" :
+                 language === "es" ? "Confirmar" :
+                 "Confirmer"}
+              </Button>
             </motion.div>
           )}
 
