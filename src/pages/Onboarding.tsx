@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import {
   calculateLeadScore,
+  calculateDistanceToJob,
   determineRoute,
   OnboardingAnswers as TreeOnboardingAnswers,
   LeadRoute,
