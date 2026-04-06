@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const DEMO_EMAIL = "demo@tofrance.fr";
+
 const ROUTE_INFO: Record<string, { label: string; emoji: string; desc: string; color: string }> = {
   route_a: { label: "Parcours FLE", emoji: "📘", desc: "Formation en français langue étrangère", color: "bg-blue-100 text-blue-800" },
   route_b: { label: "Parcours Formation", emoji: "🎓", desc: "Formation professionnelle qualifiante", color: "bg-purple-100 text-purple-800" },
@@ -174,6 +176,18 @@ const Dashboard = () => {
       <Header />
       <main className="pt-24 pb-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
+          {/* Demo Banner */}
+          {user?.email === DEMO_EMAIL && (
+            <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-200">
+              <span className="text-lg">🧪</span>
+              <div className="flex-1">
+                <p className="text-sm font-semibold">Mode démo</p>
+                <p className="text-xs opacity-80">Ce compte est un exemple pré-rempli pour découvrir la plateforme.</p>
+              </div>
+              <Badge className="border-amber-400 bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100">Démo</Badge>
+            </div>
+          )}
+
           {/* Welcome */}
           <AnimatedContainer className="mb-8">
             <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
