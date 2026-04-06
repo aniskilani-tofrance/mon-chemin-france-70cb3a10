@@ -161,14 +161,6 @@ const Onboarding = () => {
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
             )}
 
-            {step === "consent" && (
-              <ConsentStep
-                key="consent"
-                onAccept={handleConsentAccept}
-                onDecline={handleConsentDecline}
-              />
-            )}
-
             {step === "chat" && (
               <motion.div
                 key="chat"
