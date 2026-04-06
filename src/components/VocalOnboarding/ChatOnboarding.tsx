@@ -502,7 +502,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                     onClick={() => speak(msg.content)}
                     className="mt-1 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
                   >
-                    <Volume2 className="h-3 w-3" /> {language === "ar" ? "استمع" : "Écouter"}
+                    <Volume2 className="h-3 w-3" /> {language === "ar" ? "استمعوا" : "Écouter"}
                   </button>
                 )}
               </div>
