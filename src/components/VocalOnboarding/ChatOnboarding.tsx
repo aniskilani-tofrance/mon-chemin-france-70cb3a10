@@ -111,7 +111,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   // Auto-submit when STT stops (final result) in vocal mode
   useEffect(() => {
     const isNameField = currentQuestionIdRef.current === "contact_firstname" || currentQuestionIdRef.current === "contact_lastname";
-    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isNameField) {
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isPhone && !isNameField) {
       const value = pendingTranscriptRef.current.trim();
       pendingTranscriptRef.current = "";
       if (value) {
