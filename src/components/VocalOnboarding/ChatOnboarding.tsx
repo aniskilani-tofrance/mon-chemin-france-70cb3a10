@@ -221,7 +221,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       speakAndListen(response.marianne_message);
     } catch (err) {
       console.error("Greet error:", err);
-      const fallback = language === "ar" ? "مرحباً! أنا ماريان. أين تسكن في فرنسا؟" :
+      const fallback = language === "ar" ? "مرحبًا بكم! أنا ماريان، مستشارتكم. أين تقيمون في فرنسا؟" :
         language === "en" ? "Hello! I'm Marianne. Where do you live in France?" :
         "Bonjour ! Je suis Marianne, votre conseillère. Où habitez-vous en France ?";
       setMessages([{ role: "marianne", content: fallback }]);
