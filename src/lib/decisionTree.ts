@@ -761,6 +761,7 @@ export const ONBOARDING_TREE: DecisionTree = {
         },
       ],
       nextQuestion: "work_right",
+    },
     work_right: {
       id: "work_right",
       type: "choice",
