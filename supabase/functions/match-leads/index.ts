@@ -140,9 +140,12 @@ serve(async (req) => {
       lead_score: score,
       lead_route: route,
       literacy: answers.literacy || null,
-      previous_job: answers.previous_job || null,
       skills: answers.tags || null,
       barriers: answers.barriers || null,
+      worked_in_france: answers.worked_in_france || null,
+      admin_status: answers.admin_status || null,
+      real_comprehension_score: answers.real_comprehension_score || null,
+      distance_to_job: answers.distance_to_job != null ? Number(answers.distance_to_job) : null,
     };
 
     // Check if profile already exists with this email

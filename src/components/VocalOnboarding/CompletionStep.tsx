@@ -253,3 +253,41 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
     </motion.div>
   );
 }
+
+// Personalized plan steps based on route
+function PersonalizedPlanSteps({ route, distanceToJob, adminStatus }: { route: string; distanceToJob?: number; adminStatus?: string }) {
+  const steps: { emoji: string; text: string }[] = [];
+
+  if (adminStatus === "sans_papiers" || adminStatus === "demandeur_asile") {
+    steps.push({ emoji: "📋", text: "Régulariser ta situation administrative" });
+  }
+
+  if (route === "fle" || route === "fle_pro") {
+    steps.push({ emoji: "📖", text: "Améliorer ton français (1-2 mois)" });
+    steps.push({ emoji: "🎓", text: "Accéder à une formation professionnelle" });
+    steps.push({ emoji: "💼", text: "Trouver un emploi stable" });
+  } else if (route === "formation") {
+    steps.push({ emoji: "🎓", text: "Suivre une formation qualifiante" });
+    steps.push({ emoji: "📜", text: "Obtenir ta certification" });
+    steps.push({ emoji: "💼", text: "Décrocher un emploi dans ton secteur" });
+  } else if (route === "emploi") {
+    steps.push({ emoji: "🔍", text: "Mise en relation avec des employeurs" });
+    steps.push({ emoji: "🤝", text: "Entretiens et recrutement" });
+    steps.push({ emoji: "💼", text: "Démarrer ton emploi" });
+  } else {
+    steps.push({ emoji: "🧭", text: "Orientation personnalisée" });
+    steps.push({ emoji: "📖", text: "Formation adaptée à ton profil" });
+    steps.push({ emoji: "💼", text: "Insertion professionnelle" });
+  }
+
+  return (
+    <ol className="space-y-2">
+      {steps.map((step, i) => (
+        <li key={i} className="flex items-center gap-2 text-sm">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+          <span>{step.emoji} {step.text}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
