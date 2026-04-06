@@ -83,7 +83,7 @@ const FLEDashboard = () => {
             variant="outline"
             size="sm"
             className="mt-3 gap-2 rounded-full"
-            onClick={() => navigate("/fle/placement")}
+            onClick={() => navigate("/placement-test")}
           >
             <Target className="h-4 w-4" />
             {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}

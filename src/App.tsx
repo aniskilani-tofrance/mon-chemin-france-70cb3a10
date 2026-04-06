@@ -36,7 +36,7 @@ const PitchRegion = lazy(() => import("./pages/PitchRegion"));
 const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
-const FLEPlacement = lazy(() => import("./pages/FLEPlacement"));
+
 const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
 const PlacementTest = lazy(() => import("./pages/PlacementTest"));
 const PlacementTestResults = lazy(() => import("./pages/PlacementTestResults"));
@@ -85,7 +85,6 @@ const App = () => (
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
-              <Route path="/fle/placement" element={<ProtectedRoute><FLEPlacement /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
               <Route path="/placement-test" element={<PlacementTestHome />} />
