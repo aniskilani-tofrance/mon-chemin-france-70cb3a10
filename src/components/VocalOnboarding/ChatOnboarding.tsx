@@ -746,8 +746,12 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
               <Button
                 size="icon"
-                onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
+                onClick={
+                  currentQuestionId === "location" ? handleLocationSubmit :
+                  isPostalCode ? () => { if (/^\d{5}$/.test(inputText)) processAnswer(inputText); } :
+                  handleSubmit
+                }
+                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location") || (isPostalCode && !/^\d{5}$/.test(inputText))}
                 className="shrink-0"
               >
                 <Send className="h-4 w-4" />
