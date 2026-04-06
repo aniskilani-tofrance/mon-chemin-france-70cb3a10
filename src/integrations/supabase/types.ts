@@ -583,6 +583,48 @@ export type Database = {
         }
         Relationships: []
       }
+      test_results: {
+        Row: {
+          answers: Json
+          candidate_email: string
+          candidate_name: string
+          candidate_phone: string | null
+          created_at: string
+          duration_seconds: number
+          gdpr_consent: boolean
+          id: string
+          level: string
+          score: number
+          trainer_name: string | null
+        }
+        Insert: {
+          answers?: Json
+          candidate_email: string
+          candidate_name: string
+          candidate_phone?: string | null
+          created_at?: string
+          duration_seconds?: number
+          gdpr_consent?: boolean
+          id?: string
+          level?: string
+          score?: number
+          trainer_name?: string | null
+        }
+        Update: {
+          answers?: Json
+          candidate_email?: string
+          candidate_name?: string
+          candidate_phone?: string | null
+          created_at?: string
+          duration_seconds?: number
+          gdpr_consent?: boolean
+          id?: string
+          level?: string
+          score?: number
+          trainer_name?: string | null
+        }
+        Relationships: []
+      }
       training_providers: {
         Row: {
           address: string | null
