@@ -84,7 +84,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
-      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname" || qId === "contact_phone";
+      const skipMic = qId === "location" || qId === "postal_code" || qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname" || qId === "contact_phone";
       if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
@@ -111,8 +111,9 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   // Auto-submit when STT stops (final result) in vocal mode
   useEffect(() => {
-    const isNameField = currentQuestionIdRef.current === "contact_firstname" || currentQuestionIdRef.current === "contact_lastname";
-    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isPhone && !isNameField) {
+    const qId = currentQuestionIdRef.current;
+    const isSkipField = qId === "contact_firstname" || qId === "contact_lastname" || qId === "location" || qId === "postal_code";
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isPhone && !isSkipField) {
       const value = pendingTranscriptRef.current.trim();
       pendingTranscriptRef.current = "";
       if (value) {
@@ -605,6 +606,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   {locationError}
                 </motion.p>
               )}
+              <Button
+                onClick={handleLocationSubmit}
+                disabled={isProcessing || !inputText.trim()}
+                className="w-full mt-3"
+                size="lg"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تأكيد" :
+                 language === "en" ? "Confirm" :
+                 language === "es" ? "Confirmar" :
+                 "Confirmer"}
+              </Button>
             </motion.div>
           )}
 
@@ -657,6 +670,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                    "Veuillez entrer 5 chiffres"}
                 </motion.p>
               )}
+              <Button
+                onClick={() => { if (/^\d{5}$/.test(inputText)) processAnswer(inputText); }}
+                disabled={isProcessing || !/^\d{5}$/.test(inputText)}
+                className="w-full mt-3"
+                size="lg"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تأكيد" :
+                 language === "en" ? "Confirm" :
+                 language === "es" ? "Confirmar" :
+                 "Confirmer"}
+              </Button>
             </motion.div>
           )}
 
@@ -665,7 +690,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Vocal-first: big mic button for all questions except email and name fields */}
-          {vocalMode && sttSupported && !isEmail && !isPhone && !isPostalCode && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
+          {vocalMode && sttSupported && !isEmail && !isPhone && !isPostalCode && currentQuestionId !== "location" && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
@@ -708,7 +733,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Fallback text input for email or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isEmail || isPhone || isPostalCode || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
+          {(!vocalMode || !sttSupported || isEmail || isPhone || isPostalCode || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && currentQuestionId !== "location" && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
