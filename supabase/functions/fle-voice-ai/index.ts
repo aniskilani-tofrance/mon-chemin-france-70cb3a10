@@ -359,7 +359,9 @@ Réponds en JSON.`;
       throw new Error("Action non reconnue : " + action);
     }
 
-    const model = action === "onboarding_chat" ? "google/gemini-2.5-flash" : "openai/gpt-5-mini";
+    const model = action === "onboarding_chat" ? "google/gemini-2.5-flash" : "google/gemini-3-flash-preview";
+
+    console.log(`FLE voice AI: action=${action}, model=${model}`);
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -373,7 +375,6 @@ Réponds en JSON.`;
           { role: "system", content: systemPrompt },
           { role: "user", content: userMessage },
         ],
-        max_completion_tokens: 500,
       }),
     });
 
