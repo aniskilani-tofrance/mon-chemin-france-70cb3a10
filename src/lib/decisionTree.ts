@@ -1701,6 +1701,30 @@ export const ONBOARDING_TREE: DecisionTree = {
         ur: "اپنی ذاتی رہنمائی حاصل کرنے کے لیے",
       },
       required: true,
+      nextQuestion: "contact_phone",
+    },
+
+    // Téléphone
+    contact_phone: {
+      id: "contact_phone",
+      type: "text",
+      question: {
+        fr: "Votre numéro de téléphone ? (WhatsApp si possible)",
+        en: "Your phone number? (WhatsApp if possible)",
+        ar: "رقم هاتفك؟ (واتساب إن أمكن)",
+        es: "¿Tu número de teléfono? (WhatsApp si es posible)",
+        pt: "Seu número de telefone? (WhatsApp se possível)",
+        ru: "Ваш номер телефона? (WhatsApp если возможно)",
+      },
+      subtitle: {
+        fr: "On vous contactera pour vous aider, pas pour vendre",
+        en: "We'll contact you to help, not to sell",
+        ar: "سنتصل بك للمساعدة، وليس للبيع",
+        es: "Te contactaremos para ayudarte, no para vender",
+        pt: "Entraremos em contato para ajudar, não para vender",
+        ru: "Мы свяжемся с вами, чтобы помочь, а не продавать",
+      },
+      required: false,
       nextQuestion: null,
     },
   },
@@ -1716,8 +1740,11 @@ export interface OnboardingAnswers {
   contact_48h?: string;
   origin_country?: string;
   previous_job?: string;
+  worked_in_france?: string;
   literacy?: string;
   french_level_cecrl?: string;
+  real_comprehension_score?: string;
+  admin_status?: string;
   work_right?: string;
   barriers?: string | string[];
   sector_satisfaction?: string;
@@ -1733,6 +1760,8 @@ export interface OnboardingAnswers {
   contact_firstname?: string;
   contact_lastname?: string;
   contact_email?: string;
+  contact_phone?: string;
+  distance_to_job?: number;
   tags: string[];
   [key: string]: unknown;
 }
