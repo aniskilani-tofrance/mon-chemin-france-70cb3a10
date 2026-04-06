@@ -37,6 +37,11 @@ const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
 const FLEPlacement = lazy(() => import("./pages/FLEPlacement"));
+const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
+const PlacementTest = lazy(() => import("./pages/PlacementTest"));
+const PlacementTestResults = lazy(() => import("./pages/PlacementTestResults"));
+const PlacementTestTrainer = lazy(() => import("./pages/PlacementTestTrainer"));
+const PlacementTestLegal = lazy(() => import("./pages/PlacementTestLegal"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
@@ -83,6 +88,11 @@ const App = () => (
               <Route path="/fle/placement" element={<ProtectedRoute><FLEPlacement /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
+              <Route path="/placement-test" element={<PlacementTestHome />} />
+              <Route path="/placement-test/test" element={<PlacementTest />} />
+              <Route path="/placement-test/results" element={<PlacementTestResults />} />
+              <Route path="/placement-test/trainer" element={<PlacementTestTrainer />} />
+              <Route path="/placement-test/:page" element={<PlacementTestLegal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
