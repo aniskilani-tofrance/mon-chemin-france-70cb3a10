@@ -528,7 +528,25 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       {!isComplete && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
           {currentQuestionId === "location" && (
-            <div className="mb-2">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="mb-2 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {language === "ar" ? "📍 أين تسكن في فرنسا؟" :
+                   language === "en" ? "📍 Where do you live in France?" :
+                   language === "es" ? "📍 ¿Dónde vives en Francia?" :
+                   language === "pt" ? "📍 Onde você mora na França?" :
+                   language === "ru" ? "📍 Где вы живёте во Франции?" :
+                   "📍 Où habitez-vous en France ?"}
+                </p>
+              </div>
               <GooglePlacesAutocomplete
                 ref={locationInputRef}
                 value={inputText}
@@ -537,7 +555,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   if (e.key === "Enter") handleLocationSubmit();
                 }}
               />
-            </div>
+            </motion.div>
           )}
 
           {emailError && (
