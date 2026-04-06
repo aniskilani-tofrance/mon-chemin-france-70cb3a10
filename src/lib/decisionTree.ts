@@ -670,14 +670,97 @@ export const ONBOARDING_TREE: DecisionTree = {
           tags: ["b1", "level_3", "job_ready"],
         },
       ],
-      nextQuestion: "work_right",
+      nextQuestion: "real_comprehension_test",
     },
 
-    // ============================================
-    // ÉTAPE 3: DROITS & CONTRAINTES
-    // ============================================
+    // Q5b: Micro-évaluation de compréhension réelle
+    real_comprehension_test: {
+      id: "real_comprehension_test",
+      type: "choice",
+      question: {
+        fr: "On va faire un petit test rapide 😊\n\nSi je dis :\n\"Prenez un balai et nettoyez la table\"\n\nVous comprenez ?",
+        en: "Let's do a quick test 😊\n\nIf I say:\n\"Take a broom and clean the table\"\n\nDo you understand?",
+        ar: "لنقم باختبار سريع 😊\n\nإذا قلت:\n\"خذ مكنسة ونظّف الطاولة\"\n\nهل تفهم؟",
+        es: "Vamos a hacer un test rápido 😊\n\nSi digo:\n\"Tome una escoba y limpie la mesa\"\n\n¿Entiende?",
+        pt: "Vamos fazer um teste rápido 😊\n\nSe eu disser:\n\"Pegue uma vassoura e limpe a mesa\"\n\nVocê entende?",
+        ru: "Давайте сделаем быстрый тест 😊\n\nЕсли я скажу:\n\"Возьмите метлу и протрите стол\"\n\nВы понимаете?",
+      },
+      choices: [
+        {
+          id: "yes",
+          label: { fr: "Oui, je comprends", en: "Yes, I understand", ar: "نعم، أفهم", es: "Sí, entiendo", pt: "Sim, entendo", ru: "Да, понимаю" },
+          icon: "✅",
+          tags: ["comprehension_high"],
+        },
+        {
+          id: "partial",
+          label: { fr: "Un peu", en: "A little", ar: "قليلاً", es: "Un poco", pt: "Um pouco", ru: "Немного" },
+          icon: "🤔",
+          tags: ["comprehension_partial"],
+        },
+        {
+          id: "no",
+          label: { fr: "Non", en: "No", ar: "لا", es: "No", pt: "Não", ru: "Нет" },
+          icon: "❌",
+          tags: ["comprehension_low"],
+        },
+      ],
+      nextQuestion: "admin_status",
+    },
 
-    // Q6: Droit au travail
+    // Q5c: Statut administratif détaillé
+    admin_status: {
+      id: "admin_status",
+      type: "choice",
+      question: {
+        fr: "Quelle est votre situation administrative aujourd'hui ?",
+        en: "What is your administrative status today?",
+        ar: "ما هي وضعيتك الإدارية اليوم؟",
+        es: "¿Cuál es tu situación administrativa hoy?",
+        pt: "Qual é a sua situação administrativa hoje?",
+        ru: "Каков ваш административный статус сегодня?",
+      },
+      subtitle: {
+        fr: "Cette information nous aide à vous orienter vers les bons partenaires",
+        en: "This helps us guide you to the right partners",
+        ar: "تساعدنا هذه المعلومات في توجيهك إلى الشركاء المناسبين",
+        es: "Esta información nos ayuda a orientarte hacia los socios adecuados",
+        pt: "Esta informação nos ajuda a direcioná-lo aos parceiros certos",
+        ru: "Эта информация поможет нам направить вас к правильным партнёрам",
+      },
+      choices: [
+        {
+          id: "titre_sejour",
+          label: { fr: "Titre de séjour", en: "Residence permit", ar: "تصريح إقامة", es: "Permiso de residencia", pt: "Autorização de residência", ru: "Вид на жительство" },
+          icon: "🪪",
+          tags: ["status_titre_sejour"],
+        },
+        {
+          id: "refugie",
+          label: { fr: "Réfugié / Protection subsidiaire", en: "Refugee / Subsidiary protection", ar: "لاجئ / حماية فرعية", es: "Refugiado / Protección subsidiaria", pt: "Refugiado / Proteção subsidiária", ru: "Беженец / Дополнительная защита" },
+          icon: "🛡️",
+          tags: ["status_refugie"],
+        },
+        {
+          id: "demandeur_asile",
+          label: { fr: "Demandeur d'asile", en: "Asylum seeker", ar: "طالب لجوء", es: "Solicitante de asilo", pt: "Requerente de asilo", ru: "Соискатель убежища" },
+          icon: "📋",
+          tags: ["status_demandeur_asile"],
+        },
+        {
+          id: "sans_papiers",
+          label: { fr: "Sans papiers", en: "Undocumented", ar: "بدون أوراق", es: "Sin papeles", pt: "Sem documentos", ru: "Без документов" },
+          icon: "⚠️",
+          tags: ["status_sans_papiers"],
+        },
+        {
+          id: "ne_sait_pas",
+          label: { fr: "Je ne sais pas", en: "I don't know", ar: "لا أعرف", es: "No sé", pt: "Não sei", ru: "Не знаю" },
+          icon: "❓",
+          tags: ["status_inconnu"],
+        },
+      ],
+      nextQuestion: "work_right",
     work_right: {
       id: "work_right",
       type: "choice",
