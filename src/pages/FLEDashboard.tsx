@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle, Target } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle, Target, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
@@ -30,10 +30,34 @@ const FLEDashboard = () => {
   const { data: userProgress, isLoading: progressLoading } = useFLEUserProgress();
   const { data: moduleProgress } = useFLEModuleProgress();
   const [filter, setFilter] = useState<CategoryFilter>("all");
+  const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
+  const hasCheckedLevel = useRef(false);
 
   const isLoading = modulesLoading || progressLoading;
 
-  // No placement gate — direct access to courses
+  // Detect level change after test
+  useEffect(() => {
+    if (progressLoading || !userProgress || hasCheckedLevel.current) return;
+    hasCheckedLevel.current = true;
+
+    const storageKey = `fle-level-${user?.id}`;
+    const previousLevel = localStorage.getItem(storageKey);
+    const currentLevel = userProgress.estimated_level;
+
+    if (previousLevel && previousLevel !== currentLevel) {
+      const prevIdx = LEVEL_ORDER.indexOf(previousLevel);
+      const currIdx = LEVEL_ORDER.indexOf(currentLevel);
+      setLevelChange({
+        from: previousLevel,
+        to: currentLevel,
+        direction: currIdx > prevIdx ? "up" : "down",
+      });
+      // Auto-dismiss after 8s
+      setTimeout(() => setLevelChange(null), 8000);
+    }
+
+    localStorage.setItem(storageKey, currentLevel);
+  }, [progressLoading, userProgress, user?.id]);
 
   const progress = userProgress || {
     estimated_level: "a1",
@@ -65,6 +89,78 @@ const FLEDashboard = () => {
       <Header />
 
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
+        {/* Level change banner */}
+        <AnimatePresence>
+          {levelChange && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: -20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              transition={{ type: "spring", duration: 0.6 }}
+              className={`mb-6 rounded-2xl border p-5 text-center shadow-lg ${
+                levelChange.direction === "up"
+                  ? "border-green-300/50 bg-green-50 dark:border-green-500/30 dark:bg-green-950/30"
+                  : "border-amber-300/50 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/30"
+              }`}
+            >
+              <motion.div
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                className="mb-3"
+              >
+                {levelChange.direction === "up" ? (
+                  <Sparkles className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
+                ) : (
+                  <TrendingDown className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-400" />
+                )}
+              </motion.div>
+              <p className={`text-lg font-bold ${
+                levelChange.direction === "up"
+                  ? "text-green-800 dark:text-green-200"
+                  : "text-amber-800 dark:text-amber-200"
+              }`}>
+                {levelChange.direction === "up" ? "🎉 Niveau mis à jour !" : "Niveau ajusté"}
+              </p>
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <FLELevelBadge level={levelChange.from} size="md" className="opacity-60" />
+                <motion.span
+                  animate={{ x: [0, 4, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                >
+                  {levelChange.direction === "up" ? (
+                    <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  ) : (
+                    <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  )}
+                </motion.span>
+                <motion.div
+                  initial={{ scale: 0.5 }}
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ delay: 0.4, duration: 0.5 }}
+                >
+                  <FLELevelBadge level={levelChange.to} size="lg" />
+                </motion.div>
+              </div>
+              <p className={`mt-2 text-sm ${
+                levelChange.direction === "up"
+                  ? "text-green-700 dark:text-green-300"
+                  : "text-amber-700 dark:text-amber-300"
+              }`}>
+                {levelChange.direction === "up"
+                  ? "Bravo, vous progressez ! Les modules adaptés sont maintenant débloqués."
+                  : "Votre niveau a été recalibré pour mieux vous accompagner."}
+              </p>
+              <button
+                onClick={() => setLevelChange(null)}
+                className="mt-3 text-xs text-muted-foreground underline hover:text-foreground"
+              >
+                Fermer
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
