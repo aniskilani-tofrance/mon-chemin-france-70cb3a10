@@ -39,9 +39,9 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["location", "contact_email", "contact_firstname", "contact_lastname", "contact_phone"]);
+const WIDGET_QUESTIONS = new Set(["location", "postal_code", "contact_email", "contact_firstname", "contact_lastname", "contact_phone"]);
 // Questions where we accept free text directly (no AI parsing needed)
-const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country", "previous_job", "contact_phone"]);
+const DIRECT_TEXT_QUESTIONS = new Set(["location", "postal_code", "contact_firstname", "contact_lastname", "contact_email", "origin_country", "previous_job", "contact_phone"]);
 // Minimum length for free text answers to avoid empty/meaningless submissions
 const MIN_TEXT_LENGTH = 1;
 
@@ -76,6 +76,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isWidget = WIDGET_QUESTIONS.has(currentQuestionId);
   const isEmail = currentQuestionId === "contact_email";
   const isPhone = currentQuestionId === "contact_phone";
+  const isPostalCode = currentQuestionId === "postal_code";
   const isRTL = language === "ar";
 
   // TTS with onEnd to auto-start mic
@@ -591,12 +592,64 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
             </motion.div>
           )}
 
+          {isPostalCode && (
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 25 }}
+              className="mb-2 rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-4 shadow-sm"
+            >
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                  <MapPin className="h-4 w-4 text-primary" />
+                </div>
+                <p className="text-sm font-semibold text-foreground">
+                  {language === "ar" ? "📮 الرمز البريدي" :
+                   language === "en" ? "📮 Your postal code" :
+                   language === "es" ? "📮 Tu código postal" :
+                   language === "pt" ? "📮 Seu código postal" :
+                   language === "ru" ? "📮 Ваш почтовый индекс" :
+                   "📮 Votre code postal"}
+                </p>
+              </div>
+              <Input
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                maxLength={5}
+                value={inputText}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/\D/g, "").slice(0, 5);
+                  setInputText(v);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && /^\d{5}$/.test(inputText)) {
+                    processAnswer(inputText);
+                  }
+                }}
+                placeholder="75001"
+                className="text-center text-lg font-mono tracking-widest"
+              />
+              {inputText && !/^\d{5}$/.test(inputText) && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-xs text-destructive font-medium"
+                >
+                  {language === "ar" ? "يُرجى إدخال 5 أرقام" :
+                   language === "en" ? "Please enter 5 digits" :
+                   "Veuillez entrer 5 chiffres"}
+                </motion.p>
+              )}
+            </motion.div>
+          )}
+
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
           {/* Vocal-first: big mic button for all questions except email and name fields */}
-          {vocalMode && sttSupported && !isEmail && !isPhone && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
+          {vocalMode && sttSupported && !isEmail && !isPhone && !isPostalCode && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
@@ -639,7 +692,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Fallback text input for email or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isEmail || isPhone || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
+          {(!vocalMode || !sttSupported || isEmail || isPhone || isPostalCode || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
@@ -653,7 +706,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                 </Button>
               )}
 
-              {currentQuestionId !== "location" && (
+              {currentQuestionId !== "location" && !isPostalCode && (
                 <Input
                   type={isEmail ? "email" : isPhone ? "tel" : "text"}
                   value={inputText}
@@ -693,8 +746,12 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
               <Button
                 size="icon"
-                onClick={currentQuestionId === "location" ? handleLocationSubmit : handleSubmit}
-                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location")}
+                onClick={
+                  currentQuestionId === "location" ? handleLocationSubmit :
+                  isPostalCode ? () => { if (/^\d{5}$/.test(inputText)) processAnswer(inputText); } :
+                  handleSubmit
+                }
+                disabled={isProcessing || (!inputText.trim() && currentQuestionId !== "location") || (isPostalCode && !/^\d{5}$/.test(inputText))}
                 className="shrink-0"
               >
                 <Send className="h-4 w-4" />
