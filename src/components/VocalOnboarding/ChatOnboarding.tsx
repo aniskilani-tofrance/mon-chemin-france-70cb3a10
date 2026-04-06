@@ -60,6 +60,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [answers, setAnswers] = useState<OnboardingAnswers>(initialAnswers);
   const [isComplete, setIsComplete] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const [vocalMode, setVocalMode] = useState(true); // full vocal by default
   const chatEndRef = useRef<HTMLDivElement>(null);
