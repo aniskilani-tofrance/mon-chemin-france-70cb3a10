@@ -448,7 +448,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const handleLocationSubmit = () => {
     const value = getLocationValue();
-    if (value.trim()) processAnswer(value.trim());
+    if (!value.trim()) return;
+    if (!isValidAddress(value)) {
+      setLocationError(
+        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
+        language === "en" ? "Please enter a full address (number, street, city)" :
+        language === "es" ? "Introduzca una dirección completa (número, calle, ciudad)" :
+        language === "pt" ? "Insira um endereço completo (número, rua, cidade)" :
+        language === "ru" ? "Введите полный адрес (номер, улица, город)" :
+        "Veuillez saisir une adresse complète (numéro, rue, ville)"
+      );
+      return;
+    }
+    setLocationError(null);
+    processAnswer(value.trim());
   };
 
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
