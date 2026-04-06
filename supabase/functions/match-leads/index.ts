@@ -307,20 +307,29 @@ function determineRoute(answers: Record<string, unknown>): string {
   const mainGoal = answers.main_goal as string | undefined;
   const frenchLevel = answers.french_level_cecrl as string | undefined;
   const workRight = answers.work_right as string | undefined;
-  const sectorSatisfaction = answers.sector_satisfaction as string | undefined;
+  const workedInFrance = answers.worked_in_france as string | undefined;
 
-  // Route C: Emploi direct — prêt à travailler, pas de formation
-  // SAUF si reconversion demandée → route B
-  if (mainGoal === "find_job" && workRight === "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    if (sectorSatisfaction === "reconvert") return "route_b"; // Reconversion → formation
-    return "route_c";
-  }
+  // Calculate distance to job
+  let distanceToJob = 3;
+  if (frenchLevel === "alpha") distanceToJob = 4;
+  else if (frenchLevel === "a1") distanceToJob = 3;
+  else if (frenchLevel === "a2") distanceToJob = workedInFrance === "yes" ? 1 : 2;
+  else if (frenchLevel === "b1") distanceToJob = 0;
+
   // Route A: FLE
   if (mainGoal === "learn_french") return "route_a";
   if (frenchLevel === "alpha" || frenchLevel === "a1") return "route_a";
-  // Route B: Formation qualifiante
+
+  // Route B: Formation — distance >= 2
+  if (distanceToJob >= 2) return "route_b";
+
+  // Route C: Emploi direct
+  if (workRight === "yes" && distanceToJob <= 1) return "route_c";
+
+  // Route B: formation
   if (mainGoal === "job_training" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
   if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
+
   return "sas";
 }
 
