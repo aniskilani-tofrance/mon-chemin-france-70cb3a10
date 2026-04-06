@@ -119,9 +119,7 @@ const FLEExercise = () => {
     stt.start();
   }, [stt]);
 
-  const handleStopAndEvaluate = useCallback(async () => {
-    stt.stop();
-    const userAnswer = stt.transcript || stt.interimTranscript;
+  const submitOralAnswer = useCallback(async (userAnswer: string) => {
     if (!userAnswer.trim() || !currentExercise) return;
 
     setIsLoadingAI(true);
@@ -148,12 +146,10 @@ const FLEExercise = () => {
       setAnswered(true);
       if (feedback.score >= 60) setCorrectCount((c) => c + 1);
 
-      // Read feedback aloud
       if (tts.isEnabled) {
         tts.speak(feedback.feedback);
       }
 
-      // Save result
       if (user) {
         await supabase.from("fle_exercise_results").insert({
           user_id: user.id,
@@ -170,7 +166,18 @@ const FLEExercise = () => {
     } finally {
       setIsLoadingAI(false);
     }
-  }, [stt, currentExercise, moduleInfo, user, moduleId, tts]);
+  }, [currentExercise, moduleInfo, user, moduleId, tts]);
+
+  const handleStopAndEvaluate = useCallback(async () => {
+    stt.stop();
+    const userAnswer = stt.transcript || stt.interimTranscript;
+    await submitOralAnswer(userAnswer);
+  }, [stt, submitOralAnswer]);
+
+  const handleValidateAnswer = useCallback(async () => {
+    const userAnswer = stt.transcript || stt.interimTranscript;
+    await submitOralAnswer(userAnswer);
+  }, [stt, submitOralAnswer]);
 
   const handleChoiceSelect = useCallback(async (choice: string) => {
     if (answered) return;
