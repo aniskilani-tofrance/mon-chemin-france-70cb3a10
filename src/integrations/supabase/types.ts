@@ -107,6 +107,42 @@ export type Database = {
         }
         Relationships: []
       }
+      fle_badges: {
+        Row: {
+          category: string
+          condition_type: string
+          condition_value: number
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          key: string
+          title: string
+        }
+        Insert: {
+          category?: string
+          condition_type: string
+          condition_value?: number
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          key: string
+          title: string
+        }
+        Update: {
+          category?: string
+          condition_type?: string
+          condition_value?: number
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          key?: string
+          title?: string
+        }
+        Relationships: []
+      }
       fle_exercise_results: {
         Row: {
           ai_feedback: string | null
@@ -318,13 +354,85 @@ export type Database = {
         }
         Relationships: []
       }
+      fle_review_items: {
+        Row: {
+          created_at: string
+          ease_factor: number
+          exercise_id: string
+          id: string
+          interval_days: number
+          module_id: string
+          next_review_at: string
+          repetitions: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          ease_factor?: number
+          exercise_id: string
+          id?: string
+          interval_days?: number
+          module_id: string
+          next_review_at?: string
+          repetitions?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          ease_factor?: number
+          exercise_id?: string
+          id?: string
+          interval_days?: number
+          module_id?: string
+          next_review_at?: string
+          repetitions?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      fle_user_badges: {
+        Row: {
+          badge_key: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_key: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_key?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fle_user_badges_badge_key_fkey"
+            columns: ["badge_key"]
+            isOneToOne: false
+            referencedRelation: "fle_badges"
+            referencedColumns: ["key"]
+          },
+        ]
+      }
       fle_user_progress: {
         Row: {
+          badges_earned: Json
           comprehension_score: number | null
           created_at: string
+          daily_goal_minutes: number
+          daily_mission_completed_at: string | null
           estimated_level: Database["public"]["Enums"]["cecrl_level"] | null
           id: string
           last_activity_at: string | null
+          last_streak_date: string | null
           oral_score: number | null
           phrases_mastered: number | null
           placement_completed: boolean | null
@@ -335,14 +443,19 @@ export type Database = {
           total_xp: number | null
           updated_at: string
           user_id: string
+          weekly_xp_target: number
           words_learned: number | null
         }
         Insert: {
+          badges_earned?: Json
           comprehension_score?: number | null
           created_at?: string
+          daily_goal_minutes?: number
+          daily_mission_completed_at?: string | null
           estimated_level?: Database["public"]["Enums"]["cecrl_level"] | null
           id?: string
           last_activity_at?: string | null
+          last_streak_date?: string | null
           oral_score?: number | null
           phrases_mastered?: number | null
           placement_completed?: boolean | null
@@ -355,14 +468,19 @@ export type Database = {
           total_xp?: number | null
           updated_at?: string
           user_id: string
+          weekly_xp_target?: number
           words_learned?: number | null
         }
         Update: {
+          badges_earned?: Json
           comprehension_score?: number | null
           created_at?: string
+          daily_goal_minutes?: number
+          daily_mission_completed_at?: string | null
           estimated_level?: Database["public"]["Enums"]["cecrl_level"] | null
           id?: string
           last_activity_at?: string | null
+          last_streak_date?: string | null
           oral_score?: number | null
           phrases_mastered?: number | null
           placement_completed?: boolean | null
@@ -375,6 +493,7 @@ export type Database = {
           total_xp?: number | null
           updated_at?: string
           user_id?: string
+          weekly_xp_target?: number
           words_learned?: number | null
         }
         Relationships: []
