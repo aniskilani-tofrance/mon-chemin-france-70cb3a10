@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -33,14 +33,7 @@ const FLEDashboard = () => {
 
   const isLoading = modulesLoading || progressLoading;
 
-  // Redirect to placement if not completed
-  useEffect(() => {
-    if (!progressLoading && user) {
-      if (!userProgress || !userProgress.placement_completed) {
-        navigate("/fle/placement", { replace: true });
-      }
-    }
-  }, [userProgress, progressLoading, user, navigate]);
+  // No placement gate — direct access to courses
 
   const progress = userProgress || {
     estimated_level: "a1",
@@ -66,10 +59,6 @@ const FLEDashboard = () => {
   const totalModules = modules?.length || 0;
   const overallProgress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
-  // Don't render if placement not done
-  if (!progressLoading && user && (!userProgress || !userProgress.placement_completed)) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
