@@ -83,7 +83,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
-      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname";
+      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname" || qId === "contact_phone";
       if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
