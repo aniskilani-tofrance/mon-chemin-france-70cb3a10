@@ -216,7 +216,6 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
                 <span>{leadPackInfo.location}</span>
               </div>
             )}
-            )}
           </div>
 
           {/* WhatsApp message copy */}
