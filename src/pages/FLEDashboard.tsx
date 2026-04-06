@@ -59,10 +59,6 @@ const FLEDashboard = () => {
   const totalModules = modules?.length || 0;
   const overallProgress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
-  // Don't render if placement not done
-  if (!progressLoading && user && (!userProgress || !userProgress.placement_completed)) {
-    return null;
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
