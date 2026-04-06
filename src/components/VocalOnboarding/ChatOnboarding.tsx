@@ -573,11 +573,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               <GooglePlacesAutocomplete
                 ref={locationInputRef}
                 value={inputText}
-                onChange={setInputText}
+                onChange={(v) => { setInputText(v); if (locationError) setLocationError(null); }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleLocationSubmit();
                 }}
               />
+              {locationError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-xs text-destructive font-medium"
+                >
+                  {locationError}
+                </motion.p>
+              )}
             </motion.div>
           )}
 
