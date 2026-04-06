@@ -85,7 +85,7 @@ const App = () => (
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
-              <Route path="/fle/placement" element={<ProtectedRoute><FLEPlacement /></ProtectedRoute>} />
+              <Route path="/fle/placement" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
               <Route path="/placement-test" element={<PlacementTestHome />} />
