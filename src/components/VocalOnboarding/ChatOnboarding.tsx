@@ -669,6 +669,18 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                    "Veuillez entrer 5 chiffres"}
                 </motion.p>
               )}
+              <Button
+                onClick={() => { if (/^\d{5}$/.test(inputText)) processAnswer(inputText); }}
+                disabled={isProcessing || !/^\d{5}$/.test(inputText)}
+                className="w-full mt-3"
+                size="lg"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {language === "ar" ? "تأكيد" :
+                 language === "en" ? "Confirm" :
+                 language === "es" ? "Confirmar" :
+                 "Confirmer"}
+              </Button>
             </motion.div>
           )}
 
