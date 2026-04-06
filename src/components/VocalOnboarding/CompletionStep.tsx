@@ -36,6 +36,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
   const leadPackInfo = {
     name: [answers.contact_firstname, answers.contact_lastname].filter(Boolean).join(" "),
     email: answers.contact_email,
+    phone: answers.contact_phone,
     location: answers.location,
   };
 
