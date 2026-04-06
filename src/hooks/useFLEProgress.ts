@@ -29,6 +29,10 @@ export interface FLEUserProgress {
   placement_completed: boolean;
   preferred_category: string;
   target_sector: string | null;
+  daily_goal_minutes: number;
+  weekly_xp_target: number;
+  daily_mission_completed_at: string | null;
+  last_streak_date: string | null;
 }
 
 export interface FLEModuleProgress {
@@ -38,6 +42,21 @@ export interface FLEModuleProgress {
   exercises_total: number;
   completed_at: string | null;
   unlocked: boolean;
+}
+
+export interface FLEBadge {
+  key: string;
+  title: string;
+  description: string | null;
+  icon: string;
+  category: string;
+  condition_type: string;
+  condition_value: number;
+}
+
+export interface FLEUserBadge {
+  badge_key: string;
+  earned_at: string;
 }
 
 export function useFLEModules() {
@@ -85,6 +104,36 @@ export function useFLEModuleProgress() {
         .eq("user_id", user.id);
       if (error) throw error;
       return (data || []) as unknown as FLEModuleProgress[];
+    },
+    enabled: !!user,
+  });
+}
+
+export function useFLEBadges() {
+  return useQuery({
+    queryKey: ["fle-badges"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("fle_badges")
+        .select("key, title, description, icon, category, condition_type, condition_value");
+      if (error) throw error;
+      return (data || []) as unknown as FLEBadge[];
+    },
+  });
+}
+
+export function useFLEUserBadges() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["fle-user-badges", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const { data, error } = await supabase
+        .from("fle_user_badges")
+        .select("badge_key, earned_at")
+        .eq("user_id", user.id);
+      if (error) throw error;
+      return (data || []) as unknown as FLEUserBadge[];
     },
     enabled: !!user,
   });

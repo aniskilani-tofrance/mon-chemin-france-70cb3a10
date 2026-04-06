@@ -1,12 +1,15 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle, Target, TrendingUp, TrendingDown, Sparkles } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Star, Trophy, MessageCircle, Target, TrendingUp, TrendingDown, Sparkles, RotateCcw, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
-import { FLEModuleCard } from "@/components/FLE/FLEModuleCard";
+import { FLEDailyMission } from "@/components/FLE/FLEDailyMission";
+import { FLEWeeklyProgress } from "@/components/FLE/FLEWeeklyProgress";
+import { FLEPathwayMap } from "@/components/FLE/FLEPathwayMap";
+import { FLEBadgeCard } from "@/components/FLE/FLEBadgeCard";
 import { FLEStatsCard } from "@/components/FLE/FLEStatsCard";
-import { useFLEModules, useFLEUserProgress, useFLEModuleProgress } from "@/hooks/useFLEProgress";
+import { useFLEModules, useFLEUserProgress, useFLEModuleProgress, useFLEBadges, useFLEUserBadges } from "@/hooks/useFLEProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,7 +22,6 @@ function shouldUnlock(moduleLevel: string, userLevel: string, moduleIndex: numbe
   if (moduleIndex === 0) return true;
   const moduleLevelIdx = LEVEL_ORDER.indexOf(moduleLevel);
   const userLevelIdx = LEVEL_ORDER.indexOf(userLevel);
-  // Unlock if user level >= module level AND previous module in same level is completed
   return userLevelIdx >= moduleLevelIdx && previousCompleted;
 }
 
@@ -29,33 +31,27 @@ const FLEDashboard = () => {
   const { data: modules, isLoading: modulesLoading } = useFLEModules();
   const { data: userProgress, isLoading: progressLoading } = useFLEUserProgress();
   const { data: moduleProgress } = useFLEModuleProgress();
+  const { data: allBadges } = useFLEBadges();
+  const { data: userBadges } = useFLEUserBadges();
   const [filter, setFilter] = useState<CategoryFilter>("all");
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
 
   const isLoading = modulesLoading || progressLoading;
 
-  // Detect level change after test
+  // Detect level change
   useEffect(() => {
     if (progressLoading || !userProgress || hasCheckedLevel.current) return;
     hasCheckedLevel.current = true;
-
     const storageKey = `fle-level-${user?.id}`;
     const previousLevel = localStorage.getItem(storageKey);
     const currentLevel = userProgress.estimated_level;
-
     if (previousLevel && previousLevel !== currentLevel) {
       const prevIdx = LEVEL_ORDER.indexOf(previousLevel);
       const currIdx = LEVEL_ORDER.indexOf(currentLevel);
-      setLevelChange({
-        from: previousLevel,
-        to: currentLevel,
-        direction: currIdx > prevIdx ? "up" : "down",
-      });
-      // Auto-dismiss after 8s
+      setLevelChange({ from: previousLevel, to: currentLevel, direction: currIdx > prevIdx ? "up" : "down" });
       setTimeout(() => setLevelChange(null), 8000);
     }
-
     localStorage.setItem(storageKey, currentLevel);
   }, [progressLoading, userProgress, user?.id]);
 
@@ -69,227 +65,153 @@ const FLEDashboard = () => {
     streak_days: 0,
     total_time_minutes: 0,
     placement_completed: false,
+    daily_goal_minutes: 5,
+    weekly_xp_target: 100,
+    daily_mission_completed_at: null,
   };
 
-  const getModuleProgress = (moduleId: string) => {
-    return moduleProgress?.find((mp) => mp.module_id === moduleId);
-  };
+  const getModuleProgress = (moduleId: string) =>
+    moduleProgress?.find((mp) => mp.module_id === moduleId);
 
   const filteredModules = (modules || []).filter(
     (m) => filter === "all" || m.category === filter
   );
 
   const completedCount = moduleProgress?.filter((mp) => mp.completed_at).length || 0;
-  const totalModules = modules?.length || 0;
-  const overallProgress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
+  const earnedBadgeKeys = new Set((userBadges || []).map((b) => b.badge_key));
 
+  // Find next uncompleted unlocked module for daily mission
+  const nextModule = filteredModules.find((module, index) => {
+    const mp = getModuleProgress(module.id);
+    if (mp?.completed_at) return false;
+    const previousModule = index > 0 ? filteredModules[index - 1] : null;
+    const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
+    const previousCompleted = previousMp ? !!previousMp.completed_at : false;
+    const isUnlocked = mp?.unlocked || shouldUnlock(module.cecrl_level, progress.estimated_level, index, previousCompleted);
+    return isUnlocked;
+  });
+
+  const isMissionCompletedToday = (() => {
+    if (!progress.daily_mission_completed_at) return false;
+    const today = new Date().toDateString();
+    return new Date(progress.daily_mission_completed_at).toDateString() === today;
+  })();
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
       <Header />
-
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
         {/* Level change banner */}
-        <AnimatePresence>
-          {levelChange && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
-              transition={{ type: "spring", duration: 0.6 }}
-              className={`mb-6 rounded-2xl border p-5 text-center shadow-lg ${
-                levelChange.direction === "up"
-                  ? "border-green-300/50 bg-green-50 dark:border-green-500/30 dark:bg-green-950/30"
-                  : "border-amber-300/50 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/30"
-              }`}
-            >
-              <motion.div
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                className="mb-3"
-              >
-                {levelChange.direction === "up" ? (
-                  <Sparkles className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
-                ) : (
-                  <TrendingDown className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-400" />
-                )}
-              </motion.div>
-              <p className={`text-lg font-bold ${
-                levelChange.direction === "up"
-                  ? "text-green-800 dark:text-green-200"
-                  : "text-amber-800 dark:text-amber-200"
-              }`}>
-                {levelChange.direction === "up" ? "🎉 Niveau mis à jour !" : "Niveau ajusté"}
-              </p>
-              <div className="mt-2 flex items-center justify-center gap-3">
-                <FLELevelBadge level={levelChange.from} size="md" className="opacity-60" />
-                <motion.span
-                  animate={{ x: [0, 4, 0] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                >
-                  {levelChange.direction === "up" ? (
-                    <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  ) : (
-                    <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                  )}
-                </motion.span>
-                <motion.div
-                  initial={{ scale: 0.5 }}
-                  animate={{ scale: [1, 1.1, 1] }}
-                  transition={{ delay: 0.4, duration: 0.5 }}
-                >
-                  <FLELevelBadge level={levelChange.to} size="lg" />
-                </motion.div>
-              </div>
-              <p className={`mt-2 text-sm ${
-                levelChange.direction === "up"
-                  ? "text-green-700 dark:text-green-300"
-                  : "text-amber-700 dark:text-amber-300"
-              }`}>
-                {levelChange.direction === "up"
-                  ? "Bravo, vous progressez ! Les modules adaptés sont maintenant débloqués."
-                  : "Votre niveau a été recalibré pour mieux vous accompagner."}
-              </p>
-              <button
-                onClick={() => setLevelChange(null)}
-                className="mt-3 text-xs text-muted-foreground underline hover:text-foreground"
-              >
-                Fermer
-              </button>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
+        {/* Header */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
           <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-              Mon français 🇫🇷
-            </h1>
-            <FLELevelBadge level={progress.estimated_level} size="lg" />
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Mon français 🇫🇷</h1>
+            <div className="flex items-center gap-2">
+              {progress.streak_days > 0 && (
+                <motion.div
+                  animate={{ scale: [1, 1.15, 1] }}
+                  transition={{ repeat: Infinity, duration: 2 }}
+                  className="flex items-center gap-1 text-orange-500 font-bold text-sm"
+                >
+                  <Flame className="h-5 w-5" />
+                  {progress.streak_days}
+                </motion.div>
+              )}
+              <FLELevelBadge level={progress.estimated_level} size="lg" />
+            </div>
           </div>
-          <p className="text-muted-foreground text-sm">
-            Progressez à votre rythme avec des leçons courtes et pratiques.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-3 gap-2 rounded-full"
-            onClick={() => navigate("/placement-test")}
-          >
+          <p className="text-muted-foreground text-sm">Progressez à votre rythme avec des leçons courtes et pratiques.</p>
+          <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full" onClick={() => navigate("/placement-test")}>
             <Target className="h-4 w-4" />
             {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}
           </Button>
         </motion.div>
 
-        {/* Stats grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 mb-8 sm:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <Skeleton key={i} className="h-24 rounded-xl" />
-            ))}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-3 mb-8 sm:grid-cols-4">
-            <FLEStatsCard
-              icon={<Flame className="h-5 w-5" />}
-              label="Série"
-              value={`${progress.streak_days}j`}
-              subtitle="jours consécutifs"
-              color="text-orange-500"
-            />
-            <FLEStatsCard
-              icon={<Star className="h-5 w-5" />}
-              label="XP total"
-              value={progress.total_xp}
-              color="text-amber-500"
-            />
-            <FLEStatsCard
-              icon={<Mic className="h-5 w-5" />}
-              label="Score oral"
-              value={`${progress.oral_score}%`}
-              color="text-primary"
-            />
-            <FLEStatsCard
-              icon={<Brain className="h-5 w-5" />}
-              label="Compréhension"
-              value={`${progress.comprehension_score}%`}
-              color="text-indigo-500"
+        {/* Daily Mission */}
+        {!isLoading && nextModule && (
+          <div className="mb-6">
+            <FLEDailyMission
+              moduleTitle={nextModule.title}
+              moduleIcon={nextModule.icon || "📖"}
+              exerciseType=""
+              durationMinutes={nextModule.duration_minutes || 5}
+              isCompleted={isMissionCompletedToday}
+              onStart={() => navigate(`/fle/exercise/${nextModule.id}`)}
             />
           </div>
         )}
 
-        {/* Overall progress bar */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="mb-8 rounded-xl border border-border bg-card p-4"
-        >
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-foreground flex items-center gap-2">
-              <Trophy className="h-4 w-4 text-amber-500" />
-              Progression globale
-            </span>
-            <span className="text-sm font-bold text-primary">{overallProgress}%</span>
-          </div>
-          <div className="h-2.5 w-full rounded-full bg-border/50 overflow-hidden">
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${overallProgress}%` }}
-              transition={{ duration: 1, ease: "easeOut" }}
-              className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
-            />
-          </div>
-          <div className="flex items-center justify-between mt-2 text-xs text-muted-foreground">
-            <span>{completedCount} modules terminés</span>
-            <span className="flex items-center gap-1">
-              <Clock className="h-3 w-3" />
-              {progress.total_time_minutes} min au total
-            </span>
-          </div>
-        </motion.div>
-
-        {/* Quick stats row */}
-        <div className="flex items-center gap-4 mb-6 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <BookOpen className="h-4 w-4" /> {progress.words_learned} mots appris
-          </span>
-          <span className="flex items-center gap-1">
-            <Volume2 className="h-4 w-4" /> {progress.phrases_mastered} phrases
-          </span>
+        {/* Weekly XP progress */}
+        <div className="mb-6">
+          <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
         </div>
 
-        {/* Dialogue CTA */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-          className="mb-6"
-        >
-          <Button
-            variant="outline"
-            className="w-full justify-start gap-3 rounded-xl border-primary/20 bg-primary/5 py-6 hover:bg-primary/10"
-            onClick={() => navigate("/fle/dialogue")}
-          >
-            <MessageCircle className="h-5 w-5 text-primary" />
-            <div className="text-left">
-              <span className="block text-sm font-semibold text-foreground">Dialogues avec Marianne</span>
-              <span className="block text-xs text-muted-foreground">Boulangerie, médecin, transports…</span>
+        {/* Stats grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
+            <FLEStatsCard icon={<Star className="h-5 w-5" />} label="XP total" value={progress.total_xp} color="text-amber-500" />
+            <FLEStatsCard icon={<Mic className="h-5 w-5" />} label="Score oral" value={`${progress.oral_score}%`} color="text-primary" />
+            <FLEStatsCard icon={<Brain className="h-5 w-5" />} label="Compréhension" value={`${progress.comprehension_score}%`} color="text-indigo-500" />
+            <FLEStatsCard icon={<Trophy className="h-5 w-5" />} label="Modules" value={`${completedCount}/${modules?.length || 0}`} color="text-green-500" />
+          </div>
+        )}
+
+        {/* Quick access grid */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {[
+            { icon: "📖", label: "Leçon du jour", onClick: () => nextModule && navigate(`/fle/exercise/${nextModule.id}`) },
+            { icon: "🔄", label: "Réviser", onClick: () => navigate("/fle/review") },
+            { icon: "🗣️", label: "Pratiquer l'oral", onClick: () => navigate("/fle/dialogue") },
+            { icon: "💼", label: "Français emploi", onClick: () => setFilter("professionnel") },
+          ].map((item) => (
+            <motion.button
+              key={item.label}
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={item.onClick}
+              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all"
+            >
+              <span className="text-2xl">{item.icon}</span>
+              <span className="text-sm font-semibold text-foreground">{item.label}</span>
+            </motion.button>
+          ))}
+        </div>
+
+        {/* Badges row */}
+        {allBadges && allBadges.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+              <span>🏅</span> Badges
+              <span className="text-xs text-muted-foreground font-normal">
+                {earnedBadgeKeys.size}/{allBadges.length}
+              </span>
+            </h2>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {allBadges.map((badge) => (
+                <FLEBadgeCard
+                  key={badge.key}
+                  icon={badge.icon}
+                  title={badge.title}
+                  earned={earnedBadgeKeys.has(badge.key)}
+                  compact
+                />
+              ))}
             </div>
-          </Button>
-        </motion.div>
+          </div>
+        )}
 
         {/* Category filter */}
-        <div className="flex gap-2 mb-6">
+        <div className="flex gap-2 mb-4">
           {([
             { key: "all" as const, label: "📚 Tout" },
             { key: "quotidien" as const, label: "🏠 Quotidien" },
-            { key: "professionnel" as const, label: "💼 Professionnel" },
+            { key: "professionnel" as const, label: "💼 Pro" },
           ]).map((cat) => (
             <button
               key={cat.key}
@@ -305,71 +227,97 @@ const FLEDashboard = () => {
           ))}
         </div>
 
-        {/* Modules list */}
-        <div className="space-y-3">
-          {isLoading ? (
-            [...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-2xl" />
-            ))
-          ) : filteredModules.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center py-12"
-            >
-              <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-              <p className="text-muted-foreground">Aucun module disponible pour le moment.</p>
-            </motion.div>
-          ) : (
-            <AnimatePresence mode="popLayout">
-              {filteredModules.map((module, index) => {
-                const mp = getModuleProgress(module.id);
-                const moduleProgressPercent = mp
-                  ? mp.exercises_total > 0
-                    ? Math.round((mp.exercises_done / mp.exercises_total) * 100)
-                    : 0
-                  : 0;
-
-                // Determine unlock: first module always unlocked, others based on level + previous completion
-                const previousModule = index > 0 ? filteredModules[index - 1] : null;
-                const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
-                const previousCompleted = previousMp ? !!previousMp.completed_at : false;
-                const isUnlocked = mp?.unlocked || shouldUnlock(
-                  module.cecrl_level,
-                  progress.estimated_level,
-                  index,
-                  previousCompleted
-                );
-
-                return (
-                  <motion.div
-                    key={module.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: index * 0.03 }}
-                  >
-                    <FLEModuleCard
-                      title={module.title}
-                      description={module.description}
-                      icon={module.icon || "📖"}
-                      cecrlLevel={module.cecrl_level}
-                      category={module.category}
-                      durationMinutes={module.duration_minutes || 7}
-                      progress={moduleProgressPercent}
-                      unlocked={isUnlocked}
-                      completed={!!mp?.completed_at}
-                      onClick={() => navigate(`/fle/exercise/${module.id}`)}
-                    />
-                  </motion.div>
-                );
-              })}
-            </AnimatePresence>
-          )}
-        </div>
+        {/* Pathway map */}
+        {isLoading ? (
+          [...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl mb-2" />)
+        ) : filteredModules.length === 0 ? (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
+            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
+            <p className="text-muted-foreground">Aucun module disponible.</p>
+          </motion.div>
+        ) : (
+          <FLEPathwayMap
+            modules={filteredModules.map((module, index) => {
+              const mp = getModuleProgress(module.id);
+              const moduleProgressPercent = mp && mp.exercises_total > 0
+                ? Math.round((mp.exercises_done / mp.exercises_total) * 100) : 0;
+              const previousModule = index > 0 ? filteredModules[index - 1] : null;
+              const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
+              const previousCompleted = previousMp ? !!previousMp.completed_at : false;
+              const isUnlocked = mp?.unlocked || shouldUnlock(module.cecrl_level, progress.estimated_level, index, previousCompleted);
+              return {
+                id: module.id,
+                title: module.title,
+                icon: module.icon || "📖",
+                cecrlLevel: module.cecrl_level,
+                durationMinutes: module.duration_minutes || 7,
+                progress: moduleProgressPercent,
+                unlocked: isUnlocked,
+                completed: !!mp?.completed_at,
+              };
+            })}
+            onModuleClick={(id) => navigate(`/fle/exercise/${id}`)}
+          />
+        )}
       </main>
     </div>
   );
 };
+
+// Level change banner extracted
+function LevelChangeBanner({ levelChange, onDismiss }: {
+  levelChange: { from: string; to: string; direction: "up" | "down" } | null;
+  onDismiss: () => void;
+}) {
+  return (
+    <AnimatePresence>
+      {levelChange && (
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9, y: -20 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.9, y: -20 }}
+          transition={{ type: "spring", duration: 0.6 }}
+          className={`mb-6 rounded-2xl border p-5 text-center shadow-lg ${
+            levelChange.direction === "up"
+              ? "border-green-300/50 bg-green-50 dark:border-green-500/30 dark:bg-green-950/30"
+              : "border-amber-300/50 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/30"
+          }`}
+        >
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="mb-3">
+            {levelChange.direction === "up" ? (
+              <Sparkles className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
+            ) : (
+              <TrendingDown className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-400" />
+            )}
+          </motion.div>
+          <p className={`text-lg font-bold ${levelChange.direction === "up" ? "text-green-800 dark:text-green-200" : "text-amber-800 dark:text-amber-200"}`}>
+            {levelChange.direction === "up" ? "🎉 Niveau mis à jour !" : "Niveau ajusté"}
+          </p>
+          <div className="mt-2 flex items-center justify-center gap-3">
+            <FLELevelBadge level={levelChange.from} size="md" className="opacity-60" />
+            <motion.span animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+              {levelChange.direction === "up" ? (
+                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+              ) : (
+                <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+              )}
+            </motion.span>
+            <motion.div initial={{ scale: 0.5 }} animate={{ scale: [1, 1.1, 1] }} transition={{ delay: 0.4, duration: 0.5 }}>
+              <FLELevelBadge level={levelChange.to} size="lg" />
+            </motion.div>
+          </div>
+          <p className={`mt-2 text-sm ${levelChange.direction === "up" ? "text-green-700 dark:text-green-300" : "text-amber-700 dark:text-amber-300"}`}>
+            {levelChange.direction === "up"
+              ? "Bravo, vous progressez ! Les modules adaptés sont maintenant débloqués."
+              : "Votre niveau a été recalibré pour mieux vous accompagner."}
+          </p>
+          <button onClick={onDismiss} className="mt-3 text-xs text-muted-foreground underline hover:text-foreground">
+            Fermer
+          </button>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
 
 export default FLEDashboard;
