@@ -88,6 +88,11 @@ const App = () => (
               <Route path="/fle/placement" element={<ProtectedRoute><FLEPlacement /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
+              <Route path="/placement-test" element={<PlacementTestHome />} />
+              <Route path="/placement-test/test" element={<PlacementTest />} />
+              <Route path="/placement-test/results" element={<PlacementTestResults />} />
+              <Route path="/placement-test/trainer" element={<PlacementTestTrainer />} />
+              <Route path="/placement-test/:page" element={<PlacementTestLegal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
