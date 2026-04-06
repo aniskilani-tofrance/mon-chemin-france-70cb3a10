@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Volume2, Mic, MicOff, RotateCcw, ArrowRight, ArrowLeft, 
-  CheckCircle2, XCircle, Lightbulb, Loader2 
+  CheckCircle2, XCircle, Lightbulb, Loader2, Send
 } from "lucide-react";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
