@@ -79,6 +79,15 @@ const FLEDashboard = () => {
           <p className="text-muted-foreground text-sm">
             Progressez à votre rythme avec des leçons courtes et pratiques.
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-3 gap-2 rounded-full"
+            onClick={() => navigate("/fle/placement")}
+          >
+            <Target className="h-4 w-4" />
+            {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}
+          </Button>
         </motion.div>
 
         {/* Stats grid */}
