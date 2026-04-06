@@ -649,7 +649,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                       language === "ru" ? "Ваша фамилия..." :
                       "Votre nom de famille..."
                     ) :
-                    (language === "ar" ? "اكتب إجابتك..." : "Tapez votre réponse...")
+                    (language === "ar" ? "اكتبوا إجابتكم..." : "Tapez votre réponse...")
                   }
                   className="flex-1"
                   disabled={isProcessing}
