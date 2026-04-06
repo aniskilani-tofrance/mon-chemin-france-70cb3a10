@@ -35,6 +35,7 @@ export default function PlacementTest() {
   const [submitting, setSubmitting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const recognitionRef = useRef<any>(null);
+  const playAudioRef = useRef<(text: string) => void>(() => {});
 
   const currentQuestion = questions[currentIndex];
   const isQCM = !currentQuestion.type;
@@ -66,11 +67,18 @@ export default function PlacementTest() {
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [currentIndex]);
 
-  // Reset selection on question change
+  // Reset selection on question change + auto-play audio
   useEffect(() => {
     setSelectedOption(answers[currentQuestion.id] || null);
     setWrittenAnswer(answers[currentQuestion.id] || "");
     setOralTranscript(answers[currentQuestion.id] || "");
+    // Auto-play audio for oral comprehension questions
+    if (currentQuestion.audioText) {
+      const timer = setTimeout(() => {
+        playAudioRef.current(currentQuestion.audioText!);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [currentIndex]);
 
   const playAudio = useCallback(async (text: string) => {
@@ -90,6 +98,11 @@ export default function PlacementTest() {
       setIsSpeaking(false);
     }
   }, [isSpeaking]);
+
+  // Keep ref in sync for auto-play
+  useEffect(() => {
+    playAudioRef.current = playAudio;
+  }, [playAudio]);
 
   const startRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
