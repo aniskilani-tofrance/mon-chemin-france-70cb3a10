@@ -24,6 +24,7 @@ import {
   ArrowRight,
   FileText,
   AlertCircle,
+  BookOpen,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -316,6 +317,28 @@ const Dashboard = () => {
                       })}
                     </div>
                   )}
+                </CardContent>
+              </Card>
+            </AnimatedContainer>
+
+            {/* Learn French CTA */}
+            <AnimatedContainer delay={0.25} className="lg:col-span-3">
+              <Card className="overflow-hidden border-primary/20 bg-primary/5">
+                <CardContent className="flex flex-col items-center gap-4 p-6 sm:flex-row sm:justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                      <BookOpen className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Apprendre le français</h3>
+                      <p className="text-sm text-muted-foreground">Leçons courtes, oral et vie quotidienne — à votre rythme</p>
+                    </div>
+                  </div>
+                  <Button asChild>
+                    <Link to="/fle" className="gap-2">
+                      Commencer <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             </AnimatedContainer>
