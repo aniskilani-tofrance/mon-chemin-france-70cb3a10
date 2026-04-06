@@ -78,6 +78,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isPhone = currentQuestionId === "contact_phone";
   const isPostalCode = currentQuestionId === "postal_code";
   const isRTL = language === "ar";
+  const lastMarianneMessage = [...messages].reverse().find((msg) => msg.role === "marianne")?.content ?? "";
 
   // TTS with onEnd to auto-start mic
   const { speak, isSpeaking } = useTTS({
@@ -569,6 +570,29 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
       {!isComplete && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
+          {lastMarianneMessage && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => speak(lastMarianneMessage)}
+              disabled={isProcessing}
+              className="w-full"
+            >
+              <Volume2 className="h-4 w-4" />
+              {language === "ar" ? "إعادة تشغيل ماريان" : language === "en" ? "Replay Marianne" : "Réécouter Marianne"}
+            </Button>
+          )}
+
+          {(currentQuestionId === "location" || isPostalCode) && (
+            <p className="px-1 text-xs text-muted-foreground">
+              {language === "ar"
+                ? "في خطوة العنوان والرمز البريدي، يبقى الميكروفون متوقفًا أثناء الكتابة."
+                : language === "en"
+                ? "For address and postal code, the microphone stays off while you type."
+                : "Pour l’adresse et le code postal, le micro reste coupé pendant la saisie."}
+            </p>
+          )}
+
           {currentQuestionId === "location" && (
             <motion.div
               initial={{ opacity: 0, y: 12 }}
