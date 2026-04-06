@@ -324,6 +324,7 @@ const Dashboard = () => {
             {/* Learn French CTA - Enriched */}
             <AnimatedContainer delay={0.25} className="lg:col-span-3">
               <FLEDashboardCard />
+            </AnimatedContainer>
           </div>
 
           {/* Tags */}

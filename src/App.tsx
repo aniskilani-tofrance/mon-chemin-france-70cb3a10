@@ -88,6 +88,7 @@ const App = () => (
               <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
+              <Route path="/fle/review" element={<ProtectedRoute><FLEReview /></ProtectedRoute>} />
               <Route path="/placement-test" element={<PlacementTestHome />} />
               <Route path="/placement-test/test" element={<PlacementTest />} />
               <Route path="/placement-test/results" element={<PlacementTestResults />} />
