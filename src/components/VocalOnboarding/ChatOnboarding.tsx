@@ -642,7 +642,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                       "Votre prénom..."
                     ) :
                     currentQuestionId === "contact_lastname" ? (
-                      language === "ar" ? "اسم العائلة..." :
+                      language === "ar" ? "اسم عائلتكم..." :
                       language === "en" ? "Your last name..." :
                       language === "es" ? "Tu apellido..." :
                       language === "pt" ? "Seu sobrenome..." :
