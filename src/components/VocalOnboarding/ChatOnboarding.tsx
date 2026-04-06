@@ -634,7 +634,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   placeholder={
                     isEmail ? "email@exemple.com" :
                     currentQuestionId === "contact_firstname" ? (
-                      language === "ar" ? "اسمك الأول..." :
+                      language === "ar" ? "اسمكم الأوّل..." :
                       language === "en" ? "Your first name..." :
                       language === "es" ? "Tu nombre..." :
                       language === "pt" ? "Seu primeiro nome..." :
