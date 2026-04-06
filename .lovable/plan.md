@@ -1,69 +1,50 @@
+## Module FLE complet
 
+### 1. Peupler la base : 15 nouveaux modules + exercices
+Insérer les modules prévus dans la mémoire projet (18 total) avec 3-5 exercices chacun, couvrant :
 
-## Analyse de l'existant
+**Vie quotidienne (Alpha → A2) :**
+- ✅ Se présenter (existe)
+- ✅ Chez le médecin (existe)  
+- 📍 Les transports
+- 🛒 Faire les courses
+- 🏠 Le logement
+- 📞 Au téléphone
+- 🏫 L'école des enfants
+- 🏦 À la banque / La Poste
+- 📋 Les papiers administratifs
 
-La page d'accueil actuelle est générique et ne reflète pas les 3 piliers concrets de ToFrance :
-1. **Onboarding vocal avec Marianne** (conseillère IA multilingue)
-2. **Module FLE** (apprentissage du français oral-first)
-3. **Mise en relation** avec des organismes de formation locaux
+**Professionnel (A1 → B1) :**
+- ✅ Au travail : les bases (existe)
+- 🏗️ Chantier et sécurité
+- 🍽️ Hôtellerie-restauration
+- 🏥 Aide à la personne
+- 🧹 Propreté et entretien
+- 🚚 Logistique
+- 🤝 L'entretien d'embauche
+- 📄 Le CV et la lettre
+- 💼 Droits du travail
 
-Les problèmes :
-- Le hero est correct mais le badge "Votre guide pour réussir en France" est vague
-- EmployersSection affiche des stats (50+ organismes, 200+ formations) mais sans contexte narratif
-- FeaturesSection montre 4 cartes génériques (Cours, Orientation, Formations, Accompagnement) sans lien avec les vrais produits
-- CTASection répète les stats avec des chiffres gonflés (50K+, 500+) qui ne correspondent pas à la réalité
-- Il manque une section "Comment ça marche" (parcours en 3 étapes)
-- Il manque une section qui présente le module FLE comme produit phare
+Chaque module aura 4 exercices variés (listen_repeat, listen_choose, oral_answer, complete_dialogue, role_play, etc.)
 
-## Plan d'amélioration
+### 2. Test de placement
+Nouvelle page `/fle/placement` avec :
+- 5 questions progressives (compréhension orale + choix)
+- Évaluation automatique du niveau CECRL (Alpha → B1)
+- Sauvegarde du niveau estimé dans `fle_user_progress`
+- Redirection vers le dashboard avec les modules débloqués selon le niveau
+- Accessible au premier accès FLE (si `placement_completed = false`)
 
-### 1. Refonte du HeroSection
-- Garder l'image de fond et la structure existante
-- Rendre le badge plus spécifique : "IA multilingue -- 6 langues"
-- Ajouter un second CTA "Apprendre le français" qui pointe vers `/fle`
-- Garder les cartes Marianne et Parcours personnalisé
+### 3. Améliorations UX
+- **Mise à jour de la progression** : après chaque exercice terminé, mettre à jour `fle_module_progress` (exercises_done, score, completed_at)
+- **Déblocage automatique** : quand un module est terminé, débloquer le suivant
+- **Écran de fin de module** avec score, XP gagnés, et animation de félicitations
+- **Accès direct depuis le dashboard utilisateur** : ajouter un bouton "Apprendre le français" sur le dashboard principal
 
-### 2. Nouvelle section "Comment ça marche" (HowItWorksSection)
-Créer un nouveau composant avec 3 étapes visuelles :
-- **Etape 1** : "Parlez avec Marianne" -- onboarding vocal en 5 minutes
-- **Etape 2** : "Recevez votre orientation" -- parcours personnalisé (FLE, Formation, Emploi)
-- **Etape 3** : "Commencez votre parcours" -- cours de français ou mise en relation
-
-Design : timeline horizontale sur desktop, verticale sur mobile, avec icones et numéros
-
-### 3. Refonte de FeaturesSection
-Remplacer les 4 cartes génériques par 3 cartes produit plus impactantes :
-- **Marianne, votre conseillère IA** : onboarding vocal, 6 langues, orientation instantanée
-- **Apprenez le français (FLE)** : modules interactifs, du niveau Alpha à B1, oral-first
-- **Formations près de chez vous** : réseau de partenaires, mise en relation directe
-
-Chaque carte aura un CTA propre (lien vers /onboarding, /fle, /partenaires)
-
-### 4. Nettoyage de EmployersSection
-- Garder les stats dynamiques (providers, trainings, sectors)
-- Retirer "10 000+ personnes accompagnées" (chiffre non vérifié)
-- Ajouter "6 langues" comme stat
-
-### 5. Refonte de CTASection
-- Retirer les stats gonflées (50K+, 500+, 13 régions)
-- Simplifier : un CTA principal + mention "Gratuit, sans inscription, 5 minutes"
-- Ajouter les langues supportées sous forme de drapeaux ou badges
-
-### 6. Mise à jour Index.tsx
-Nouvel ordre des sections :
-1. Hero
-2. EmployersSection (stats rapides)
-3. HowItWorksSection (nouveau)
-4. FeaturesSection (refonte produit)
-5. CTA
-6. Footer
-
-## Fichiers modifiés
-- `src/components/HeroSection.tsx` -- second CTA + badge mis à jour
-- `src/components/HowItWorksSection.tsx` -- nouveau composant
-- `src/components/FeaturesSection.tsx` -- refonte 3 cartes produit avec CTA
-- `src/components/EmployersSection.tsx` -- stats réalistes
-- `src/components/CTASection.tsx` -- simplification
-- `src/pages/Index.tsx` -- ajout HowItWorksSection
-- `src/lib/translations.ts` -- mise à jour des textes features (toutes langues)
-
+### Fichiers modifiés
+- `supabase insert` : 15 modules + ~60 exercices
+- Nouvelle page : `src/pages/FLEPlacement.tsx`
+- Modifié : `src/pages/FLEDashboard.tsx` (redirection placement, UX)
+- Modifié : `src/pages/FLEExercise.tsx` (progression, écran de fin)
+- Modifié : `src/App.tsx` (route placement)
+- Modifié : `src/pages/Dashboard.tsx` (lien FLE)

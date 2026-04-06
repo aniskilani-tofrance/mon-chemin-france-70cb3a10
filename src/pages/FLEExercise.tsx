@@ -193,7 +193,7 @@ const FLEExercise = () => {
     }
   }, [answered, currentExercise, tts]);
 
-  const handleNext = useCallback(() => {
+  const handleNext = useCallback(async () => {
     if (currentIndex < totalExercises - 1) {
       setCurrentIndex((i) => i + 1);
       setAnswered(false);
@@ -202,11 +202,48 @@ const FLEExercise = () => {
       setShowHint(false);
       stt.reset();
     } else {
-      // Module complete
+      // Module complete — save progress
+      if (user && moduleId) {
+        try {
+          const score = Math.round((correctCount / totalExercises) * 100);
+          const { data: existing } = await supabase
+            .from("fle_module_progress")
+            .select("id")
+            .eq("user_id", user.id)
+            .eq("module_id", moduleId)
+            .maybeSingle();
+
+          if (existing) {
+            await supabase
+              .from("fle_module_progress")
+              .update({
+                exercises_done: totalExercises,
+                exercises_total: totalExercises,
+                score,
+                completed_at: new Date().toISOString(),
+              } as any)
+              .eq("id", existing.id);
+          } else {
+            await supabase
+              .from("fle_module_progress")
+              .insert({
+                user_id: user.id,
+                module_id: moduleId,
+                exercises_done: totalExercises,
+                exercises_total: totalExercises,
+                score,
+                completed_at: new Date().toISOString(),
+                unlocked: true,
+              } as any);
+          }
+        } catch (err) {
+          console.error("Error saving module progress:", err);
+        }
+      }
       navigate(`/fle`);
       toast.success(`Module terminé ! Score : ${correctCount}/${totalExercises} 🎉`);
     }
-  }, [currentIndex, totalExercises, correctCount, navigate, stt]);
+  }, [currentIndex, totalExercises, correctCount, navigate, stt, user, moduleId]);
 
   const handleRetry = useCallback(() => {
     setAnswered(false);
