@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
+const DEMO_EMAIL = "demo@tofrance.fr";
+
 const ROUTE_INFO: Record<string, { label: string; emoji: string; desc: string; color: string }> = {
   route_a: { label: "Parcours FLE", emoji: "📘", desc: "Formation en français langue étrangère", color: "bg-blue-100 text-blue-800" },
   route_b: { label: "Parcours Formation", emoji: "🎓", desc: "Formation professionnelle qualifiante", color: "bg-purple-100 text-purple-800" },
