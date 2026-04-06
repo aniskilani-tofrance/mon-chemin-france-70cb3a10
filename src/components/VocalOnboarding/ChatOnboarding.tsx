@@ -24,6 +24,15 @@ import {
 
 const emailSchema = z.string().trim().email().max(255);
 
+// Validates that an address contains at least a number, a street name, and a city
+const ADDRESS_REGEX = /\d+.*[a-zA-ZÀ-ÿ]{2,}.*[a-zA-ZÀ-ÿ]{2,}/;
+function isValidAddress(value: string): boolean {
+  const trimmed = value.trim();
+  // Must have at least 3 parts (number + street + city) and match the pattern
+  const parts = trimmed.split(/[\s,]+/).filter(Boolean);
+  return parts.length >= 3 && ADDRESS_REGEX.test(trimmed);
+}
+
 interface ChatMessage {
   role: "marianne" | "user";
   content: string;
