@@ -137,6 +137,70 @@ export const ONBOARDING_TREE: DecisionTree = {
         ru: "Даже неформальный или в вашей стране",
       },
       required: true,
+      nextQuestion: "worked_in_france",
+    },
+
+    // Q1d: Expérience en France
+    worked_in_france: {
+      id: "worked_in_france",
+      type: "choice",
+      question: {
+        fr: "Avez-vous déjà travaillé en France ?",
+        en: "Have you ever worked in France?",
+        ar: "هل سبق لك العمل في فرنسا؟",
+        es: "¿Has trabajado alguna vez en Francia?",
+        pt: "Você já trabalhou na França?",
+        ru: "Вы когда-нибудь работали во Франции?",
+      },
+      subtitle: {
+        fr: "Même un stage, du bénévolat ou un petit boulot",
+        en: "Even an internship, volunteering or a small job",
+        ar: "حتى تدريب أو تطوع أو عمل صغير",
+        es: "Incluso una pasantía, voluntariado o un pequeño trabajo",
+        pt: "Mesmo um estágio, voluntariado ou um pequeno trabalho",
+        ru: "Даже стажировка, волонтёрство или подработка",
+      },
+      choices: [
+        {
+          id: "yes",
+          label: {
+            fr: "Oui",
+            en: "Yes",
+            ar: "نعم",
+            es: "Sí",
+            pt: "Sim",
+            ru: "Да",
+          },
+          icon: "✅",
+          tags: ["exp_france"],
+        },
+        {
+          id: "no",
+          label: {
+            fr: "Non",
+            en: "No",
+            ar: "لا",
+            es: "No",
+            pt: "Não",
+            ru: "Нет",
+          },
+          icon: "❌",
+          tags: ["no_exp_france"],
+        },
+        {
+          id: "partial",
+          label: {
+            fr: "Un peu (stage, bénévolat)",
+            en: "A little (internship, volunteering)",
+            ar: "قليلاً (تدريب، تطوع)",
+            es: "Un poco (pasantía, voluntariado)",
+            pt: "Um pouco (estágio, voluntariado)",
+            ru: "Немного (стажировка, волонтёрство)",
+          },
+          icon: "📝",
+          tags: ["partial_exp_france"],
+        },
+      ],
       nextQuestion: "main_goal",
     },
 
@@ -606,14 +670,97 @@ export const ONBOARDING_TREE: DecisionTree = {
           tags: ["b1", "level_3", "job_ready"],
         },
       ],
-      nextQuestion: "work_right",
+      nextQuestion: "real_comprehension_test",
     },
 
-    // ============================================
-    // ÉTAPE 3: DROITS & CONTRAINTES
-    // ============================================
+    // Q5b: Micro-évaluation de compréhension réelle
+    real_comprehension_test: {
+      id: "real_comprehension_test",
+      type: "choice",
+      question: {
+        fr: "On va faire un petit test rapide 😊\n\nSi je dis :\n\"Prenez un balai et nettoyez la table\"\n\nVous comprenez ?",
+        en: "Let's do a quick test 😊\n\nIf I say:\n\"Take a broom and clean the table\"\n\nDo you understand?",
+        ar: "لنقم باختبار سريع 😊\n\nإذا قلت:\n\"خذ مكنسة ونظّف الطاولة\"\n\nهل تفهم؟",
+        es: "Vamos a hacer un test rápido 😊\n\nSi digo:\n\"Tome una escoba y limpie la mesa\"\n\n¿Entiende?",
+        pt: "Vamos fazer um teste rápido 😊\n\nSe eu disser:\n\"Pegue uma vassoura e limpe a mesa\"\n\nVocê entende?",
+        ru: "Давайте сделаем быстрый тест 😊\n\nЕсли я скажу:\n\"Возьмите метлу и протрите стол\"\n\nВы понимаете?",
+      },
+      choices: [
+        {
+          id: "yes",
+          label: { fr: "Oui, je comprends", en: "Yes, I understand", ar: "نعم، أفهم", es: "Sí, entiendo", pt: "Sim, entendo", ru: "Да, понимаю" },
+          icon: "✅",
+          tags: ["comprehension_high"],
+        },
+        {
+          id: "partial",
+          label: { fr: "Un peu", en: "A little", ar: "قليلاً", es: "Un poco", pt: "Um pouco", ru: "Немного" },
+          icon: "🤔",
+          tags: ["comprehension_partial"],
+        },
+        {
+          id: "no",
+          label: { fr: "Non", en: "No", ar: "لا", es: "No", pt: "Não", ru: "Нет" },
+          icon: "❌",
+          tags: ["comprehension_low"],
+        },
+      ],
+      nextQuestion: "admin_status",
+    },
 
-    // Q6: Droit au travail
+    // Q5c: Statut administratif détaillé
+    admin_status: {
+      id: "admin_status",
+      type: "choice",
+      question: {
+        fr: "Quelle est votre situation administrative aujourd'hui ?",
+        en: "What is your administrative status today?",
+        ar: "ما هي وضعيتك الإدارية اليوم؟",
+        es: "¿Cuál es tu situación administrativa hoy?",
+        pt: "Qual é a sua situação administrativa hoje?",
+        ru: "Каков ваш административный статус сегодня?",
+      },
+      subtitle: {
+        fr: "Cette information nous aide à vous orienter vers les bons partenaires",
+        en: "This helps us guide you to the right partners",
+        ar: "تساعدنا هذه المعلومات في توجيهك إلى الشركاء المناسبين",
+        es: "Esta información nos ayuda a orientarte hacia los socios adecuados",
+        pt: "Esta informação nos ajuda a direcioná-lo aos parceiros certos",
+        ru: "Эта информация поможет нам направить вас к правильным партнёрам",
+      },
+      choices: [
+        {
+          id: "titre_sejour",
+          label: { fr: "Titre de séjour", en: "Residence permit", ar: "تصريح إقامة", es: "Permiso de residencia", pt: "Autorização de residência", ru: "Вид на жительство" },
+          icon: "🪪",
+          tags: ["status_titre_sejour"],
+        },
+        {
+          id: "refugie",
+          label: { fr: "Réfugié / Protection subsidiaire", en: "Refugee / Subsidiary protection", ar: "لاجئ / حماية فرعية", es: "Refugiado / Protección subsidiaria", pt: "Refugiado / Proteção subsidiária", ru: "Беженец / Дополнительная защита" },
+          icon: "🛡️",
+          tags: ["status_refugie"],
+        },
+        {
+          id: "demandeur_asile",
+          label: { fr: "Demandeur d'asile", en: "Asylum seeker", ar: "طالب لجوء", es: "Solicitante de asilo", pt: "Requerente de asilo", ru: "Соискатель убежища" },
+          icon: "📋",
+          tags: ["status_demandeur_asile"],
+        },
+        {
+          id: "sans_papiers",
+          label: { fr: "Sans papiers", en: "Undocumented", ar: "بدون أوراق", es: "Sin papeles", pt: "Sem documentos", ru: "Без документов" },
+          icon: "⚠️",
+          tags: ["status_sans_papiers"],
+        },
+        {
+          id: "ne_sait_pas",
+          label: { fr: "Je ne sais pas", en: "I don't know", ar: "لا أعرف", es: "No sé", pt: "Não sei", ru: "Не знаю" },
+          icon: "❓",
+          tags: ["status_inconnu"],
+        },
+      ],
+      nextQuestion: "work_right",
     work_right: {
       id: "work_right",
       type: "choice",
@@ -1554,6 +1701,30 @@ export const ONBOARDING_TREE: DecisionTree = {
         ur: "اپنی ذاتی رہنمائی حاصل کرنے کے لیے",
       },
       required: true,
+      nextQuestion: "contact_phone",
+    },
+
+    // Téléphone
+    contact_phone: {
+      id: "contact_phone",
+      type: "text",
+      question: {
+        fr: "Votre numéro de téléphone ? (WhatsApp si possible)",
+        en: "Your phone number? (WhatsApp if possible)",
+        ar: "رقم هاتفك؟ (واتساب إن أمكن)",
+        es: "¿Tu número de teléfono? (WhatsApp si es posible)",
+        pt: "Seu número de telefone? (WhatsApp se possível)",
+        ru: "Ваш номер телефона? (WhatsApp если возможно)",
+      },
+      subtitle: {
+        fr: "On vous contactera pour vous aider, pas pour vendre",
+        en: "We'll contact you to help, not to sell",
+        ar: "سنتصل بك للمساعدة، وليس للبيع",
+        es: "Te contactaremos para ayudarte, no para vender",
+        pt: "Entraremos em contato para ajudar, não para vender",
+        ru: "Мы свяжемся с вами, чтобы помочь, а не продавать",
+      },
+      required: false,
       nextQuestion: null,
     },
   },
@@ -1569,8 +1740,11 @@ export interface OnboardingAnswers {
   contact_48h?: string;
   origin_country?: string;
   previous_job?: string;
+  worked_in_france?: string;
   literacy?: string;
   french_level_cecrl?: string;
+  real_comprehension_score?: string;
+  admin_status?: string;
   work_right?: string;
   barriers?: string | string[];
   sector_satisfaction?: string;
@@ -1586,44 +1760,51 @@ export interface OnboardingAnswers {
   contact_firstname?: string;
   contact_lastname?: string;
   contact_email?: string;
+  contact_phone?: string;
+  distance_to_job?: number;
   tags: string[];
   [key: string]: unknown;
 }
 
-// Determine the route based on answers
+// Calculate distance to job (0-4)
+export function calculateDistanceToJob(answers: OnboardingAnswers): number {
+  const level = answers.french_level_cecrl;
+  const workedInFrance = answers.worked_in_france;
+
+  if (level === "alpha") return 4;
+  if (level === "a1") return 3;
+  if (level === "a2") {
+    if (workedInFrance === "yes") return 1;
+    return 2;
+  }
+  if (level === "b1") return 0;
+  return 3; // default
+}
+
+// Determine the route based on answers (smart routing with distance_to_job)
 export function determineRoute(answers: OnboardingAnswers): LeadRoute {
   const mainGoal = answers.main_goal as string | undefined;
   const frenchLevel = answers.french_level_cecrl as string | undefined;
   const workRight = answers.work_right as string | undefined;
+  const distanceToJob = calculateDistanceToJob(answers);
 
-  // Route C: Emploi direct — personne prête à travailler immédiatement
-  // Conditions: veut un emploi + droit de travailler + niveau A2 minimum
-  // Pas besoin de formation, juste mise en relation avec employeurs
-  if (mainGoal === "find_job" && workRight === "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_c";
-  }
+  // Route A: FLE — niveau trop faible
+  if (mainGoal === "learn_french") return "route_a";
+  if (frenchLevel === "alpha" || frenchLevel === "a1") return "route_a";
 
-  // Route A: FLE — besoin d'apprendre le français d'abord
-  // Conditions: veut apprendre OU niveau trop faible (alpha/A1)
-  if (mainGoal === "learn_french") {
-    return "route_a";
-  }
-  if (frenchLevel === "alpha" || frenchLevel === "a1") {
-    return "route_a";
-  }
+  // Route B: Formation — distance à l'emploi >= 2
+  if (distanceToJob >= 2) return "route_b";
 
-  // Route B: Formation qualifiante — a le niveau de français, veut un métier
-  // Conditions: veut une formation + niveau A2 minimum
-  if (mainGoal === "job_training" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_b";
-  }
+  // Route C: Emploi direct — prêt à travailler
+  if (workRight === "yes" && distanceToJob <= 1) return "route_c";
 
-  // Route B aussi: veut un emploi mais pas de droit de travail → formation d'abord
-  if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) {
-    return "route_b";
-  }
+  // Route B: veut une formation
+  if (mainGoal === "job_training" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
 
-  // SAS: besoin d'aide / cas mixtes / orientation nécessaire
+  // Route B: veut un emploi mais pas de droit de travail
+  if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
+
+  // SAS: besoin d'aide / cas mixtes
   return "sas";
 }
 
@@ -1707,16 +1888,30 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
   const workRight = answers.work_right;
 
   // Match niveau langue avec prérequis
-  if (frenchLevel === "b1") fit += 20;
-  else if (frenchLevel === "a2") fit += 15;
-  else if (frenchLevel === "a1") fit += 10;
-  else if (frenchLevel === "alpha") fit += 5;
+  if (frenchLevel === "b1") fit += 15;
+  else if (frenchLevel === "a2") fit += 10;
+  else if (frenchLevel === "a1") fit += 5;
+  else if (frenchLevel === "alpha") fit += 2;
+
+  // Distance to job bonus/malus
+  const distanceToJob = calculateDistanceToJob(answers);
+  if (distanceToJob === 0) fit += 15;
+  else if (distanceToJob === 1) fit += 10;
+  else if (distanceToJob === 2) fit += 5;
+  else if (distanceToJob >= 3) fit -= 5;
+
+  // Worked in France bonus
+  if (answers.worked_in_france === "yes") fit += 10;
+  else if (answers.worked_in_france === "partial") fit += 5;
+
+  // Real comprehension bonus
+  if (answers.real_comprehension_score === "yes") fit += 5;
 
   // Match zone géographique (si localisation fournie)
-  if (answers.location) fit += 15;
+  if (answers.location) fit += 10;
 
   // Match secteur/compétences
-  if (answers.target_sector || answers.fle_type) fit += 15;
+  if (answers.target_sector || answers.fle_type) fit += 10;
 
   // Réactivité (0-20 points)
   if (answers.contact_48h === "yes") reactivite += 10;
@@ -1726,7 +1921,6 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
 
   // Work right bonus for Route C
   if (mainGoal === "find_job" && workRight === "yes") fit += 5;
-
   // Cap at max values
   completude = Math.min(completude, 30);
   fit = Math.min(fit, 50);

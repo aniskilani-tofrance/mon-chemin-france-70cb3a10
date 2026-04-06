@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Sparkles, Loader2, Mail, User, MapPin, Clock, Star, Copy, AlertTriangle, CheckCircle } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Loader2, Mail, User, MapPin, Phone, Star, Copy, AlertTriangle, CheckCircle, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -36,6 +36,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
   const leadPackInfo = {
     name: [answers.contact_firstname, answers.contact_lastname].filter(Boolean).join(" "),
     email: answers.contact_email,
+    phone: answers.contact_phone,
     location: answers.location,
   };
 
@@ -85,6 +86,24 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             {t.onboarding.profileCreated}
           </h2>
 
+          {/* Personalized Plan */}
+          <div className="mb-6 rounded-xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 to-accent/5 p-5 text-left">
+            <div className="flex items-center gap-2 mb-3">
+              <Target className="h-5 w-5 text-primary" />
+              <h3 className="text-sm font-semibold uppercase text-primary">
+                Ton plan personnalisé
+              </h3>
+            </div>
+            <PersonalizedPlanSteps
+              route={result.parcours}
+              distanceToJob={answers.distance_to_job ? parseInt(answers.distance_to_job) : undefined}
+              adminStatus={answers.admin_status}
+            />
+            <p className="mt-3 text-sm font-medium text-primary">
+              Tu es sur le bon chemin 💪
+            </p>
+          </div>
+
           {/* Parcours indicator */}
           <div className="mb-6 rounded-xl bg-secondary/50 p-4">
             <div className="mb-2 text-3xl">{PARCOURS_META[result.parcours].emoji}</div>
@@ -111,6 +130,14 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
               {result.scoreLabel}
             </Badge>
           </div>
+
+          {/* Admin status alert */}
+          {answers.admin_status === "sans_papiers" && (
+            <div className="mb-6 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+              <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
+              <span>⚠️ Orientation juridique recommandée — nous vous mettrons en relation avec des partenaires spécialisés</span>
+            </div>
+          )}
 
           {/* Alertes */}
           {result.alertes.length > 0 && (
@@ -177,6 +204,12 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
                 <span className="truncate">{leadPackInfo.email}</span>
               </div>
             )}
+            {leadPackInfo.phone && (
+              <div className="flex items-center gap-2 text-sm">
+                <Phone className="h-4 w-4 text-muted-foreground" />
+                <span>{leadPackInfo.phone}</span>
+              </div>
+            )}
             {leadPackInfo.location && (
               <div className="flex items-center gap-2 text-sm">
                 <MapPin className="h-4 w-4 text-muted-foreground" />
@@ -218,5 +251,43 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
         </CardContent>
       </Card>
     </motion.div>
+  );
+}
+
+// Personalized plan steps based on route
+function PersonalizedPlanSteps({ route, distanceToJob, adminStatus }: { route: string; distanceToJob?: number; adminStatus?: string }) {
+  const steps: { emoji: string; text: string }[] = [];
+
+  if (adminStatus === "sans_papiers" || adminStatus === "demandeur_asile") {
+    steps.push({ emoji: "📋", text: "Régulariser ta situation administrative" });
+  }
+
+  if (route === "fle" || route === "fle_pro") {
+    steps.push({ emoji: "📖", text: "Améliorer ton français (1-2 mois)" });
+    steps.push({ emoji: "🎓", text: "Accéder à une formation professionnelle" });
+    steps.push({ emoji: "💼", text: "Trouver un emploi stable" });
+  } else if (route === "formation") {
+    steps.push({ emoji: "🎓", text: "Suivre une formation qualifiante" });
+    steps.push({ emoji: "📜", text: "Obtenir ta certification" });
+    steps.push({ emoji: "💼", text: "Décrocher un emploi dans ton secteur" });
+  } else if (route === "emploi") {
+    steps.push({ emoji: "🔍", text: "Mise en relation avec des employeurs" });
+    steps.push({ emoji: "🤝", text: "Entretiens et recrutement" });
+    steps.push({ emoji: "💼", text: "Démarrer ton emploi" });
+  } else {
+    steps.push({ emoji: "🧭", text: "Orientation personnalisée" });
+    steps.push({ emoji: "📖", text: "Formation adaptée à ton profil" });
+    steps.push({ emoji: "💼", text: "Insertion professionnelle" });
+  }
+
+  return (
+    <ol className="space-y-2">
+      {steps.map((step, i) => (
+        <li key={i} className="flex items-center gap-2 text-sm">
+          <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">{i + 1}</span>
+          <span>{step.emoji} {step.text}</span>
+        </li>
+      ))}
+    </ol>
   );
 }

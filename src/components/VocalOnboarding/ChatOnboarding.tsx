@@ -39,9 +39,9 @@ interface ChatMessage {
 }
 
 // Questions that need a special inline widget instead of free text
-const WIDGET_QUESTIONS = new Set(["location", "contact_email", "contact_firstname", "contact_lastname"]);
+const WIDGET_QUESTIONS = new Set(["location", "contact_email", "contact_firstname", "contact_lastname", "contact_phone"]);
 // Questions where we accept free text directly (no AI parsing needed)
-const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country", "previous_job"]);
+const DIRECT_TEXT_QUESTIONS = new Set(["location", "contact_firstname", "contact_lastname", "contact_email", "origin_country", "previous_job", "contact_phone"]);
 // Minimum length for free text answers to avoid empty/meaningless submissions
 const MIN_TEXT_LENGTH = 1;
 
@@ -75,6 +75,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const isDirectText = DIRECT_TEXT_QUESTIONS.has(currentQuestionId);
   const isWidget = WIDGET_QUESTIONS.has(currentQuestionId);
   const isEmail = currentQuestionId === "contact_email";
+  const isPhone = currentQuestionId === "contact_phone";
   const isRTL = language === "ar";
 
   // TTS with onEnd to auto-start mic
@@ -82,7 +83,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
-      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname";
+      const skipMic = qId === "contact_email" || qId === "contact_firstname" || qId === "contact_lastname" || qId === "contact_phone";
       if (shouldAutoListen.current && vocalMode && sttSupported && !skipMic) {
         shouldAutoListen.current = false;
         setTimeout(() => startListening(), 300);
@@ -110,7 +111,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   // Auto-submit when STT stops (final result) in vocal mode
   useEffect(() => {
     const isNameField = currentQuestionIdRef.current === "contact_firstname" || currentQuestionIdRef.current === "contact_lastname";
-    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isNameField) {
+    if (!isListening && pendingTranscriptRef.current && vocalMode && !isProcessing && !isEmail && !isPhone && !isNameField) {
       const value = pendingTranscriptRef.current.trim();
       pendingTranscriptRef.current = "";
       if (value) {
@@ -595,7 +596,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Vocal-first: big mic button for all questions except email and name fields */}
-          {vocalMode && sttSupported && !isEmail && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
+          {vocalMode && sttSupported && !isEmail && !isPhone && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-2">
               <motion.button
                 onClick={handleMicToggle}
@@ -638,7 +639,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           )}
 
           {/* Fallback text input for email or non-vocal mode */}
-          {(!vocalMode || !sttSupported || isEmail || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
+          {(!vocalMode || !sttSupported || isEmail || isPhone || currentQuestionId === "contact_firstname" || currentQuestionId === "contact_lastname") && (
             <div className="flex items-center gap-2">
               {sttSupported && !isWidget && (
                 <Button
@@ -654,7 +655,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
               {currentQuestionId !== "location" && (
                 <Input
-                  type={isEmail ? "email" : "text"}
+                  type={isEmail ? "email" : isPhone ? "tel" : "text"}
                   value={inputText}
                   onChange={(e) => {
                     setInputText(e.target.value);
@@ -665,6 +666,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   }}
                   placeholder={
                     isEmail ? "email@exemple.com" :
+                    isPhone ? "+33 6 12 34 56 78" :
                     currentQuestionId === "contact_firstname" ? (
                       language === "ar" ? "اسمكم الأوّل..." :
                       language === "en" ? "Your first name..." :

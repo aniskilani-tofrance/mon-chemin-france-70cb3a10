@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import {
   calculateLeadScore,
+  calculateDistanceToJob,
   determineRoute,
   OnboardingAnswers as TreeOnboardingAnswers,
   LeadRoute,
@@ -62,11 +63,13 @@ const Onboarding = () => {
   const handleChatComplete = useCallback((chatAnswers: TreeOnboardingAnswers) => {
     const route = determineRoute(chatAnswers);
     const score = calculateLeadScore(chatAnswers);
+    const distanceToJob = calculateDistanceToJob(chatAnswers);
     const finalAnswers: OnboardingAnswers = {
       ...answers,
       ...chatAnswers,
       leadRoute: route,
       leadScore: score.total,
+      distance_to_job: distanceToJob,
     };
     setAnswers(finalAnswers);
     setStep("complete");

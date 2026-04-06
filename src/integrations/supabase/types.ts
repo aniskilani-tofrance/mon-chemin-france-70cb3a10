@@ -468,10 +468,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          admin_status: string | null
           barriers: string[] | null
           city: string | null
           contact_48h: boolean | null
           created_at: string
+          distance_to_job: number | null
           email: string | null
           first_name: string | null
           fle_format: string | null
@@ -493,6 +495,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           previous_job: string | null
+          real_comprehension_score: string | null
           skills: string[] | null
           target_sector: string | null
           training_duration: string | null
@@ -500,12 +503,15 @@ export type Database = {
           user_id: string | null
           work_right: string | null
           work_schedule: string | null
+          worked_in_france: string | null
         }
         Insert: {
+          admin_status?: string | null
           barriers?: string[] | null
           city?: string | null
           contact_48h?: boolean | null
           created_at?: string
+          distance_to_job?: number | null
           email?: string | null
           first_name?: string | null
           fle_format?: string | null
@@ -527,6 +533,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           previous_job?: string | null
+          real_comprehension_score?: string | null
           skills?: string[] | null
           target_sector?: string | null
           training_duration?: string | null
@@ -534,12 +541,15 @@ export type Database = {
           user_id?: string | null
           work_right?: string | null
           work_schedule?: string | null
+          worked_in_france?: string | null
         }
         Update: {
+          admin_status?: string | null
           barriers?: string[] | null
           city?: string | null
           contact_48h?: boolean | null
           created_at?: string
+          distance_to_job?: number | null
           email?: string | null
           first_name?: string | null
           fle_format?: string | null
@@ -561,6 +571,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           previous_job?: string | null
+          real_comprehension_score?: string | null
           skills?: string[] | null
           target_sector?: string | null
           training_duration?: string | null
@@ -568,6 +579,7 @@ export type Database = {
           user_id?: string | null
           work_right?: string | null
           work_schedule?: string | null
+          worked_in_france?: string | null
         }
         Relationships: []
       }
