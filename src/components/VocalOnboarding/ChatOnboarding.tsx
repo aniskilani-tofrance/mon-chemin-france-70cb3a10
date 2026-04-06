@@ -706,7 +706,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                 </Button>
               )}
 
-              {currentQuestionId !== "location" && (
+              {currentQuestionId !== "location" && !isPostalCode && (
                 <Input
                   type={isEmail ? "email" : isPhone ? "tel" : "text"}
                   value={inputText}
