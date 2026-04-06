@@ -666,6 +666,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   }}
                   placeholder={
                     isEmail ? "email@exemple.com" :
+                    isPhone ? "+33 6 12 34 56 78" :
                     currentQuestionId === "contact_firstname" ? (
                       language === "ar" ? "اسمكم الأوّل..." :
                       language === "en" ? "Your first name..." :
