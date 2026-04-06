@@ -539,7 +539,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
                   <MapPin className="h-4 w-4 text-primary" />
                 </div>
                 <p className="text-sm font-semibold text-foreground">
-                  {language === "ar" ? "📍 أين تسكن في فرنسا؟" :
+                  {language === "ar" ? "📍 أين تقيمون في فرنسا؟" :
                    language === "en" ? "📍 Where do you live in France?" :
                    language === "es" ? "📍 ¿Dónde vives en Francia?" :
                    language === "pt" ? "📍 Onde você mora na França?" :
