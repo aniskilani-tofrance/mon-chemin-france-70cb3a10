@@ -18,12 +18,12 @@ export interface GooglePlacesAutocompleteHandle {
 }
 
 const LOCATION_PLACEHOLDERS: Record<string, string> = {
-  fr: "Ville ou code postal",
-  en: "City or postal code",
-  ar: "المدينة أو الرمز البريدي",
-  es: "Ciudad o código postal",
-  pt: "Cidade ou código postal",
-  ru: "Город или почтовый индекс",
+  fr: "12 rue de la République, Lyon",
+  en: "12 rue de la République, Paris",
+  ar: "12 شارع الجمهورية، باريس",
+  es: "12 rue de la République, Lyon",
+  pt: "12 rue de la République, Lyon",
+  ru: "12 rue de la République, Лион",
 };
 
 export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandle, GooglePlacesAutocompleteProps>(function GooglePlacesAutocomplete({
@@ -106,7 +106,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
     try {
       const el = new google.maps.places.PlaceAutocompleteElement({
         componentRestrictions: { country: "fr" },
-        types: ["(cities)"],
+        types: ["address"],
       });
 
       el.setAttribute("dir", isRTL ? "rtl" : "ltr");
@@ -263,7 +263,9 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
     };
   }, []);
 
+  // No native fallback — only Google Places autocomplete
   if (useNativeInput) {
+    // Still render Google-style input but without autocomplete
     return (
       <div className="relative" dir={isRTL ? "rtl" : "ltr"}>
         <MapPin className={`absolute top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground ${isRTL ? "right-3" : "left-3"}`} />
@@ -272,11 +274,14 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
           dir={isRTL ? "rtl" : "ltr"}
-          className={`flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all focus:ring-2 focus:ring-primary/30 ${isRTL ? "pr-10 text-right" : "pl-10 text-center"} ${className ?? ""}`}
+          className={`flex h-12 w-full rounded-md border border-input bg-background px-3 py-2 text-lg ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-all focus:ring-2 focus:ring-primary/30 ${isRTL ? "pr-10 text-right" : "pl-10"} ${className ?? ""}`}
           autoFocus={autoFocus}
           autoComplete="off"
           onKeyDown={onKeyDown as any}
         />
+        <p className="mt-1.5 text-[10px] text-muted-foreground">
+          {isRTL ? "مثال: 12 شارع الجمهورية، باريس" : "Ex : 12 rue de la République, Lyon"}
+        </p>
       </div>
     );
   }

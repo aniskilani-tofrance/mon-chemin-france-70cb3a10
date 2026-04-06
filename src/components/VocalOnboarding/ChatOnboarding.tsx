@@ -24,6 +24,15 @@ import {
 
 const emailSchema = z.string().trim().email().max(255);
 
+// Validates that an address contains at least a number, a street name, and a city
+const ADDRESS_REGEX = /\d+.*[a-zA-ZÀ-ÿ]{2,}.*[a-zA-ZÀ-ÿ]{2,}/;
+function isValidAddress(value: string): boolean {
+  const trimmed = value.trim();
+  // Must have at least 3 parts (number + street + city) and match the pattern
+  const parts = trimmed.split(/[\s,]+/).filter(Boolean);
+  return parts.length >= 3 && ADDRESS_REGEX.test(trimmed);
+}
+
 interface ChatMessage {
   role: "marianne" | "user";
   content: string;
@@ -51,6 +60,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [answers, setAnswers] = useState<OnboardingAnswers>(initialAnswers);
   const [isComplete, setIsComplete] = useState(false);
   const [emailError, setEmailError] = useState<string | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
   const [vocalMode, setVocalMode] = useState(true); // full vocal by default
   const chatEndRef = useRef<HTMLDivElement>(null);
@@ -438,7 +448,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
 
   const handleLocationSubmit = () => {
     const value = getLocationValue();
-    if (value.trim()) processAnswer(value.trim());
+    if (!value.trim()) return;
+    if (!isValidAddress(value)) {
+      setLocationError(
+        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
+        language === "en" ? "Please enter a full address (number, street, city)" :
+        language === "es" ? "Introduzca una dirección completa (número, calle, ciudad)" :
+        language === "pt" ? "Insira um endereço completo (número, rua, cidade)" :
+        language === "ru" ? "Введите полный адрес (номер, улица, город)" :
+        "Veuillez saisir une adresse complète (numéro, rue, ville)"
+      );
+      return;
+    }
+    setLocationError(null);
+    processAnswer(value.trim());
   };
 
   const agentState = isProcessing ? "thinking" : isSpeaking ? "speaking" : isListening ? "listening" : "idle";
@@ -550,11 +573,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
               <GooglePlacesAutocomplete
                 ref={locationInputRef}
                 value={inputText}
-                onChange={setInputText}
+                onChange={(v) => { setInputText(v); if (locationError) setLocationError(null); }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleLocationSubmit();
                 }}
               />
+              {locationError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-2 text-xs text-destructive font-medium"
+                >
+                  {locationError}
+                </motion.p>
+              )}
             </motion.div>
           )}
 
