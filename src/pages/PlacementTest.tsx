@@ -99,6 +99,11 @@ export default function PlacementTest() {
     }
   }, [isSpeaking]);
 
+  // Keep ref in sync for auto-play
+  useEffect(() => {
+    playAudioRef.current = playAudio;
+  }, [playAudio]);
+
   const startRecording = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
     if (!SpeechRecognition) {
