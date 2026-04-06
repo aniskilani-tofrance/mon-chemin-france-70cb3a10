@@ -36,6 +36,7 @@ const PitchRegion = lazy(() => import("./pages/PitchRegion"));
 const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
+const FLEPlacement = lazy(() => import("./pages/FLEPlacement"));
 
 const NotFound = lazy(() => import("./pages/NotFound"));
 
