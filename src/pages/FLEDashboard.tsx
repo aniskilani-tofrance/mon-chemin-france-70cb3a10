@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BookOpen, Mic, Brain, Flame, Clock, Star, Trophy, Volume2, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
 
+const LEVEL_ORDER = ["alpha", "post_alpha", "a1", "a2", "b1"];
+
+function shouldUnlock(moduleLevel: string, userLevel: string, moduleIndex: number, previousCompleted: boolean): boolean {
+  if (moduleIndex === 0) return true;
+  const moduleLevelIdx = LEVEL_ORDER.indexOf(moduleLevel);
+  const userLevelIdx = LEVEL_ORDER.indexOf(userLevel);
+  // Unlock if user level >= module level AND previous module in same level is completed
+  return userLevelIdx >= moduleLevelIdx && previousCompleted;
+}
+
 const FLEDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -23,7 +33,15 @@ const FLEDashboard = () => {
 
   const isLoading = modulesLoading || progressLoading;
 
-  // Fallback progress for non-authenticated or new users
+  // Redirect to placement if not completed
+  useEffect(() => {
+    if (!progressLoading && user) {
+      if (!userProgress || !userProgress.placement_completed) {
+        navigate("/fle/placement", { replace: true });
+      }
+    }
+  }, [userProgress, progressLoading, user, navigate]);
+
   const progress = userProgress || {
     estimated_level: "a1",
     total_xp: 0,
@@ -48,12 +66,16 @@ const FLEDashboard = () => {
   const totalModules = modules?.length || 0;
   const overallProgress = totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0;
 
+  // Don't render if placement not done
+  if (!progressLoading && user && (!userProgress || !userProgress.placement_completed)) {
+    return null;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
       <Header />
 
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
-        {/* Welcome section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -171,7 +193,7 @@ const FLEDashboard = () => {
         {/* Category filter */}
         <div className="flex gap-2 mb-6">
           {([
-            { key: "all" as const, label: "📚 Tout", },
+            { key: "all" as const, label: "📚 Tout" },
             { key: "quotidien" as const, label: "🏠 Quotidien" },
             { key: "professionnel" as const, label: "💼 Professionnel" },
           ]).map((cat) => (
@@ -203,9 +225,6 @@ const FLEDashboard = () => {
             >
               <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
               <p className="text-muted-foreground">Aucun module disponible pour le moment.</p>
-              <p className="text-sm text-muted-foreground/60 mt-1">
-                De nouveaux contenus arrivent bientôt ! 🚀
-              </p>
             </motion.div>
           ) : (
             <AnimatePresence mode="popLayout">
@@ -217,13 +236,24 @@ const FLEDashboard = () => {
                     : 0
                   : 0;
 
+                // Determine unlock: first module always unlocked, others based on level + previous completion
+                const previousModule = index > 0 ? filteredModules[index - 1] : null;
+                const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
+                const previousCompleted = previousMp ? !!previousMp.completed_at : false;
+                const isUnlocked = mp?.unlocked || shouldUnlock(
+                  module.cecrl_level,
+                  progress.estimated_level,
+                  index,
+                  previousCompleted
+                );
+
                 return (
                   <motion.div
                     key={module.id}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
-                    transition={{ delay: index * 0.05 }}
+                    transition={{ delay: index * 0.03 }}
                   >
                     <FLEModuleCard
                       title={module.title}
@@ -233,7 +263,7 @@ const FLEDashboard = () => {
                       category={module.category}
                       durationMinutes={module.duration_minutes || 7}
                       progress={moduleProgressPercent}
-                      unlocked={mp?.unlocked ?? index === 0}
+                      unlocked={isUnlocked}
                       completed={!!mp?.completed_at}
                       onClick={() => navigate(`/fle/exercise/${module.id}`)}
                     />
