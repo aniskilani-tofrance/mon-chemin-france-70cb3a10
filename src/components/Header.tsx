@@ -140,7 +140,7 @@ export function Header() {
                     <User className="h-4 w-4" />
                     {user.email?.split("@")[0]}
                   </Link>
-                  <Button variant="outline" className="mt-2 gap-2" onClick={() => { signOut(); setMobileMenuOpen(false); }}>
+                  <Button variant="outline" className="mt-2 gap-2" onClick={() => { handleSignOut(); setMobileMenuOpen(false); }}>
                     <LogOut className="h-4 w-4" />
                     Déconnexion
                   </Button>
