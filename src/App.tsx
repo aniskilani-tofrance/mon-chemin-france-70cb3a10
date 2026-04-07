@@ -39,6 +39,7 @@ const FLEDashboard = lazy(() => import("./pages/FLEDashboard"));
 const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
 const FLEReview = lazy(() => import("./pages/FLEReview"));
+const FormateurDashboard = lazy(() => import("./pages/FormateurDashboard"));
 
 const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
 const PlacementTest = lazy(() => import("./pages/PlacementTest"));
