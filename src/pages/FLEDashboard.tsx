@@ -238,6 +238,24 @@ const FLEDashboard = () => {
           </Button>
         </motion.div>
 
+        {/* Coach Marianne */}
+        {!isLoading && (
+          <div className="mb-6">
+            <FLECoach
+              userLevel={progress.estimated_level}
+              streakDays={progress.streak_days}
+              totalXp={progress.total_xp}
+              modulesCompleted={completedCount}
+              oralScore={progress.oral_score}
+              comprehensionScore={progress.comprehension_score}
+              lastModuleTitle={nextModule?.title}
+              targetSector={userProfile?.target_sector}
+              mainGoal={userProfile?.main_goal}
+              firstName={null}
+            />
+          </div>
+        )}
+
         {/* Daily Mission */}
         {!isLoading && nextModule && (
           <div className="mb-6">
