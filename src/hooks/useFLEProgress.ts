@@ -60,6 +60,7 @@ export interface FLEUserBadge {
 }
 
 export interface UserProfile {
+  first_name: string | null;
   main_goal: string | null;
   target_sector: string | null;
   french_level_cecrl: string | null;
