@@ -640,6 +640,63 @@ const FLEExercise = () => {
               </div>
             )}
 
+            {/* Audio submit to formateur */}
+            {isOralExercise && answered && currentExercise && moduleId && (
+              <div className="mb-4">
+                <AudioSubmitButton exerciseId={currentExercise.id} moduleId={moduleId} />
+              </div>
+            )}
+
+            {/* Drag & Match exercise */}
+            {isDragMatch && currentExercise && !answered && (
+              <div className="mb-6">
+                <DragMatchExercise
+                  pairs={(currentExercise.choices as any[])?.map((c: any) => ({
+                    term: c.term || c.label || "",
+                    definition: c.definition || c.match || "",
+                  })) || []}
+                  onComplete={async (isCorrect, score) => {
+                    setAnswered(true);
+                    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
+                    setAiFeedback({
+                      score,
+                      feedback: isCorrect ? "Bravo, bonnes associations ! 🎉" : "Pas tout à fait, révisez les associations.",
+                      correction: null,
+                      encouragement: isCorrect ? "Excellent travail !" : "Continuez à pratiquer 💪",
+                      pronunciation_tip: null,
+                    });
+                    if (currentExercise) {
+                      await saveExerciseResult(currentExercise.id, "drag_match", isCorrect, null, null);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Scenario tree exercise */}
+            {isScenarioTree && currentExercise && !answered && (
+              <div className="mb-6">
+                <ScenarioTreeExercise
+                  nodes={(currentExercise.choices as any)?.nodes || {}}
+                  startNodeId={(currentExercise.choices as any)?.startNodeId || "start"}
+                  onComplete={async (isCorrect, score) => {
+                    setAnswered(true);
+                    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
+                    setAiFeedback({
+                      score,
+                      feedback: isCorrect ? "Excellent choix dans cette situation ! 🎉" : "Pas le meilleur choix, mais vous apprenez !",
+                      correction: null,
+                      encouragement: isCorrect ? "Vous gérez bien les situations !" : "Réessayez pour explorer d'autres options 💪",
+                      pronunciation_tip: null,
+                    });
+                    if (currentExercise) {
+                      await saveExerciseResult(currentExercise.id, "scenario_tree", isCorrect, null, null);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
             {/* Choice exercise */}
             {isChoiceExercise && choices && choices.length > 0 && (
               <div className="grid grid-cols-1 gap-3 mb-6 sm:grid-cols-2">
