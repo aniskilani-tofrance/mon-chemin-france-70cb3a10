@@ -199,6 +199,12 @@ export default function AdminDashboard() {
 
           <div className="flex gap-2">
             <Button variant="outline" asChild>
+              <Link to="/admin/fle">
+                <Users className="mr-2 h-4 w-4" />
+                Suivi FLE
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link to="/admin/email-preview">
                 <Mail className="mr-2 h-4 w-4" />
                 Prévisualiser les emails
