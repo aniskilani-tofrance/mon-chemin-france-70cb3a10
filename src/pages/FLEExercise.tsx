@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { playSuccess, playError } from "@/lib/sounds";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
