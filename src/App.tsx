@@ -30,6 +30,7 @@ const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminEmailPreview = lazy(() => import("./pages/AdminEmailPreview"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
+const AdminFLEProgress = lazy(() => import("./pages/AdminFLEProgress"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Heberger = lazy(() => import("./pages/Heberger"));
 const PitchRegion = lazy(() => import("./pages/PitchRegion"));
@@ -85,6 +86,7 @@ const App = () => (
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
+              <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
               <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
