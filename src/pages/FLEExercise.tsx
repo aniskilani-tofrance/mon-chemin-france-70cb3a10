@@ -154,6 +154,8 @@ const FLEExercise = () => {
   const queryClient = useQueryClient();
   const tts = useTTS({ language: "fr" });
   const stt = useSpeechRecognition({ language: "fr" });
+  const { evaluateAndAdjust } = useAdaptiveLearning();
+  const { isOffline, cachedExercises, savePendingResult } = useOfflineExercises(moduleId);
   const isAlphaMode = userProgress?.estimated_level === "alpha" || userProgress?.estimated_level === "post_alpha";
 
   const [currentIndex, setCurrentIndex] = useState(0);
