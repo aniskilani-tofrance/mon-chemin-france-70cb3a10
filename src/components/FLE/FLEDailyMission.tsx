@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { PlayCircle, Clock, Sparkles, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { playWhoosh } from "@/lib/sounds";
 
 interface FLEDailyMissionProps {
   moduleTitle: string;
