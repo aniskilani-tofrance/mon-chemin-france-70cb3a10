@@ -766,6 +766,7 @@ export type Database = {
           level: string
           score: number
           trainer_name: string | null
+          user_id: string | null
         }
         Insert: {
           answers?: Json
@@ -779,6 +780,7 @@ export type Database = {
           level?: string
           score?: number
           trainer_name?: string | null
+          user_id?: string | null
         }
         Update: {
           answers?: Json
@@ -792,6 +794,7 @@ export type Database = {
           level?: string
           score?: number
           trainer_name?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
