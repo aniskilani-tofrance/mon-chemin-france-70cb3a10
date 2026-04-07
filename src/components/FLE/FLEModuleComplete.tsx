@@ -1,7 +1,9 @@
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
 import { ArrowRight, RotateCcw, Home, Star } from "lucide-react";
+import { playFanfare } from "@/lib/sounds";
 
 interface FLEModuleCompleteProps {
   moduleTitle: string;
@@ -37,6 +39,10 @@ export function FLEModuleComplete({
   onHome,
 }: FLEModuleCompleteProps) {
   const stars = getStars(score);
+
+  useEffect(() => {
+    playFanfare();
+  }, []);
 
   return (
     <motion.div

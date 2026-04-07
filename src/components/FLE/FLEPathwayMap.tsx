@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Lock, PlayCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FLELevelBadge } from "./FLELevelBadge";
+import { playDing, playWhoosh } from "@/lib/sounds";
 
 interface PathwayModule {
   id: string;
@@ -53,7 +54,7 @@ export function FLEPathwayMap({ modules, onModuleClick }: FLEPathwayMapProps) {
               transition={{ delay: index * 0.06, type: "spring", stiffness: 200 }}
               whileHover={isAccessible ? { scale: 1.02, x: 6 } : {}}
               whileTap={isAccessible ? { scale: 0.97 } : {}}
-              onClick={() => isAccessible && onModuleClick(module.id)}
+              onClick={() => { if (isAccessible) { playDing(); onModuleClick(module.id); } }}
               className={cn(
                 "relative flex items-center gap-3 w-full rounded-2xl px-3 py-3 text-left transition-all",
                 isAccessible

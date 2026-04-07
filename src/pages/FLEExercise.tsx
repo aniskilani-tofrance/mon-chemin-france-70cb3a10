@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { playSuccess, playError } from "@/lib/sounds";
 import { useParams, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -280,7 +281,7 @@ const FLEExercise = () => {
     setAnswered(true);
 
     const isCorrect = choice === currentExercise?.correct_answer;
-    if (isCorrect) setCorrectCount((c) => c + 1);
+    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
 
     setAiFeedback({
       score: isCorrect ? 100 : 0,
