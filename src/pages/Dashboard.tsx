@@ -30,7 +30,7 @@ import {
 import { Link } from "react-router-dom";
 import { FLEDashboardCard } from "@/components/FLE/FLEDashboardCard";
 
-const DEMO_EMAIL = "demo@tofrance.fr";
+import { DemoBanner } from "@/components/DemoBanner";
 
 const ROUTE_INFO: Record<string, { label: string; emoji: string; desc: string; color: string }> = {
   route_a: { label: "Parcours FLE", emoji: "📘", desc: "Formation en français langue étrangère", color: "bg-blue-100 text-blue-800" },
