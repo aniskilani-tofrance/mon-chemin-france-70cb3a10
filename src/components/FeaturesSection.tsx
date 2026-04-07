@@ -60,11 +60,20 @@ export function FeaturesSection() {
                       <p className="mb-6 flex-1 text-muted-foreground">
                         {feature.description}
                       </p>
-                      <Button variant="ghost" className="w-fit gap-2 px-0 text-primary hover:bg-transparent hover:text-primary/80" asChild>
-                        <Link to={feature.link} onClick={(e) => handleFeatureClick(feature, e)}>
-                          {feature.cta}
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
+                      <Button
+                        variant="ghost"
+                        className="w-fit gap-2 px-0 text-primary hover:bg-transparent hover:text-primary/80"
+                        onClick={(e) => {
+                          if (feature.gated && !hasCompletedOnboarding) {
+                            e.preventDefault();
+                            setGateOpen(true);
+                          } else {
+                            navigate(feature.link);
+                          }
+                        }}
+                      >
+                        {feature.cta}
+                        <ArrowRight className="h-4 w-4" />
                       </Button>
                     </CardContent>
                   </Card>
