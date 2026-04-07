@@ -4,6 +4,9 @@ import { FLECoach } from "@/components/FLE/FLECoach";
 import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info, Zap, RotateCcw, MessageCircle, Briefcase, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
+import { FLETimeTracker } from "@/components/FLE/FLETimeTracker";
+import { FLEGenerateExercise } from "@/components/FLE/FLEGenerateExercise";
+import { FLEInstallPrompt } from "@/components/FLE/FLEInstallPrompt";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
 import { FLEDailyMission } from "@/components/FLE/FLEDailyMission";
 import { FLEWeeklyProgress } from "@/components/FLE/FLEWeeklyProgress";
@@ -303,6 +306,11 @@ const FLEDashboard = () => {
           </motion.div>
         )}
 
+        {/* Time Tracker */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-6">
+          <FLETimeTracker />
+        </motion.div>
+
         {/* Weekly XP progress */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
           <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
@@ -374,6 +382,19 @@ const FLEDashboard = () => {
             </div>
           </motion.div>
         )}
+
+        {/* AI-generated exercises */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.33 }}
+          className="mb-6"
+        >
+          <FLEGenerateExercise
+            userLevel={progress.estimated_level}
+            theme={userProfile?.target_sector || undefined}
+          />
+        </motion.div>
 
         {/* Section title */}
         <motion.div
@@ -568,3 +589,6 @@ function LevelChangeBanner({ levelChange, onDismiss }: {
 }
 
 export default FLEDashboard;
+
+// PWA Install prompt is rendered at root level - re-export for App.tsx
+export { FLEInstallPrompt };

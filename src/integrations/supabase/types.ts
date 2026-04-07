@@ -393,6 +393,47 @@ export type Database = {
         }
         Relationships: []
       }
+      fle_sessions: {
+        Row: {
+          activity_type: string
+          created_at: string
+          duration_seconds: number | null
+          ended_at: string | null
+          id: string
+          module_id: string | null
+          started_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          module_id?: string | null
+          started_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          duration_seconds?: number | null
+          ended_at?: string | null
+          id?: string
+          module_id?: string | null
+          started_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fle_sessions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fle_user_badges: {
         Row: {
           badge_key: string

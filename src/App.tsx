@@ -8,6 +8,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { lazy, Suspense } from "react";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import { FLEInstallPrompt } from "@/components/FLE/FLEInstallPrompt";
 
 // Eagerly loaded (critical path)
 import Index from "./pages/Index";
@@ -64,6 +65,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <OAuthRedirectHandler />
+          <FLEInstallPrompt />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
               <Route path="/" element={<Index />} />
