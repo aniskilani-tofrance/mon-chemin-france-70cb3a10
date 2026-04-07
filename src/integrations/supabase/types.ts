@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      afest_observations: {
+        Row: {
+          appreciation: number
+          commentaire: string | null
+          competences: Json
+          created_at: string
+          formateur_id: string
+          id: string
+          learner_id: string
+          observation_date: string
+          situation: string
+          updated_at: string
+        }
+        Insert: {
+          appreciation?: number
+          commentaire?: string | null
+          competences?: Json
+          created_at?: string
+          formateur_id: string
+          id?: string
+          learner_id: string
+          observation_date?: string
+          situation: string
+          updated_at?: string
+        }
+        Update: {
+          appreciation?: number
+          commentaire?: string | null
+          competences?: Json
+          created_at?: string
+          formateur_id?: string
+          id?: string
+          learner_id?: string
+          observation_date?: string
+          situation?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           created_at: string
@@ -43,6 +82,110 @@ export type Database = {
           session_id?: string
         }
         Relationships: []
+      }
+      assignments: {
+        Row: {
+          assigned_by: string
+          completed_at: string | null
+          created_at: string
+          due_date: string | null
+          id: string
+          learner_id: string
+          module_id: string
+          score: number | null
+          status: Database["public"]["Enums"]["assignment_status"]
+          updated_at: string
+        }
+        Insert: {
+          assigned_by: string
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          learner_id: string
+          module_id: string
+          score?: number | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          updated_at?: string
+        }
+        Update: {
+          assigned_by?: string
+          completed_at?: string | null
+          created_at?: string
+          due_date?: string | null
+          id?: string
+          learner_id?: string
+          module_id?: string
+          score?: number | null
+          status?: Database["public"]["Enums"]["assignment_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "assignments_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audio_submissions: {
+        Row: {
+          audio_url: string
+          created_at: string
+          exercise_id: string | null
+          formateur_comment: string | null
+          id: string
+          learner_id: string
+          module_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["audio_review_status"]
+          updated_at: string
+        }
+        Insert: {
+          audio_url: string
+          created_at?: string
+          exercise_id?: string | null
+          formateur_comment?: string | null
+          id?: string
+          learner_id: string
+          module_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["audio_review_status"]
+          updated_at?: string
+        }
+        Update: {
+          audio_url?: string
+          created_at?: string
+          exercise_id?: string | null
+          formateur_comment?: string | null
+          id?: string
+          learner_id?: string
+          module_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["audio_review_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audio_submissions_exercise_id_fkey"
+            columns: ["exercise_id"]
+            isOneToOne: false
+            referencedRelation: "fle_exercises"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audio_submissions_module_id_fkey"
+            columns: ["module_id"]
+            isOneToOne: false
+            referencedRelation: "fle_modules"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       consents: {
         Row: {
@@ -557,6 +700,27 @@ export type Database = {
           user_id?: string
           weekly_xp_target?: number
           words_learned?: number | null
+        }
+        Relationships: []
+      }
+      formateur_learners: {
+        Row: {
+          created_at: string
+          formateur_id: string
+          id: string
+          learner_id: string
+        }
+        Insert: {
+          created_at?: string
+          formateur_id: string
+          id?: string
+          learner_id: string
+        }
+        Update: {
+          created_at?: string
+          formateur_id?: string
+          id?: string
+          learner_id?: string
         }
         Relationships: []
       }
@@ -1139,13 +1303,16 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_formateur_for: { Args: { _learner_id: string }; Returns: boolean }
       is_provider_for_profile: {
         Args: { _profile_id: string }
         Returns: boolean
       }
     }
     Enums: {
-      app_role: "admin" | "provider" | "user"
+      app_role: "admin" | "provider" | "user" | "formateur" | "directeur"
+      assignment_status: "a_faire" | "en_cours" | "termine" | "en_retard"
+      audio_review_status: "pending" | "validated" | "rework"
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
       certification_type: "language" | "cqp" | "tp"
       consent_type: "lead_sharing" | "marketing" | "analytics"
@@ -1162,6 +1329,8 @@ export type Database = {
         | "interview_sim"
         | "safety_instruction"
         | "vocal_dialogue"
+        | "scenario_tree"
+        | "drag_match"
       lead_status:
         | "pending"
         | "contacted"
@@ -1306,7 +1475,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "provider", "user"],
+      app_role: ["admin", "provider", "user", "formateur", "directeur"],
+      assignment_status: ["a_faire", "en_cours", "termine", "en_retard"],
+      audio_review_status: ["pending", "validated", "rework"],
       cecrl_level: ["alpha", "post_alpha", "a1", "a2", "b1"],
       certification_type: ["language", "cqp", "tp"],
       consent_type: ["lead_sharing", "marketing", "analytics"],
@@ -1323,6 +1494,8 @@ export const Constants = {
         "interview_sim",
         "safety_instruction",
         "vocal_dialogue",
+        "scenario_tree",
+        "drag_match",
       ],
       lead_status: [
         "pending",
