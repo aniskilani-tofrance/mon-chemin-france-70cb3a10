@@ -19,6 +19,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isSoundEnabled, toggleSound, playDing } from "@/lib/sounds";
+import { useOnboardingResult } from "@/hooks/useOnboardingResult";
+import { FLEOnboardingGate } from "@/components/FLEOnboardingGate";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
 type ThemeFilter = string | null;
