@@ -113,6 +113,43 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (method === "create_user") {
+      const { email: newEmail, password, full_name, assign_role } = body;
+      if (!newEmail || !password) {
+        return new Response(
+          JSON.stringify({ error: "email et password requis" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
+        email: newEmail,
+        password,
+        email_confirm: true,
+      });
+      if (createError) throw createError;
+
+      // Create profile
+      if (full_name) {
+        await supabaseAdmin.from("profiles").insert({
+          user_id: newUser.user.id,
+          email: newEmail,
+          full_name,
+        });
+      }
+
+      // Assign role if specified
+      if (assign_role) {
+        await supabaseAdmin
+          .from("user_roles")
+          .upsert({ user_id: newUser.user.id, role: assign_role }, { onConflict: "user_id,role" });
+      }
+
+      return new Response(JSON.stringify({ success: true, user_id: newUser.user.id }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     return new Response(JSON.stringify({ error: "Méthode non supportée" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
