@@ -53,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { FormateurRoute } from "./components/FormateurRoute";
+import { DirecteurRoute } from "./components/DirecteurRoute";
 import { OAuthRedirectHandler } from "./components/OAuthRedirectHandler";
 import { FLEGatedRoute } from "./components/FLEGatedRoute";
 
