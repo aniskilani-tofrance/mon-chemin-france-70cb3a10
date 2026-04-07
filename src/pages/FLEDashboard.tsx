@@ -97,6 +97,7 @@ const FLEDashboard = () => {
 
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [themeFilter, setThemeFilter] = useState<ThemeFilter>(null);
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
 
