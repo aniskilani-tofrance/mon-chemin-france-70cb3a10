@@ -316,6 +316,21 @@ const FLEDashboard = () => {
           <FLETimeTracker />
         </motion.div>
 
+        {/* CECRL Progression + Skills Radar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+            <FLEProgressChart />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+            <FLESkillsRadar />
+          </motion.div>
+        </div>
+
+        {/* Weekly goals */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.195 }} className="mb-6">
+          <FLEWeeklyGoal />
+        </motion.div>
+
         {/* Weekly XP progress */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
           <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
