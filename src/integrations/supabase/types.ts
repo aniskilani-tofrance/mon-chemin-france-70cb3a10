@@ -1145,7 +1145,9 @@ export type Database = {
       }
     }
     Enums: {
-      app_role: "admin" | "provider" | "user"
+      app_role: "admin" | "provider" | "user" | "formateur" | "directeur"
+      assignment_status: "a_faire" | "en_cours" | "termine" | "en_retard"
+      audio_review_status: "pending" | "validated" | "rework"
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
       certification_type: "language" | "cqp" | "tp"
       consent_type: "lead_sharing" | "marketing" | "analytics"
@@ -1162,6 +1164,8 @@ export type Database = {
         | "interview_sim"
         | "safety_instruction"
         | "vocal_dialogue"
+        | "scenario_tree"
+        | "drag_match"
       lead_status:
         | "pending"
         | "contacted"
@@ -1306,7 +1310,9 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "provider", "user"],
+      app_role: ["admin", "provider", "user", "formateur", "directeur"],
+      assignment_status: ["a_faire", "en_cours", "termine", "en_retard"],
+      audio_review_status: ["pending", "validated", "rework"],
       cecrl_level: ["alpha", "post_alpha", "a1", "a2", "b1"],
       certification_type: ["language", "cqp", "tp"],
       consent_type: ["lead_sharing", "marketing", "analytics"],
@@ -1323,6 +1329,8 @@ export const Constants = {
         "interview_sim",
         "safety_instruction",
         "vocal_dialogue",
+        "scenario_tree",
+        "drag_match",
       ],
       lead_status: [
         "pending",
