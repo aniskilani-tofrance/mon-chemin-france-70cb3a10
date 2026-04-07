@@ -45,10 +45,10 @@ export function useAdaptiveLearning() {
     let reason = "";
 
     if (successRate >= UPGRADE_THRESHOLD && currentIdx < LEVEL_ORDER.length - 1) {
-      newLevel = LEVEL_ORDER[currentIdx + 1];
+      newLevel = LEVEL_ORDER[currentIdx + 1] as typeof progress.estimated_level;
       reason = "adaptive_upgrade";
     } else if (successRate <= DOWNGRADE_THRESHOLD && currentIdx > 0) {
-      newLevel = LEVEL_ORDER[currentIdx - 1];
+      newLevel = LEVEL_ORDER[currentIdx - 1] as typeof progress.estimated_level;
       reason = "adaptive_downgrade";
     }
 
