@@ -221,17 +221,7 @@ const Dashboard = () => {
       <Header />
       <main className="pt-24 pb-12">
         <div className="mx-auto max-w-4xl px-4 sm:px-6">
-          {/* Demo Banner */}
-          {user?.email === DEMO_EMAIL && (
-            <div className="mb-6 flex items-center gap-3 rounded-xl border border-amber-300/50 bg-amber-50 px-4 py-3 text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/30 dark:text-amber-200">
-              <span className="text-lg">🧪</span>
-              <div className="flex-1">
-                <p className="text-sm font-semibold">Mode démo</p>
-                <p className="text-xs opacity-80">Ce compte est un exemple pré-rempli pour découvrir la plateforme.</p>
-              </div>
-              <Badge className="border-amber-400 bg-amber-200 text-amber-900 dark:bg-amber-800 dark:text-amber-100">Démo</Badge>
-            </div>
-          )}
+          <DemoBanner />
 
           {/* Welcome */}
           <AnimatedContainer className="mb-8">

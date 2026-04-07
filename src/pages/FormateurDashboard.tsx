@@ -21,6 +21,7 @@ export default function FormateurDashboard() {
             <h1 className="text-lg font-semibold">Espace Formateur</h1>
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto">
+            <DemoBanner />
             <Routes>
               <Route index element={<FormateurApprenants />} />
               <Route path="contenus" element={<FormateurContenus />} />

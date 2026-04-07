@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from "react";
+import { DemoBanner } from "@/components/DemoBanner";
 import { motion, AnimatePresence } from "framer-motion";
 import { FLECoach } from "@/components/FLE/FLECoach";
 import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Zap, RotateCcw, MessageCircle, Briefcase, Volume2, VolumeX, PlayCircle, Clock } from "lucide-react";
