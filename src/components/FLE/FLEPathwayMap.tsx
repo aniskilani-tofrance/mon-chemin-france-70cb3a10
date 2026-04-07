@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { CheckCircle2, Lock, PlayCircle, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { FLELevelBadge } from "./FLELevelBadge";
+import { playDing, playWhoosh } from "@/lib/sounds";
 
 interface PathwayModule {
   id: string;
