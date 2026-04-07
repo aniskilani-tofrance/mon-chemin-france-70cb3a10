@@ -658,7 +658,7 @@ export default function AdminFLEProgress() {
                                 {LEVEL_LABELS[u.estimated_level || "a1"] || u.estimated_level}
                               </Badge>
                               {u.levelProgressed && (
-                                <ArrowUpRight className="h-3 w-3 text-emerald-500" title="Progression de niveau" />
+                                <span title="Progression de niveau"><ArrowUpRight className="h-3 w-3 text-emerald-500" /></span>
                               )}
                             </div>
                           </TableCell>
