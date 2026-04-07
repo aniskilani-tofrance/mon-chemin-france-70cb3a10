@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FLECoach } from "@/components/FLE/FLECoach";
-import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info, Zap, RotateCcw, MessageCircle, Briefcase, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Zap, RotateCcw, MessageCircle, Briefcase, Volume2, VolumeX, PlayCircle, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLETimeTracker } from "@/components/FLE/FLETimeTracker";
@@ -75,23 +75,49 @@ function personalizeModules(modules: FLEModule[], profile: { main_goal?: string 
 function getPersonalizedMessage(profile: { main_goal?: string | null; target_sector?: string | null; french_level_cecrl?: string | null } | null): string | null {
   if (!profile) return null;
   if (profile.target_sector && (profile.main_goal === "travail" || profile.main_goal === "emploi")) {
-    return `🎯 Parcours adapté pour l'emploi en ${profile.target_sector}`;
+    return `Parcours adapté pour l'emploi en ${profile.target_sector}`;
   }
   if (profile.main_goal === "travail" || profile.main_goal === "emploi") {
-    return "🎯 Parcours adapté pour la recherche d'emploi";
+    return "Parcours adapté pour la recherche d'emploi";
   }
   if (profile.main_goal === "autonomie" || profile.main_goal === "vie_quotidienne") {
-    return "🎯 Parcours adapté pour la vie quotidienne en France";
+    return "Parcours adapté pour la vie quotidienne en France";
   }
   return null;
 }
 
 const QUICK_ACCESS = [
-  { icon: "📖", label: "Leçon du jour", color: "from-sky-400/20 to-blue-400/10", borderColor: "border-sky-200 dark:border-sky-800", key: "lesson" },
-  { icon: "🔄", label: "Réviser", color: "from-violet-400/20 to-purple-400/10", borderColor: "border-violet-200 dark:border-violet-800", key: "review" },
-  { icon: "🗣️", label: "Oral", color: "from-emerald-400/20 to-green-400/10", borderColor: "border-emerald-200 dark:border-emerald-800", key: "oral" },
-  { icon: "💼", label: "Emploi", color: "from-amber-400/20 to-orange-400/10", borderColor: "border-amber-200 dark:border-amber-800", key: "emploi" },
+  { icon: PlayCircle, label: "Leçon du jour", description: "Continuer votre parcours", color: "bg-sky-500/10 text-sky-600 dark:text-sky-400", key: "lesson" },
+  { icon: RotateCcw, label: "Réviser", description: "Revoir les acquis", color: "bg-violet-500/10 text-violet-600 dark:text-violet-400", key: "review" },
+  { icon: MessageCircle, label: "Oral", description: "Pratiquer le dialogue", color: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", key: "oral" },
+  { icon: Briefcase, label: "Emploi", description: "Modules professionnels", color: "bg-amber-500/10 text-amber-600 dark:text-amber-400", key: "emploi" },
 ];
+
+/* ─── Section wrapper ────────────────────────────────────── */
+function Section({ children, title, icon, delay = 0, className = "" }: {
+  children: React.ReactNode;
+  title?: string;
+  icon?: React.ReactNode;
+  delay?: number;
+  className?: string;
+}) {
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay, duration: 0.4, ease: "easeOut" }}
+      className={className}
+    >
+      {title && (
+        <div className="flex items-center gap-2 mb-3">
+          {icon}
+          <h2 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">{title}</h2>
+        </div>
+      )}
+      {children}
+    </motion.section>
+  );
+}
 
 const FLEDashboard = () => {
   const navigate = useNavigate();
@@ -188,101 +214,100 @@ const FLEDashboard = () => {
     }
   };
 
+  const overallPercent = modules && modules.length > 0
+    ? Math.round((completedCount / modules.length) * 100)
+    : 0;
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-muted/20">
       <Header />
       <FLEOfflineIndicator />
-      <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
+      <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24 space-y-6">
+
         {/* Level change banner */}
         <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
 
-        {/* Header - Fun & bold */}
+        {/* ━━━ HERO HEADER ━━━ */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ type: "spring", stiffness: 200 }}
-          className="mb-6"
+          className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/8 via-accent/10 to-primary/5 border border-primary/10 p-6"
         >
-          <div className="flex items-center justify-between mb-1">
-            <div>
-              <h1 className="text-3xl font-extrabold text-foreground sm:text-4xl">
-                Mon français
-                <motion.span
-                  className="inline-block ml-2"
-                  animate={{ rotate: [0, 10, -10, 0] }}
-                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+          {/* Decorative */}
+          <div className="absolute -top-12 -right-12 h-32 w-32 rounded-full bg-primary/5 blur-3xl" />
+          <div className="absolute -bottom-8 -left-8 h-24 w-24 rounded-full bg-accent/10 blur-2xl" />
+
+          <div className="relative">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl leading-tight">
+                  Mon français 🇫🇷
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {personalizedMsg ? `🎯 ${personalizedMsg}` : "Chaque minute compte. Progressez à votre rythme !"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => { const s = toggleSound(); setSoundOn(s); if (s) playDing(); }}
+                  className="flex items-center justify-center h-8 w-8 rounded-full bg-card border border-border shadow-sm"
+                  title={soundOn ? "Sons activés" : "Sons désactivés"}
                 >
-                  🇫🇷
-                </motion.span>
-              </h1>
+                  {soundOn ? <Volume2 className="h-3.5 w-3.5 text-primary" /> : <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />}
+                </motion.button>
+                <FLELevelBadge level={progress.estimated_level} size="lg" />
+              </div>
             </div>
-            <div className="flex items-center gap-2">
-              <motion.button
-                whileTap={{ scale: 0.9 }}
-                onClick={() => {
-                  const newState = toggleSound();
-                  setSoundOn(newState);
-                  if (newState) playDing();
-                }}
-                className="flex items-center justify-center h-9 w-9 rounded-full border-2 border-muted bg-card shadow-sm transition-colors hover:bg-accent"
-                aria-label={soundOn ? "Couper les sons" : "Activer les sons"}
-                title={soundOn ? "Sons activés" : "Sons désactivés"}
-              >
-                {soundOn ? (
-                  <Volume2 className="h-4 w-4 text-primary" />
-                ) : (
-                  <VolumeX className="h-4 w-4 text-muted-foreground" />
-                )}
-              </motion.button>
+
+            {/* Stats row inside hero */}
+            <div className="flex items-center gap-4 mt-4">
               {progress.streak_days > 0 && (
-                <motion.div
-                  animate={{ scale: [1, 1.2, 1] }}
-                  transition={{ repeat: Infinity, duration: 1.5 }}
-                  className="flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-400/20 to-red-400/10 border-2 border-orange-300 dark:border-orange-700 px-3 py-1 font-extrabold text-foreground shadow-md"
-                >
-                  <Flame className="h-5 w-5 text-orange-500" />
-                  <span className="text-sm">{progress.streak_days}</span>
-                </motion.div>
+                <div className="flex items-center gap-1.5">
+                  <Flame className="h-4 w-4 text-orange-500" />
+                  <span className="text-sm font-extrabold text-foreground">{progress.streak_days}</span>
+                  <span className="text-xs text-muted-foreground">jours</span>
+                </div>
               )}
-              <FLELevelBadge level={progress.estimated_level} size="lg" />
+              <div className="flex items-center gap-1.5">
+                <Star className="h-4 w-4 text-amber-500" />
+                <span className="text-sm font-extrabold text-foreground">{progress.total_xp}</span>
+                <span className="text-xs text-muted-foreground">XP</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Trophy className="h-4 w-4 text-emerald-500" />
+                <span className="text-sm font-extrabold text-foreground">{completedCount}/{modules?.length || 0}</span>
+                <span className="text-xs text-muted-foreground">modules</span>
+              </div>
             </div>
-          </div>
-          <p className="text-muted-foreground text-sm font-medium">
-            Chaque minute compte. Progressez à votre rythme ! 🚀
-          </p>
 
-          {personalizedMsg && (
-            <motion.div
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="mt-3 flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/10 border-2 border-primary/15 px-4 py-2.5"
-            >
-              <Target className="h-4 w-4 text-primary shrink-0" />
-              <p className="text-sm font-bold text-foreground">{personalizedMsg}</p>
-            </motion.div>
-          )}
+            {/* Overall progress bar */}
+            <div className="mt-3">
+              <div className="h-2 w-full rounded-full bg-primary/10 overflow-hidden">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${overallPercent}%` }}
+                  transition={{ duration: 1, ease: "easeOut" }}
+                  className="h-full rounded-full bg-gradient-to-r from-primary to-primary/70"
+                />
+              </div>
+              <p className="text-[11px] text-muted-foreground mt-1.5 font-medium">{overallPercent}% du parcours terminé</p>
+            </div>
 
-          <div className="flex gap-2 mt-3 flex-wrap">
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-              <Button variant="outline" size="sm" className="gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
-                <Target className="h-4 w-4" />
+            {/* Action buttons */}
+            <div className="flex gap-2 mt-4 flex-wrap">
+              <Button variant="outline" size="sm" className="gap-1.5 rounded-full text-xs h-8 border-primary/20 hover:border-primary/40" onClick={() => navigate("/placement-test")}>
+                <Target className="h-3.5 w-3.5" />
                 {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
               </Button>
-            </motion.div>
-            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
               <FLEExportPDF />
-            </motion.div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Coach Marianne */}
+        {/* ━━━ COACH MARIANNE ━━━ */}
         {!isLoading && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-6"
-          >
+          <Section delay={0.1}>
             <FLECoach
               userLevel={progress.estimated_level}
               streakDays={progress.streak_days}
@@ -295,17 +320,12 @@ const FLEDashboard = () => {
               mainGoal={userProfile?.main_goal}
               firstName={userProfile?.first_name}
             />
-          </motion.div>
+          </Section>
         )}
 
-        {/* Daily Mission */}
+        {/* ━━━ DAILY MISSION ━━━ */}
         {!isLoading && nextModule && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.15 }}
-            className="mb-6"
-          >
+          <Section delay={0.15}>
             <FLEDailyMission
               moduleTitle={nextModule.title}
               moduleIcon={nextModule.icon || "📖"}
@@ -314,88 +334,66 @@ const FLEDashboard = () => {
               isCompleted={isMissionCompletedToday}
               onStart={() => navigate(`/fle/exercise/${nextModule.id}`)}
             />
-          </motion.div>
+          </Section>
         )}
 
-        {/* Time Tracker */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-6">
-          <FLETimeTracker />
-        </motion.div>
+        {/* ━━━ QUICK ACCESS GRID ━━━ */}
+        <Section delay={0.2} title="Accès rapide" icon={<Zap className="h-4 w-4 text-primary" />}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            {QUICK_ACCESS.map((item, i) => (
+              <motion.button
+                key={item.key}
+                whileHover={{ scale: 1.03, y: -2 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => handleQuickAccess(item.key)}
+                className="flex flex-col items-center gap-2 rounded-2xl bg-card border border-border/60 p-4 text-center shadow-sm hover:shadow-md transition-shadow"
+              >
+                <div className={`flex h-10 w-10 items-center justify-center rounded-xl ${item.color}`}>
+                  <item.icon className="h-5 w-5" />
+                </div>
+                <span className="text-xs font-bold text-foreground leading-tight">{item.label}</span>
+              </motion.button>
+            ))}
+          </div>
+        </Section>
 
-        {/* CECRL Progression + Skills Radar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
-            <FLEProgressChart />
-          </motion.div>
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
-            <FLESkillsRadar />
-          </motion.div>
-        </div>
-
-        {/* Weekly goals */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.195 }} className="mb-6">
-          <FLEWeeklyGoal />
-        </motion.div>
-
-        {/* Weekly XP progress */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
-          <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
-        </motion.div>
-
-        {/* Stats grid */}
+        {/* ━━━ STATS CARDS ━━━ */}
         {isLoading ? (
-          <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-2xl" />)}
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
-            <FLEStatsCard icon={<Star className="h-6 w-6" />} label="XP total" value={progress.total_xp} color="text-amber-500" bgGradient="from-amber-400/15 to-orange-400/5" />
-            <FLEStatsCard icon={<Mic className="h-6 w-6" />} label="Oral" value={`${progress.oral_score}%`} color="text-sky-500" bgGradient="from-sky-400/15 to-blue-400/5" />
-            <FLEStatsCard icon={<Brain className="h-6 w-6" />} label="Compréhension" value={`${progress.comprehension_score}%`} color="text-violet-500" bgGradient="from-violet-400/15 to-purple-400/5" />
-            <FLEStatsCard icon={<Trophy className="h-6 w-6" />} label="Modules" value={`${completedCount}/${modules?.length || 0}`} color="text-emerald-500" bgGradient="from-emerald-400/15 to-green-400/5" />
-          </div>
+          <Section delay={0.25}>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <FLEStatsCard icon={<Star className="h-5 w-5" />} label="XP total" value={progress.total_xp} color="text-amber-500" bgGradient="from-amber-400/10 to-orange-400/5" />
+              <FLEStatsCard icon={<Mic className="h-5 w-5" />} label="Oral" value={`${progress.oral_score}%`} color="text-sky-500" bgGradient="from-sky-400/10 to-blue-400/5" />
+              <FLEStatsCard icon={<Brain className="h-5 w-5" />} label="Compréhension" value={`${progress.comprehension_score}%`} color="text-violet-500" bgGradient="from-violet-400/10 to-purple-400/5" />
+              <FLEStatsCard icon={<Trophy className="h-5 w-5" />} label="Modules" value={`${completedCount}/${modules?.length || 0}`} color="text-emerald-500" bgGradient="from-emerald-400/10 to-green-400/5" />
+            </div>
+          </Section>
         )}
 
-        {/* Quick access - fun colorful cards */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          {QUICK_ACCESS.map((item, i) => (
-            <motion.button
-              key={item.key}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.25 + i * 0.05, type: "spring" }}
-              whileHover={{ scale: 1.05, y: -3 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => handleQuickAccess(item.key)}
-              className={`relative overflow-hidden flex flex-col items-center gap-2 rounded-2xl border-2 ${item.borderColor} bg-gradient-to-br ${item.color} p-5 text-center shadow-md transition-all`}
-            >
-              <motion.span
-                className="text-3xl"
-                animate={{ y: [0, -3, 0] }}
-                transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }}
-              >
-                {item.icon}
-              </motion.span>
-              <span className="text-sm font-extrabold text-foreground">{item.label}</span>
-            </motion.button>
-          ))}
-        </div>
+        {/* ━━━ ANALYTICS: Time + Charts + Goals ━━━ */}
+        <Section delay={0.3} title="Progression" icon={<TrendingUp className="h-4 w-4 text-emerald-500" />}>
+          <div className="space-y-3">
+            <FLETimeTracker />
 
-        {/* Badges row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FLEProgressChart />
+              <FLESkillsRadar />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <FLEWeeklyGoal />
+              <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
+            </div>
+          </div>
+        </Section>
+
+        {/* ━━━ BADGES ━━━ */}
         {allBadges && allBadges.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="mb-6"
-          >
-            <h2 className="text-sm font-extrabold text-foreground mb-3 flex items-center gap-2 uppercase tracking-wider">
-              <Trophy className="h-4 w-4 text-amber-500" /> Trophées
-              <span className="text-xs text-muted-foreground font-normal normal-case tracking-normal">
-                {earnedBadgeKeys.size}/{allBadges.length}
-              </span>
-            </h2>
-            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
+          <Section delay={0.35} title={`Trophées · ${earnedBadgeKeys.size}/${allBadges.length}`} icon={<Trophy className="h-4 w-4 text-amber-500" />}>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {allBadges.map((badge) => (
                 <FLEBadgeCard
                   key={badge.key}
@@ -406,122 +404,103 @@ const FLEDashboard = () => {
                 />
               ))}
             </div>
-          </motion.div>
+          </Section>
         )}
 
-        {/* AI-generated exercises */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.33 }}
-          className="mb-6"
-        >
+        {/* ━━━ AI GENERATE ━━━ */}
+        <Section delay={0.38}>
           <FLEGenerateExercise
             userLevel={progress.estimated_level}
             theme={userProfile?.target_sector || undefined}
           />
-        </motion.div>
+        </Section>
 
-        {/* Section title */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.35 }}
-          className="flex items-center gap-2 mb-3"
-        >
-          <Sparkles className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-extrabold text-foreground">Mon parcours</h2>
-        </motion.div>
-
-        {/* Category filter */}
-        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
-          {([
-            { key: "all" as const, label: "📚 Tout" },
-            { key: "quotidien" as const, label: "🏠 Quotidien" },
-            { key: "professionnel" as const, label: "💼 Pro" },
-            { key: "certification" as const, label: "🎓 DELF/TCF" },
-            { key: "culture" as const, label: "🇫🇷 Civique" },
-          ]).map((cat) => (
-            <motion.button
-              key={cat.key}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => { setCategoryFilter(cat.key); setThemeFilter(null); }}
-              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all border-2 ${
-                categoryFilter === cat.key && !themeFilter
-                  ? "bg-primary text-primary-foreground shadow-md border-primary"
-                  : "bg-card border-border text-muted-foreground hover:bg-accent hover:border-accent-foreground/20"
-              }`}
-            >
-              {cat.label}
-            </motion.button>
-          ))}
-        </div>
-
-        {/* Theme filter chips */}
-        {availableThemes.length > 0 && (
-          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
-            {availableThemes.map((theme) => {
-              const meta = THEME_META[theme];
-              if (!meta) return null;
-              const isActive = themeFilter === theme;
-              return (
-                <motion.button
-                  key={theme}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => setThemeFilter(prev => prev === theme ? null : theme)}
-                  className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-all border-2 ${
-                    isActive
-                      ? "bg-primary text-primary-foreground shadow-md border-primary"
-                      : "bg-card border-border text-muted-foreground hover:bg-accent"
-                  }`}
-                >
-                  <span>{meta.icon}</span>
-                  {meta.label}
-                </motion.button>
-              );
-            })}
+        {/* ━━━ MODULES PATHWAY ━━━ */}
+        <Section delay={0.4} title="Mon parcours" icon={<Sparkles className="h-4 w-4 text-primary" />}>
+          {/* Category filter */}
+          <div className="flex gap-1.5 mb-3 overflow-x-auto pb-1 scrollbar-hide">
+            {([
+              { key: "all" as const, label: "📚 Tout" },
+              { key: "quotidien" as const, label: "🏠 Quotidien" },
+              { key: "professionnel" as const, label: "💼 Pro" },
+              { key: "certification" as const, label: "🎓 DELF/TCF" },
+              { key: "culture" as const, label: "🇫🇷 Civique" },
+            ]).map((cat) => (
+              <button
+                key={cat.key}
+                onClick={() => { setCategoryFilter(cat.key); setThemeFilter(null); }}
+                className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all border ${
+                  categoryFilter === cat.key && !themeFilter
+                    ? "bg-primary text-primary-foreground shadow-sm border-primary"
+                    : "bg-card border-border text-muted-foreground hover:bg-accent/50 hover:border-border"
+                }`}
+              >
+                {cat.label}
+              </button>
+            ))}
           </div>
-        )}
 
-        {/* Pathway map */}
-        {isLoading ? (
-          [...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl mb-3" />)
-        ) : filteredModules.length === 0 ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
-            <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
-              <BookOpen className="h-16 w-16 mx-auto text-muted-foreground/20 mb-3" />
-            </motion.div>
-            <p className="text-muted-foreground font-medium">Aucun module pour ce filtre.</p>
-            <Button variant="link" onClick={() => { setCategoryFilter("all"); setThemeFilter(null); }} className="mt-2 font-bold">
-              Voir tous les modules →
-            </Button>
-          </motion.div>
-        ) : (
-          <FLEPathwayMap
-            modules={filteredModules.map((module, index) => {
-              const mp = getModuleProgress(module.id);
-              const moduleProgressPercent = mp && mp.exercises_total > 0
-                ? Math.round((mp.exercises_done / mp.exercises_total) * 100) : 0;
-              const previousModule = index > 0 ? filteredModules[index - 1] : null;
-              const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
-              const previousCompleted = previousMp ? !!previousMp.completed_at : false;
-              const isUnlocked = mp?.unlocked || shouldUnlock(module.cecrl_level, progress.estimated_level, index, previousCompleted);
-              return {
-                id: module.id,
-                title: module.title,
-                icon: module.icon || "📖",
-                cecrlLevel: module.cecrl_level,
-                durationMinutes: module.duration_minutes || 7,
-                progress: moduleProgressPercent,
-                unlocked: isUnlocked,
-                completed: !!mp?.completed_at,
-              };
-            })}
-            onModuleClick={(id) => navigate(`/fle/exercise/${id}`)}
-          />
-        )}
+          {/* Theme chips */}
+          {availableThemes.length > 0 && (
+            <div className="flex gap-1.5 mb-4 overflow-x-auto pb-1 scrollbar-hide">
+              {availableThemes.map((theme) => {
+                const meta = THEME_META[theme];
+                if (!meta) return null;
+                const isActive = themeFilter === theme;
+                return (
+                  <button
+                    key={theme}
+                    onClick={() => setThemeFilter(prev => prev === theme ? null : theme)}
+                    className={`flex items-center gap-1 shrink-0 rounded-full px-3 py-1 text-[11px] font-bold transition-all border ${
+                      isActive
+                        ? "bg-primary text-primary-foreground shadow-sm border-primary"
+                        : "bg-card border-border/60 text-muted-foreground hover:bg-accent/50"
+                    }`}
+                  >
+                    <span>{meta.icon}</span>
+                    {meta.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Module list */}
+          {isLoading ? (
+            [...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl mb-2" />)
+          ) : filteredModules.length === 0 ? (
+            <div className="text-center py-16">
+              <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/20 mb-3" />
+              <p className="text-muted-foreground font-medium text-sm">Aucun module pour ce filtre.</p>
+              <Button variant="link" onClick={() => { setCategoryFilter("all"); setThemeFilter(null); }} className="mt-2 font-bold text-sm">
+                Voir tous les modules →
+              </Button>
+            </div>
+          ) : (
+            <FLEPathwayMap
+              modules={filteredModules.map((module, index) => {
+                const mp = getModuleProgress(module.id);
+                const moduleProgressPercent = mp && mp.exercises_total > 0
+                  ? Math.round((mp.exercises_done / mp.exercises_total) * 100) : 0;
+                const previousModule = index > 0 ? filteredModules[index - 1] : null;
+                const previousMp = previousModule ? getModuleProgress(previousModule.id) : null;
+                const previousCompleted = previousMp ? !!previousMp.completed_at : false;
+                const isUnlocked = mp?.unlocked || shouldUnlock(module.cecrl_level, progress.estimated_level, index, previousCompleted);
+                return {
+                  id: module.id,
+                  title: module.title,
+                  icon: module.icon || "📖",
+                  cecrlLevel: module.cecrl_level,
+                  durationMinutes: module.duration_minutes || 7,
+                  progress: moduleProgressPercent,
+                  unlocked: isUnlocked,
+                  completed: !!mp?.completed_at,
+                };
+              })}
+              onModuleClick={(id) => navigate(`/fle/exercise/${id}`)}
+            />
+          )}
+        </Section>
       </main>
     </div>
   );
@@ -536,80 +515,47 @@ function LevelChangeBanner({ levelChange, onDismiss }: {
     <AnimatePresence>
       {levelChange && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: -30 }}
+          initial={{ opacity: 0, scale: 0.9, y: -20 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.8, y: -30 }}
+          exit={{ opacity: 0, scale: 0.9, y: -20 }}
           transition={{ type: "spring", stiffness: 200, damping: 15 }}
-          className={`mb-6 rounded-3xl border-2 p-6 text-center shadow-xl relative overflow-hidden ${
+          className={`rounded-2xl border p-5 text-center shadow-lg relative overflow-hidden ${
             levelChange.direction === "up"
-              ? "border-emerald-300 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:border-emerald-600/50 dark:from-emerald-950/30 dark:via-green-950/20 dark:to-teal-950/20"
-              : "border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:border-amber-600/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/20"
+              ? "border-emerald-200 bg-gradient-to-br from-emerald-50 to-green-50 dark:border-emerald-700 dark:from-emerald-950/30 dark:to-green-950/20"
+              : "border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 dark:border-amber-700 dark:from-amber-950/30 dark:to-yellow-950/20"
           }`}
         >
-          {/* Confetti */}
-          {levelChange.direction === "up" && [...Array(8)].map((_, i) => (
+          {levelChange.direction === "up" && [...Array(6)].map((_, i) => (
             <motion.div
               key={i}
-              className="absolute h-2 w-2 rounded-full"
+              className="absolute h-1.5 w-1.5 rounded-full"
               style={{
-                background: ["#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#14b8a6"][i],
+                background: ["#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#06b6d4"][i],
                 top: `${Math.random() * 100}%`,
                 left: `${Math.random() * 100}%`,
               }}
-              animate={{
-                y: [0, -30, 0],
-                opacity: [0, 1, 0],
-                scale: [0, 1.5, 0],
-              }}
+              animate={{ y: [0, -20, 0], opacity: [0, 1, 0], scale: [0, 1.5, 0] }}
               transition={{ repeat: Infinity, duration: 1.5 + i * 0.2, delay: i * 0.15 }}
             />
           ))}
 
-          <motion.div
-            initial={{ scale: 0, rotate: -180 }}
-            animate={{ scale: 1, rotate: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-            className="mb-3"
-          >
-            {levelChange.direction === "up" ? (
-              <span className="text-5xl">🎉</span>
-            ) : (
-              <TrendingDown className="mx-auto h-10 w-10 text-amber-500" />
-            )}
-          </motion.div>
-          <p className={`text-xl font-extrabold ${levelChange.direction === "up" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"}`}>
-            {levelChange.direction === "up" ? "Level Up !" : "Niveau ajusté"}
-          </p>
-          <div className="mt-3 flex items-center justify-center gap-3">
-            <FLELevelBadge level={levelChange.from} size="md" className="opacity-50" />
-            <motion.span animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1 }}>
-              {levelChange.direction === "up" ? (
-                <TrendingUp className="h-6 w-6 text-emerald-500" />
-              ) : (
-                <TrendingDown className="h-6 w-6 text-amber-500" />
-              )}
-            </motion.span>
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: [1, 1.15, 1] }}
-              transition={{ delay: 0.4, duration: 0.6 }}
-            >
+          <div className="relative">
+            <span className="text-4xl">{levelChange.direction === "up" ? "🎉" : "📊"}</span>
+            <p className={`text-lg font-extrabold mt-2 ${levelChange.direction === "up" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"}`}>
+              {levelChange.direction === "up" ? "Level Up !" : "Niveau ajusté"}
+            </p>
+            <div className="mt-3 flex items-center justify-center gap-3">
+              <FLELevelBadge level={levelChange.from} size="md" className="opacity-50" />
+              {levelChange.direction === "up" ? <TrendingUp className="h-5 w-5 text-emerald-500" /> : <TrendingDown className="h-5 w-5 text-amber-500" />}
               <FLELevelBadge level={levelChange.to} size="lg" />
-            </motion.div>
+            </div>
+            <p className={`mt-2 text-xs font-medium ${levelChange.direction === "up" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
+              {levelChange.direction === "up" ? "Bravo ! De nouveaux modules sont débloqués 🔓" : "Recalibré pour mieux vous accompagner."}
+            </p>
+            <button onClick={onDismiss} className="mt-2 text-xs text-muted-foreground underline hover:text-foreground">
+              Fermer
+            </button>
           </div>
-          <p className={`mt-3 text-sm font-medium ${levelChange.direction === "up" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
-            {levelChange.direction === "up"
-              ? "Bravo ! De nouveaux modules sont débloqués 🔓"
-              : "Recalibré pour mieux vous accompagner."}
-          </p>
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={onDismiss}
-            className="mt-3 text-xs font-bold text-muted-foreground underline hover:text-foreground"
-          >
-            Fermer
-          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>
@@ -617,6 +563,4 @@ function LevelChangeBanner({ levelChange, onDismiss }: {
 }
 
 export default FLEDashboard;
-
-// PWA Install prompt is rendered at root level - re-export for App.tsx
 export { FLEInstallPrompt };
