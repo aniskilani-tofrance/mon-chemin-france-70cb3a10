@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FLECoach } from "@/components/FLE/FLECoach";
 import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
@@ -236,6 +237,24 @@ const FLEDashboard = () => {
             {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}
           </Button>
         </motion.div>
+
+        {/* Coach Marianne */}
+        {!isLoading && (
+          <div className="mb-6">
+            <FLECoach
+              userLevel={progress.estimated_level}
+              streakDays={progress.streak_days}
+              totalXp={progress.total_xp}
+              modulesCompleted={completedCount}
+              oralScore={progress.oral_score}
+              comprehensionScore={progress.comprehension_score}
+              lastModuleTitle={nextModule?.title}
+              targetSector={userProfile?.target_sector}
+              mainGoal={userProfile?.main_goal}
+              firstName={null}
+            />
+          </div>
+        )}
 
         {/* Daily Mission */}
         {!isLoading && nextModule && (

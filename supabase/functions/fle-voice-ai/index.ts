@@ -355,6 +355,45 @@ Réponds en JSON.`;
       } else {
         throw new Error("Phase onboarding_chat invalide: " + phase);
       }
+    } else if (action === "coach") {
+      const { user_level, streak_days, total_xp, modules_completed, oral_score, comprehension_score, last_module_title, target_sector, main_goal, first_name } = body;
+
+      systemPrompt = `Tu es Marianne, coach FLE bienveillante et motivante pour des primo-arrivants en France.
+Tu génères un message de coaching quotidien personnalisé.
+
+PERSONNALITÉ :
+- Chaleureuse, encourageante, jamais condescendante
+- Tu félicites les progrès sincèrement
+- Tu motives sans culpabiliser
+- Tu proposes toujours une micro-action concrète
+
+RÈGLES :
+- Réponds en JSON : {"greeting": "string", "mission_suggestion": "string", "encouragement": "string"}
+- "greeting" : salutation personnalisée (utilise le prénom si dispo, sinon vouvoie)
+- "mission_suggestion" : suggestion de mini-mission de 5 min adaptée au niveau et au profil
+- "encouragement" : phrase motivante basée sur les stats de l'apprenant
+- Sois CONCISE : chaque champ = 1-2 phrases MAX
+- Adapte le vocabulaire au niveau de l'apprenant
+- Si streak > 0 : félicite la régularité
+- Si streak = 0 et XP > 0 : encourage à reprendre sans culpabiliser
+- Si XP = 0 : accueil chaleureux de bienvenue
+- Si oral_score bas : suggère des exercices oraux
+- Si target_sector : intègre-le dans la suggestion`;
+
+      const stats = [
+        `Niveau : ${user_level || "A1"}`,
+        `Streak : ${streak_days || 0} jours`,
+        `XP total : ${total_xp || 0}`,
+        `Modules terminés : ${modules_completed || 0}`,
+        `Score oral : ${oral_score || 0}%`,
+        `Score compréhension : ${comprehension_score || 0}%`,
+        last_module_title ? `Dernier module : ${last_module_title}` : null,
+        target_sector ? `Secteur visé : ${target_sector}` : null,
+        main_goal ? `Objectif principal : ${main_goal}` : null,
+        first_name ? `Prénom : ${first_name}` : null,
+      ].filter(Boolean).join("\n");
+
+      userMessage = `Génère un message de coaching quotidien pour cet apprenant :\n\n${stats}\n\nRéponds en JSON.`;
     } else {
       throw new Error("Action non reconnue : " + action);
     }
