@@ -477,7 +477,6 @@ const FLEDashboard = () => {
         )}
       </main>
     </div>
-    </>
   );
 };
 
