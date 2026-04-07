@@ -1,0 +1,1 @@
+ALTER TYPE public.fle_exercise_type ADD VALUE IF NOT EXISTS 'fill_in_blank';
