@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isSoundEnabled, toggleSound, playDing } from "@/lib/sounds";
 
-type CategoryFilter = "all" | "quotidien" | "professionnel";
+type CategoryFilter = "all" | "quotidien" | "professionnel" | "certification" | "culture";
 type ThemeFilter = string | null;
 
 const LEVEL_ORDER = ["alpha", "post_alpha", "a1", "a2", "b1"];
