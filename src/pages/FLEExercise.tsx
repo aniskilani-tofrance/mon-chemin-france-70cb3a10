@@ -52,6 +52,8 @@ const EXERCISE_LABELS: Record<string, { icon: string; label: string; instruction
   interview_sim: { icon: "🤝", label: "Simulation d'entretien", instruction: "Répondez comme dans un vrai entretien" },
   safety_instruction: { icon: "🦺", label: "Sécurité", instruction: "Comprenez cette consigne de sécurité" },
   vocal_dialogue: { icon: "🤖", label: "Dialogue avec Marianne", instruction: "Parlez avec Marianne" },
+  drag_match: { icon: "🔗", label: "Associer", instruction: "Glissez chaque terme vers sa définition" },
+  scenario_tree: { icon: "🌳", label: "Scénario", instruction: "Faites vos choix dans cette situation" },
 };
 
 // XP calculation based on score
