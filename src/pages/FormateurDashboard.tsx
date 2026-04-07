@@ -7,6 +7,7 @@ import { FormateurAssignations } from "@/components/Formateur/FormateurAssignati
 import { FormateurEvaluations } from "@/components/Formateur/FormateurEvaluations";
 import { FormateurAFEST } from "@/components/Formateur/FormateurAFEST";
 import { SEO } from "@/components/SEO";
+import { DemoBanner } from "@/components/DemoBanner";
 
 export default function FormateurDashboard() {
   return (
