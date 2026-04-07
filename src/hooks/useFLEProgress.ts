@@ -60,6 +60,7 @@ export interface FLEUserBadge {
 }
 
 export interface UserProfile {
+  first_name: string | null;
   main_goal: string | null;
   target_sector: string | null;
   french_level_cecrl: string | null;
@@ -177,7 +178,7 @@ export function useUserProfile() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("main_goal, target_sector, french_level_cecrl, french_level, literacy")
+        .select("first_name, main_goal, target_sector, french_level_cecrl, french_level, literacy")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
