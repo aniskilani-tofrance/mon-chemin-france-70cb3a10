@@ -319,22 +319,33 @@ export function AdminLeadsManager() {
           <DialogHeader>
             <DialogTitle>Détail du profil</DialogTitle>
           </DialogHeader>
-          {selectedProfile && (
-            <div className="space-y-3 pt-2 text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <div><span className="font-medium text-muted-foreground">Prénom :</span> {selectedProfile.first_name || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Nom :</span> {selectedProfile.last_name || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Email :</span> {selectedProfile.email || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Tél :</span> {selectedProfile.phone || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Ville :</span> {selectedProfile.city || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">CP :</span> {selectedProfile.postal_code || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Secteur :</span> {selectedProfile.target_sector || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Français :</span> {selectedProfile.french_level_cecrl || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Objectif :</span> {selectedProfile.main_goal || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Score :</span> {selectedProfile.lead_score ?? "—"}</div>
+          {selectedProfileId && profiles[selectedProfileId] && (() => {
+            const prof = profiles[selectedProfileId];
+            const ob = onboardingMap[selectedProfileId];
+            return (
+              <div className="space-y-3 pt-2 text-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <div><span className="font-medium text-muted-foreground">Prénom :</span> {prof.first_name || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Nom :</span> {prof.last_name || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Email :</span> {prof.email || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Tél :</span> {prof.phone || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Ville :</span> {prof.city || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">CP :</span> {prof.postal_code || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Secteur :</span> {ob?.target_sector || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Français :</span> {ob?.french_level_cecrl || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Objectif :</span> {ob?.main_goal || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Score :</span> {ob?.lead_score ?? "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Route :</span> {ob?.lead_route || "—"}</div>
+                </div>
+                {ob?.barriers && ob.barriers.length > 0 && (
+                  <div>
+                    <span className="font-medium text-muted-foreground">Freins : </span>
+                    {ob.barriers.join(", ")}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 
