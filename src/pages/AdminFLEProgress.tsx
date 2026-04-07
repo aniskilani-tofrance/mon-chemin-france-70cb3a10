@@ -41,10 +41,11 @@ interface UserProfile {
   last_name: string | null;
   full_name: string | null;
   email: string | null;
+  origin_country: string | null;
+  // Orientation data (from onboarding_results, merged at fetch time)
   main_goal: string | null;
   target_sector: string | null;
   french_level_cecrl: string | null;
-  origin_country: string | null;
 }
 
 interface ModuleProgress {
