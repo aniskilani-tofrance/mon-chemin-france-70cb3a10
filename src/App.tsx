@@ -88,10 +88,10 @@ const App = () => (
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
-              <Route path="/fle" element={<ProtectedRoute><FLEGatedRoute><FLEDashboard /></FLEGatedRoute></ProtectedRoute>} />
-              <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEGatedRoute><FLEExercise /></FLEGatedRoute></ProtectedRoute>} />
-              <Route path="/fle/dialogue" element={<ProtectedRoute><FLEGatedRoute><FLEDialogue /></FLEGatedRoute></ProtectedRoute>} />
-              <Route path="/fle/review" element={<ProtectedRoute><FLEGatedRoute><FLEReview /></FLEGatedRoute></ProtectedRoute>} />
+              <Route path="/fle" element={<FLEGatedRoute><FLEDashboard /></FLEGatedRoute>} />
+              <Route path="/fle/exercise/:moduleId" element={<FLEGatedRoute><FLEExercise /></FLEGatedRoute>} />
+              <Route path="/fle/dialogue" element={<FLEGatedRoute><FLEDialogue /></FLEGatedRoute>} />
+              <Route path="/fle/review" element={<FLEGatedRoute><FLEReview /></FLEGatedRoute>} />
               <Route path="/placement-test" element={<PlacementTestHome />} />
               <Route path="/placement-test/test" element={<PlacementTest />} />
               <Route path="/placement-test/results" element={<PlacementTestResults />} />
