@@ -1122,7 +1122,7 @@ export type Database = {
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
       certification_type: "language" | "cqp" | "tp"
       consent_type: "lead_sharing" | "marketing" | "analytics"
-      fle_category: "quotidien" | "professionnel"
+      fle_category: "quotidien" | "professionnel" | "certification" | "culture"
       fle_exercise_type:
         | "listen_repeat"
         | "listen_choose"
@@ -1283,7 +1283,7 @@ export const Constants = {
       cecrl_level: ["alpha", "post_alpha", "a1", "a2", "b1"],
       certification_type: ["language", "cqp", "tp"],
       consent_type: ["lead_sharing", "marketing", "analytics"],
-      fle_category: ["quotidien", "professionnel"],
+      fle_category: ["quotidien", "professionnel", "certification", "culture"],
       fle_exercise_type: [
         "listen_repeat",
         "listen_choose",

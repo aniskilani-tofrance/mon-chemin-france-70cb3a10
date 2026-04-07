@@ -74,7 +74,7 @@ export function FLEModuleCard({
           {durationMinutes} min
         </span>
         <span className="text-xs px-2 py-0.5 rounded-full bg-secondary/10 text-secondary-foreground/70">
-          {category === "quotidien" ? "🏠 Quotidien" : "💼 Professionnel"}
+          {category === "quotidien" ? "🏠 Quotidien" : category === "professionnel" ? "💼 Pro" : category === "certification" ? "🎓 Certif" : category === "culture" ? "🇫🇷 Civique" : category}
         </span>
       </div>
 

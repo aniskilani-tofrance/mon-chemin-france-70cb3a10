@@ -10,11 +10,13 @@ import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { FLEModuleComplete } from "@/components/FLE/FLEModuleComplete";
+import { FLEAlphaExercise } from "@/components/FLE/FLEAlphaMode";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { callFLEVoiceAI } from "@/lib/fleVoiceAI";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useFLEUserProgress } from "@/hooks/useFLEProgress";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -146,9 +148,11 @@ const FLEExercise = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: userProgress } = useFLEUserProgress();
   const queryClient = useQueryClient();
   const tts = useTTS({ language: "fr" });
   const stt = useSpeechRecognition({ language: "fr" });
+  const isAlphaMode = userProgress?.estimated_level === "alpha" || userProgress?.estimated_level === "post_alpha";
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showHint, setShowHint] = useState(false);
@@ -478,6 +482,51 @@ const FLEExercise = () => {
             onNext={handleNextModule}
             onReview={() => navigate("/fle/review")}
             onHome={() => navigate("/fle")}
+          />
+        </main>
+      </div>
+    );
+  }
+
+  // Alpha mode - simplified UI for absolute beginners
+  if (isAlphaMode && currentExercise) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5 flex flex-col">
+        <Header />
+        <main className="flex-1 mx-auto w-full max-w-2xl px-4 pt-20 pb-8 sm:pt-24 flex flex-col">
+          <div className="mb-6">
+            <div className="flex items-center justify-between mb-2">
+              <button onClick={() => navigate("/fle")} className="text-muted-foreground hover:text-foreground flex items-center gap-2 text-lg">
+                <ArrowLeft className="h-5 w-5" /> ←
+              </button>
+              <span className="text-lg font-bold text-foreground">
+                {currentIndex + 1} / {totalExercises}
+              </span>
+            </div>
+            <Progress value={progressPercent} className="h-3" />
+          </div>
+
+          <FLEAlphaExercise
+            promptText={currentExercise.prompt_text}
+            choices={choices}
+            exerciseType={currentExercise.exercise_type}
+            isRecording={stt.isListening}
+            isLoadingAI={isLoadingAI}
+            answered={answered}
+            selectedChoice={selectedChoice}
+            correctAnswer={currentExercise.correct_answer}
+            aiFeedbackScore={aiFeedback?.score ?? null}
+            aiFeedbackText={aiFeedback?.feedback ?? null}
+            onListen={handleListen}
+            onStartRecording={handleStartRecording}
+            onStopRecording={handleStopAndEvaluate}
+            onChoiceSelect={handleChoiceSelect}
+            onNext={handleNext}
+            onRetry={handleRetry}
+            onShowHint={() => setShowHint(true)}
+            hintText={currentExercise.hint_text}
+            showHint={showHint}
+            transcript={stt.transcript || stt.interimTranscript || ""}
           />
         </main>
       </div>
