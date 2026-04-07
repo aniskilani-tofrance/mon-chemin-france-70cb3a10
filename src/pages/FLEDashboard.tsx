@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { FLECoach } from "@/components/FLE/FLECoach";
 import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
