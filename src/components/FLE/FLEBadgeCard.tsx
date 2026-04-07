@@ -15,16 +15,26 @@ export function FLEBadgeCard({ icon, title, description, earned, compact }: FLEB
   if (compact) {
     return (
       <motion.div
-        whileHover={{ scale: 1.05 }}
+        whileHover={earned ? { scale: 1.12, rotate: 3, y: -4 } : { scale: 1.02 }}
+        whileTap={earned ? { scale: 0.95 } : {}}
         className={cn(
-          "flex flex-col items-center gap-1 rounded-xl border p-3 min-w-[72px] transition-colors",
+          "flex flex-col items-center gap-1.5 rounded-2xl border-2 p-3 min-w-[76px] transition-all cursor-default",
           earned
-            ? "border-amber-200 bg-amber-50/50 dark:border-amber-800/40 dark:bg-amber-950/20"
-            : "border-border/50 bg-muted/20 opacity-50"
+            ? "border-amber-300 bg-gradient-to-b from-amber-50 to-orange-50/50 shadow-md shadow-amber-200/30 dark:border-amber-600/50 dark:from-amber-950/30 dark:to-orange-950/20 dark:shadow-amber-900/10"
+            : "border-border/30 bg-muted/10 grayscale"
         )}
       >
-        <span className="text-2xl">{earned ? icon : "🔒"}</span>
-        <span className="text-[10px] font-medium text-center text-muted-foreground leading-tight line-clamp-2">
+        <motion.span
+          className="text-2xl"
+          animate={earned ? { y: [0, -2, 0] } : {}}
+          transition={earned ? { repeat: Infinity, duration: 2, delay: Math.random() * 2 } : {}}
+        >
+          {earned ? icon : "🔒"}
+        </motion.span>
+        <span className={cn(
+          "text-[10px] font-bold text-center leading-tight line-clamp-2",
+          earned ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground/50"
+        )}>
           {title}
         </span>
       </motion.div>
@@ -33,25 +43,33 @@ export function FLEBadgeCard({ icon, title, description, earned, compact }: FLEB
 
   return (
     <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{ opacity: 0, scale: 0.8, rotate: -5 }}
+      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+      whileHover={earned ? { scale: 1.03 } : {}}
+      transition={{ type: "spring", stiffness: 300 }}
       className={cn(
-        "flex items-center gap-3 rounded-xl border p-4 transition-colors",
+        "flex items-center gap-3 rounded-2xl border-2 p-4 transition-all",
         earned
-          ? "border-amber-200 bg-amber-50/50 dark:border-amber-800/40 dark:bg-amber-950/20"
-          : "border-border/50 bg-muted/20 opacity-60"
+          ? "border-amber-300 bg-gradient-to-r from-amber-50 to-orange-50/50 shadow-md dark:border-amber-600/50 dark:from-amber-950/30 dark:to-orange-950/20"
+          : "border-border/30 bg-muted/10 grayscale opacity-60"
       )}
     >
-      <span className="text-3xl">{earned ? icon : "🔒"}</span>
+      <motion.span
+        className="text-3xl"
+        animate={earned ? { rotate: [0, 10, -10, 0] } : {}}
+        transition={{ repeat: Infinity, duration: 3 }}
+      >
+        {earned ? icon : "🔒"}
+      </motion.span>
       <div className="min-w-0 flex-1">
-        <p className={cn("font-semibold text-sm", earned ? "text-foreground" : "text-muted-foreground")}>
+        <p className={cn("font-bold text-sm", earned ? "text-foreground" : "text-muted-foreground")}>
           {title}
         </p>
         {description && (
           <p className="text-xs text-muted-foreground truncate">{description}</p>
         )}
       </div>
-      {!earned && <Lock className="h-4 w-4 text-muted-foreground/40 shrink-0" />}
+      {!earned && <Lock className="h-4 w-4 text-muted-foreground/30 shrink-0" />}
     </motion.div>
   );
 }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FLECoach } from "@/components/FLE/FLECoach";
-import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info, Zap, RotateCcw, MessageCircle, Briefcase } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
@@ -20,11 +20,10 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
-type ThemeFilter = string | null; // null = no theme filter
+type ThemeFilter = string | null;
 
 const LEVEL_ORDER = ["alpha", "post_alpha", "a1", "a2", "b1"];
 
-// Sector → theme mapping for personalization
 const SECTOR_TO_THEMES: Record<string, string[]> = {
   restauration: ["hotellerie"],
   hotellerie: ["hotellerie"],
@@ -44,27 +43,18 @@ function shouldUnlock(moduleLevel: string, userLevel: string, moduleIndex: numbe
   return userLevelIdx >= moduleLevelIdx && previousCompleted;
 }
 
-// Sort modules by relevance to user profile
 function personalizeModules(modules: FLEModule[], profile: { main_goal?: string | null; target_sector?: string | null } | null): FLEModule[] {
   if (!profile) return modules;
-
   const priorityThemes = new Set<string>();
-
-  // If goal is work → prioritize professional themes
   if (profile.main_goal === "travail" || profile.main_goal === "emploi") {
     ["travail", "entretien", "cv", "securite"].forEach(t => priorityThemes.add(t));
   }
-
-  // If target sector is set → prioritize sector themes
   if (profile.target_sector) {
     const sectorKey = profile.target_sector.toLowerCase().replace(/[éè]/g, "e").replace(/\s+/g, "_");
     const themes = SECTOR_TO_THEMES[sectorKey] || [];
     themes.forEach(t => priorityThemes.add(t));
   }
-
   if (priorityThemes.size === 0) return modules;
-
-  // Stable sort: priority modules first, rest after
   return [...modules].sort((a, b) => {
     const aPriority = priorityThemes.has(a.theme) ? 0 : 1;
     const bPriority = priorityThemes.has(b.theme) ? 0 : 1;
@@ -87,6 +77,13 @@ function getPersonalizedMessage(profile: { main_goal?: string | null; target_sec
   return null;
 }
 
+const QUICK_ACCESS = [
+  { icon: "📖", label: "Leçon du jour", color: "from-sky-400/20 to-blue-400/10", borderColor: "border-sky-200 dark:border-sky-800", key: "lesson" },
+  { icon: "🔄", label: "Réviser", color: "from-violet-400/20 to-purple-400/10", borderColor: "border-violet-200 dark:border-violet-800", key: "review" },
+  { icon: "🗣️", label: "Oral", color: "from-emerald-400/20 to-green-400/10", borderColor: "border-emerald-200 dark:border-emerald-800", key: "oral" },
+  { icon: "💼", label: "Emploi", color: "from-amber-400/20 to-orange-400/10", borderColor: "border-amber-200 dark:border-amber-800", key: "emploi" },
+];
+
 const FLEDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -104,7 +101,6 @@ const FLEDashboard = () => {
 
   const isLoading = modulesLoading || progressLoading;
 
-  // Detect level change
   useEffect(() => {
     if (progressLoading || !userProgress || hasCheckedLevel.current) return;
     hasCheckedLevel.current = true;
@@ -138,39 +134,23 @@ const FLEDashboard = () => {
   const getModuleProgress = (moduleId: string) =>
     moduleProgress?.find((mp) => mp.module_id === moduleId);
 
-  // Compute available themes from modules
   const availableThemes = useMemo(() => {
     if (!modules) return [];
     const themes = [...new Set(modules.map(m => m.theme))];
     return themes.filter(t => THEME_META[t]).sort();
   }, [modules]);
 
-  // Filter & personalize modules
   const filteredModules = useMemo(() => {
     let result = modules || [];
-
-    // Category filter
-    if (categoryFilter !== "all") {
-      result = result.filter(m => m.category === categoryFilter);
-    }
-
-    // Theme filter
-    if (themeFilter) {
-      result = result.filter(m => m.theme === themeFilter);
-    }
-
-    // Personalize order if no specific theme filter active
-    if (!themeFilter) {
-      result = personalizeModules(result, userProfile);
-    }
-
+    if (categoryFilter !== "all") result = result.filter(m => m.category === categoryFilter);
+    if (themeFilter) result = result.filter(m => m.theme === themeFilter);
+    if (!themeFilter) result = personalizeModules(result, userProfile);
     return result;
   }, [modules, categoryFilter, themeFilter, userProfile]);
 
   const completedCount = moduleProgress?.filter((mp) => mp.completed_at).length || 0;
   const earnedBadgeKeys = new Set((userBadges || []).map((b) => b.badge_key));
 
-  // Find next uncompleted unlocked module for daily mission
   const nextModule = filteredModules.find((module, index) => {
     const mp = getModuleProgress(module.id);
     if (mp?.completed_at) return false;
@@ -189,58 +169,87 @@ const FLEDashboard = () => {
 
   const personalizedMsg = getPersonalizedMessage(userProfile);
 
-  const handleThemeClick = (theme: string) => {
-    setThemeFilter(prev => prev === theme ? null : theme);
+  const handleQuickAccess = (key: string) => {
+    switch (key) {
+      case "lesson": nextModule && navigate(`/fle/exercise/${nextModule.id}`); break;
+      case "review": navigate("/fle/review"); break;
+      case "oral": navigate("/fle/dialogue"); break;
+      case "emploi": setCategoryFilter("professionnel"); setThemeFilter(null); break;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
+    <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
       <Header />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
         {/* Level change banner */}
         <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
 
-        {/* Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Mon français 🇫🇷</h1>
-            <div className="flex items-center gap-2">
+        {/* Header - Fun & bold */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ type: "spring", stiffness: 200 }}
+          className="mb-6"
+        >
+          <div className="flex items-center justify-between mb-1">
+            <div>
+              <h1 className="text-3xl font-extrabold text-foreground sm:text-4xl">
+                Mon français
+                <motion.span
+                  className="inline-block ml-2"
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                >
+                  🇫🇷
+                </motion.span>
+              </h1>
+            </div>
+            <div className="flex items-center gap-3">
               {progress.streak_days > 0 && (
                 <motion.div
-                  animate={{ scale: [1, 1.15, 1] }}
-                  transition={{ repeat: Infinity, duration: 2 }}
-                  className="flex items-center gap-1 text-orange-500 font-bold text-sm"
+                  animate={{ scale: [1, 1.2, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="flex items-center gap-1 rounded-full bg-gradient-to-r from-orange-400/20 to-red-400/10 border-2 border-orange-300 dark:border-orange-700 px-3 py-1 font-extrabold text-foreground shadow-md"
                 >
-                  <Flame className="h-5 w-5" />
-                  {progress.streak_days}
+                  <Flame className="h-5 w-5 text-orange-500" />
+                  <span className="text-sm">{progress.streak_days}</span>
                 </motion.div>
               )}
               <FLELevelBadge level={progress.estimated_level} size="lg" />
             </div>
           </div>
-          <p className="text-muted-foreground text-sm">Progressez à votre rythme avec des leçons courtes et pratiques.</p>
+          <p className="text-muted-foreground text-sm font-medium">
+            Chaque minute compte. Progressez à votre rythme ! 🚀
+          </p>
 
-          {/* Personalized message */}
           {personalizedMsg && (
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
-              className="mt-2 flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2"
+              className="mt-3 flex items-center gap-2 rounded-2xl bg-gradient-to-r from-primary/5 to-accent/10 border-2 border-primary/15 px-4 py-2.5"
             >
-              <Info className="h-4 w-4 text-primary shrink-0" />
-              <p className="text-sm text-foreground">{personalizedMsg}</p>
+              <Target className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm font-bold text-foreground">{personalizedMsg}</p>
             </motion.div>
           )}
 
-          <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full" onClick={() => navigate("/placement-test")}>
-            <Target className="h-4 w-4" />
-            {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}
-          </Button>
+          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+            <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
+              <Target className="h-4 w-4" />
+              {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
+            </Button>
+          </motion.div>
         </motion.div>
 
         {/* Coach Marianne */}
         {!isLoading && (
-          <div className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-6"
+          >
             <FLECoach
               userLevel={progress.estimated_level}
               streakDays={progress.streak_days}
@@ -253,12 +262,17 @@ const FLEDashboard = () => {
               mainGoal={userProfile?.main_goal}
               firstName={null}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* Daily Mission */}
         {!isLoading && nextModule && (
-          <div className="mb-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.15 }}
+            className="mb-6"
+          >
             <FLEDailyMission
               moduleTitle={nextModule.title}
               moduleIcon={nextModule.icon || "📖"}
@@ -267,59 +281,68 @@ const FLEDashboard = () => {
               isCompleted={isMissionCompletedToday}
               onStart={() => navigate(`/fle/exercise/${nextModule.id}`)}
             />
-          </div>
+          </motion.div>
         )}
 
         {/* Weekly XP progress */}
-        <div className="mb-6">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
           <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
-        </div>
+        </motion.div>
 
         {/* Stats grid */}
         {isLoading ? (
           <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
-            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-24 rounded-xl" />)}
+            {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-28 rounded-2xl" />)}
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4">
-            <FLEStatsCard icon={<Star className="h-5 w-5" />} label="XP total" value={progress.total_xp} color="text-amber-500" />
-            <FLEStatsCard icon={<Mic className="h-5 w-5" />} label="Score oral" value={`${progress.oral_score}%`} color="text-primary" />
-            <FLEStatsCard icon={<Brain className="h-5 w-5" />} label="Compréhension" value={`${progress.comprehension_score}%`} color="text-indigo-500" />
-            <FLEStatsCard icon={<Trophy className="h-5 w-5" />} label="Modules" value={`${completedCount}/${modules?.length || 0}`} color="text-green-500" />
+            <FLEStatsCard icon={<Star className="h-6 w-6" />} label="XP total" value={progress.total_xp} color="text-amber-500" bgGradient="from-amber-400/15 to-orange-400/5" />
+            <FLEStatsCard icon={<Mic className="h-6 w-6" />} label="Oral" value={`${progress.oral_score}%`} color="text-sky-500" bgGradient="from-sky-400/15 to-blue-400/5" />
+            <FLEStatsCard icon={<Brain className="h-6 w-6" />} label="Compréhension" value={`${progress.comprehension_score}%`} color="text-violet-500" bgGradient="from-violet-400/15 to-purple-400/5" />
+            <FLEStatsCard icon={<Trophy className="h-6 w-6" />} label="Modules" value={`${completedCount}/${modules?.length || 0}`} color="text-emerald-500" bgGradient="from-emerald-400/15 to-green-400/5" />
           </div>
         )}
 
-        {/* Quick access grid */}
+        {/* Quick access - fun colorful cards */}
         <div className="grid grid-cols-2 gap-3 mb-6">
-          {[
-            { icon: "📖", label: "Leçon du jour", onClick: () => nextModule && navigate(`/fle/exercise/${nextModule.id}`) },
-            { icon: "🔄", label: "Réviser", onClick: () => navigate("/fle/review") },
-            { icon: "🗣️", label: "Pratiquer l'oral", onClick: () => navigate("/fle/dialogue") },
-            { icon: "💼", label: "Français emploi", onClick: () => { setCategoryFilter("professionnel"); setThemeFilter(null); } },
-          ].map((item) => (
+          {QUICK_ACCESS.map((item, i) => (
             <motion.button
-              key={item.label}
-              whileHover={{ scale: 1.03 }}
-              whileTap={{ scale: 0.97 }}
-              onClick={item.onClick}
-              className="flex items-center gap-3 rounded-xl border border-border bg-card p-4 text-left hover:border-primary/30 hover:shadow-sm transition-all"
+              key={item.key}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.25 + i * 0.05, type: "spring" }}
+              whileHover={{ scale: 1.05, y: -3 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => handleQuickAccess(item.key)}
+              className={`relative overflow-hidden flex flex-col items-center gap-2 rounded-2xl border-2 ${item.borderColor} bg-gradient-to-br ${item.color} p-5 text-center shadow-md transition-all`}
             >
-              <span className="text-2xl">{item.icon}</span>
-              <span className="text-sm font-semibold text-foreground">{item.label}</span>
+              <motion.span
+                className="text-3xl"
+                animate={{ y: [0, -3, 0] }}
+                transition={{ repeat: Infinity, duration: 2, delay: i * 0.3 }}
+              >
+                {item.icon}
+              </motion.span>
+              <span className="text-sm font-extrabold text-foreground">{item.label}</span>
             </motion.button>
           ))}
         </div>
 
         {/* Badges row */}
         {allBadges && allBadges.length > 0 && (
-          <div className="mb-6">
-            <h2 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
-              <span>🏅</span> Badges
-              <span className="text-xs text-muted-foreground font-normal">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            className="mb-6"
+          >
+            <h2 className="text-sm font-extrabold text-foreground mb-3 flex items-center gap-2 uppercase tracking-wider">
+              <Trophy className="h-4 w-4 text-amber-500" /> Trophées
+              <span className="text-xs text-muted-foreground font-normal normal-case tracking-normal">
                 {earnedBadgeKeys.size}/{allBadges.length}
               </span>
             </h2>
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-hide">
               {allBadges.map((badge) => (
                 <FLEBadgeCard
                   key={badge.key}
@@ -330,8 +353,19 @@ const FLEDashboard = () => {
                 />
               ))}
             </div>
-          </div>
+          </motion.div>
         )}
+
+        {/* Section title */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.35 }}
+          className="flex items-center gap-2 mb-3"
+        >
+          <Sparkles className="h-5 w-5 text-primary" />
+          <h2 className="text-lg font-extrabold text-foreground">Mon parcours</h2>
+        </motion.div>
 
         {/* Category filter */}
         <div className="flex gap-2 mb-3">
@@ -340,17 +374,19 @@ const FLEDashboard = () => {
             { key: "quotidien" as const, label: "🏠 Quotidien" },
             { key: "professionnel" as const, label: "💼 Pro" },
           ]).map((cat) => (
-            <button
+            <motion.button
               key={cat.key}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
               onClick={() => { setCategoryFilter(cat.key); setThemeFilter(null); }}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
+              className={`rounded-full px-4 py-2 text-sm font-bold transition-all border-2 ${
                 categoryFilter === cat.key && !themeFilter
-                  ? "bg-primary text-primary-foreground shadow-sm"
-                  : "bg-card border border-border text-muted-foreground hover:bg-accent"
+                  ? "bg-primary text-primary-foreground shadow-md border-primary"
+                  : "bg-card border-border text-muted-foreground hover:bg-accent hover:border-accent-foreground/20"
               }`}
             >
               {cat.label}
-            </button>
+            </motion.button>
           ))}
         </div>
 
@@ -362,18 +398,20 @@ const FLEDashboard = () => {
               if (!meta) return null;
               const isActive = themeFilter === theme;
               return (
-                <button
+                <motion.button
                   key={theme}
-                  onClick={() => handleThemeClick(theme)}
-                  className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setThemeFilter(prev => prev === theme ? null : theme)}
+                  className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-bold transition-all border-2 ${
                     isActive
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-card border border-border text-muted-foreground hover:bg-accent"
+                      ? "bg-primary text-primary-foreground shadow-md border-primary"
+                      : "bg-card border-border text-muted-foreground hover:bg-accent"
                   }`}
                 >
                   <span>{meta.icon}</span>
                   {meta.label}
-                </button>
+                </motion.button>
               );
             })}
           </div>
@@ -381,13 +419,15 @@ const FLEDashboard = () => {
 
         {/* Pathway map */}
         {isLoading ? (
-          [...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl mb-2" />)
+          [...Array(5)].map((_, i) => <Skeleton key={i} className="h-20 rounded-2xl mb-3" />)
         ) : filteredModules.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
-            <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-            <p className="text-muted-foreground">Aucun module disponible pour ce filtre.</p>
-            <Button variant="link" onClick={() => { setCategoryFilter("all"); setThemeFilter(null); }} className="mt-2">
-              Voir tous les modules
+            <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
+              <BookOpen className="h-16 w-16 mx-auto text-muted-foreground/20 mb-3" />
+            </motion.div>
+            <p className="text-muted-foreground font-medium">Aucun module pour ce filtre.</p>
+            <Button variant="link" onClick={() => { setCategoryFilter("all"); setThemeFilter(null); }} className="mt-2 font-bold">
+              Voir tous les modules →
             </Button>
           </motion.div>
         ) : (
@@ -419,7 +459,7 @@ const FLEDashboard = () => {
   );
 };
 
-// Level change banner extracted
+// Level change banner
 function LevelChangeBanner({ levelChange, onDismiss }: {
   levelChange: { from: string; to: string; direction: "up" | "down" } | null;
   onDismiss: () => void;
@@ -428,47 +468,80 @@ function LevelChangeBanner({ levelChange, onDismiss }: {
     <AnimatePresence>
       {levelChange && (
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: -20 }}
+          initial={{ opacity: 0, scale: 0.8, y: -30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: -20 }}
-          transition={{ type: "spring", duration: 0.6 }}
-          className={`mb-6 rounded-2xl border p-5 text-center shadow-lg ${
+          exit={{ opacity: 0, scale: 0.8, y: -30 }}
+          transition={{ type: "spring", stiffness: 200, damping: 15 }}
+          className={`mb-6 rounded-3xl border-2 p-6 text-center shadow-xl relative overflow-hidden ${
             levelChange.direction === "up"
-              ? "border-green-300/50 bg-green-50 dark:border-green-500/30 dark:bg-green-950/30"
-              : "border-amber-300/50 bg-amber-50 dark:border-amber-500/30 dark:bg-amber-950/30"
+              ? "border-emerald-300 bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:border-emerald-600/50 dark:from-emerald-950/30 dark:via-green-950/20 dark:to-teal-950/20"
+              : "border-amber-300 bg-gradient-to-br from-amber-50 via-yellow-50 to-orange-50 dark:border-amber-600/50 dark:from-amber-950/30 dark:via-yellow-950/20 dark:to-orange-950/20"
           }`}
         >
-          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.2, type: "spring", stiffness: 200 }} className="mb-3">
+          {/* Confetti */}
+          {levelChange.direction === "up" && [...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute h-2 w-2 rounded-full"
+              style={{
+                background: ["#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#14b8a6"][i],
+                top: `${Math.random() * 100}%`,
+                left: `${Math.random() * 100}%`,
+              }}
+              animate={{
+                y: [0, -30, 0],
+                opacity: [0, 1, 0],
+                scale: [0, 1.5, 0],
+              }}
+              transition={{ repeat: Infinity, duration: 1.5 + i * 0.2, delay: i * 0.15 }}
+            />
+          ))}
+
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+            className="mb-3"
+          >
             {levelChange.direction === "up" ? (
-              <Sparkles className="mx-auto h-8 w-8 text-green-600 dark:text-green-400" />
+              <span className="text-5xl">🎉</span>
             ) : (
-              <TrendingDown className="mx-auto h-8 w-8 text-amber-600 dark:text-amber-400" />
+              <TrendingDown className="mx-auto h-10 w-10 text-amber-500" />
             )}
           </motion.div>
-          <p className={`text-lg font-bold ${levelChange.direction === "up" ? "text-green-800 dark:text-green-200" : "text-amber-800 dark:text-amber-200"}`}>
-            {levelChange.direction === "up" ? "🎉 Niveau mis à jour !" : "Niveau ajusté"}
+          <p className={`text-xl font-extrabold ${levelChange.direction === "up" ? "text-emerald-700 dark:text-emerald-300" : "text-amber-700 dark:text-amber-300"}`}>
+            {levelChange.direction === "up" ? "Level Up !" : "Niveau ajusté"}
           </p>
-          <div className="mt-2 flex items-center justify-center gap-3">
-            <FLELevelBadge level={levelChange.from} size="md" className="opacity-60" />
-            <motion.span animate={{ x: [0, 4, 0] }} transition={{ repeat: Infinity, duration: 1.5 }}>
+          <div className="mt-3 flex items-center justify-center gap-3">
+            <FLELevelBadge level={levelChange.from} size="md" className="opacity-50" />
+            <motion.span animate={{ x: [0, 6, 0] }} transition={{ repeat: Infinity, duration: 1 }}>
               {levelChange.direction === "up" ? (
-                <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                <TrendingUp className="h-6 w-6 text-emerald-500" />
               ) : (
-                <TrendingDown className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                <TrendingDown className="h-6 w-6 text-amber-500" />
               )}
             </motion.span>
-            <motion.div initial={{ scale: 0.5 }} animate={{ scale: [1, 1.1, 1] }} transition={{ delay: 0.4, duration: 0.5 }}>
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: [1, 1.15, 1] }}
+              transition={{ delay: 0.4, duration: 0.6 }}
+            >
               <FLELevelBadge level={levelChange.to} size="lg" />
             </motion.div>
           </div>
-          <p className={`mt-2 text-sm ${levelChange.direction === "up" ? "text-green-700 dark:text-green-300" : "text-amber-700 dark:text-amber-300"}`}>
+          <p className={`mt-3 text-sm font-medium ${levelChange.direction === "up" ? "text-emerald-600 dark:text-emerald-400" : "text-amber-600 dark:text-amber-400"}`}>
             {levelChange.direction === "up"
-              ? "Bravo, vous progressez ! Les modules adaptés sont maintenant débloqués."
-              : "Votre niveau a été recalibré pour mieux vous accompagner."}
+              ? "Bravo ! De nouveaux modules sont débloqués 🔓"
+              : "Recalibré pour mieux vous accompagner."}
           </p>
-          <button onClick={onDismiss} className="mt-3 text-xs text-muted-foreground underline hover:text-foreground">
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={onDismiss}
+            className="mt-3 text-xs font-bold text-muted-foreground underline hover:text-foreground"
+          >
             Fermer
-          </button>
+          </motion.button>
         </motion.div>
       )}
     </AnimatePresence>

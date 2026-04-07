@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { PlayCircle, Clock, Sparkles } from "lucide-react";
+import { PlayCircle, Clock, Sparkles, CheckCircle2, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface FLEDailyMissionProps {
@@ -23,13 +23,40 @@ export function FLEDailyMission({
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="rounded-2xl border border-green-200 bg-green-50 p-5 dark:border-green-800/40 dark:bg-green-950/20"
+        className="relative overflow-hidden rounded-2xl border-2 border-emerald-300 bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 p-5 dark:border-emerald-700/60 dark:from-emerald-950/30 dark:via-green-950/20 dark:to-teal-950/20"
       >
-        <div className="flex items-center gap-3">
-          <Sparkles className="h-6 w-6 text-green-600 dark:text-green-400" />
+        {/* Confetti dots */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute h-2 w-2 rounded-full"
+            style={{
+              background: ["#10b981", "#f59e0b", "#3b82f6", "#ec4899", "#8b5cf6", "#06b6d4"][i],
+              top: `${10 + Math.random() * 70}%`,
+              left: `${10 + Math.random() * 80}%`,
+            }}
+            animate={{
+              y: [0, -10, 0],
+              opacity: [0.4, 1, 0.4],
+              scale: [0.8, 1.2, 0.8],
+            }}
+            transition={{ repeat: Infinity, duration: 2 + i * 0.3, delay: i * 0.2 }}
+          />
+        ))}
+        <div className="relative flex items-center gap-3">
+          <motion.div
+            animate={{ rotate: [0, 10, -10, 0] }}
+            transition={{ repeat: Infinity, duration: 2 }}
+          >
+            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+          </motion.div>
           <div>
-            <p className="font-semibold text-green-800 dark:text-green-200">Mission du jour terminée !</p>
-            <p className="text-sm text-green-700/80 dark:text-green-300/70">Revenez demain pour continuer votre série 🔥</p>
+            <p className="font-bold text-emerald-700 dark:text-emerald-300 text-lg">
+              Mission accomplie ! 🎉
+            </p>
+            <p className="text-sm text-emerald-600/80 dark:text-emerald-400/70">
+              Super travail ! Revenez demain pour continuer votre série 🔥
+            </p>
           </div>
         </div>
       </motion.div>
@@ -40,26 +67,61 @@ export function FLEDailyMission({
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-primary/20 bg-gradient-to-r from-primary/5 to-primary/10 p-5"
+      whileHover={{ scale: 1.01 }}
+      className="relative overflow-hidden rounded-2xl border-2 border-primary/30 bg-gradient-to-r from-primary/10 via-accent/20 to-primary/5 p-5 shadow-lg shadow-primary/5"
     >
-      <p className="mb-1 text-xs font-bold uppercase tracking-wider text-primary/70">
-        🎯 Mission du jour
-      </p>
-      <div className="flex items-center gap-4">
-        <span className="text-4xl">{moduleIcon}</span>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-semibold text-foreground truncate">{moduleTitle}</h3>
-          <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
-            <span className="flex items-center gap-1">
-              <Clock className="h-3.5 w-3.5" />
-              {durationMinutes} min
-            </span>
-          </div>
+      {/* Animated glow */}
+      <motion.div
+        className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent"
+        animate={{ x: ["-100%", "100%"] }}
+        transition={{ repeat: Infinity, duration: 3, ease: "linear" }}
+      />
+
+      <div className="relative">
+        <div className="flex items-center gap-2 mb-3">
+          <motion.div
+            animate={{ rotate: [0, 15, -15, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            <Zap className="h-5 w-5 text-primary" />
+          </motion.div>
+          <p className="text-xs font-extrabold uppercase tracking-widest text-primary">
+            Mission du jour
+          </p>
         </div>
-        <Button onClick={onStart} className="gap-2 rounded-xl shrink-0">
-          <PlayCircle className="h-4 w-4" />
-          Go !
-        </Button>
+
+        <div className="flex items-center gap-4">
+          <motion.div
+            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-card border-2 border-primary/20 shadow-inner"
+            animate={{ y: [0, -3, 0] }}
+            transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
+          >
+            <span className="text-3xl">{moduleIcon}</span>
+          </motion.div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-bold text-foreground text-lg truncate">{moduleTitle}</h3>
+            <div className="flex items-center gap-3 mt-1 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1 bg-card/80 rounded-full px-2 py-0.5 text-xs font-medium">
+                <Clock className="h-3 w-3" />
+                {durationMinutes} min
+              </span>
+              <span className="flex items-center gap-1 bg-amber-100/80 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 rounded-full px-2 py-0.5 text-xs font-bold">
+                <Sparkles className="h-3 w-3" />
+                +{durationMinutes * 3} XP
+              </span>
+            </div>
+          </div>
+          <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+            <Button
+              onClick={onStart}
+              size="lg"
+              className="gap-2 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 px-6"
+            >
+              <PlayCircle className="h-5 w-5" />
+              Go !
+            </Button>
+          </motion.div>
+        </div>
       </div>
     </motion.div>
   );
