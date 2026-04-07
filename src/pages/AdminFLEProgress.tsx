@@ -430,7 +430,7 @@ export default function AdminFLEProgress() {
                     <div><span className="text-muted-foreground">Email :</span> {selectedEnriched.profile?.email || "—"}</div>
                     <div><span className="text-muted-foreground">Pays :</span> {selectedEnriched.profile?.origin_country || "—"}</div>
                     <div><span className="text-muted-foreground">Objectif :</span> {selectedEnriched.profile?.main_goal || "—"}</div>
-                    <div><span className="text-muted-foreground">Secteur :</span> {selectedEnriched.target_sector || selectedEnriched.profile?.target_sector || "—"}</div>
+                    <div><span className="text-muted-foreground">Secteur :</span> {selectedEnriched.profile?.target_sector || "—"}</div>
                   </div>
 
                   {/* Stats Grid */}
