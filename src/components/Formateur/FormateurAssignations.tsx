@@ -31,7 +31,7 @@ const statusLabels: Record<string, string> = {
 export function FormateurAssignations() {
   const [assignments, setAssignments] = useState<(Assignment & { module_title?: string; learner_name?: string })[]>([]);
   const [loading, setLoading] = useState(true);
-  const [modules, setModules] = useState<Tables<"fle_modules">[]>([]);
+  const [modules, setModules] = useState<{ id: string; title: string }[]>([]);
   const [learnerIds, setLearnerIds] = useState<string[]>([]);
   const [learnerProfiles, setLearnerProfiles] = useState<Record<string, string>>({});
   const [dialogOpen, setDialogOpen] = useState(false);
