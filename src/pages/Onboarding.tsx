@@ -81,20 +81,20 @@ const Onboarding = () => {
 
     // 1. Save onboarding results to database FIRST (secure audit trail)
     try {
-      await supabase.from("onboarding_results").insert({
+      await supabase.from("onboarding_results").insert([{
         email: email || null,
         language,
         answers: answers as unknown as Record<string, unknown>,
-        french_level_cecrl: answers.french_level_cecrl as string | undefined,
-        main_goal: answers.main_goal as string | undefined,
-        target_sector: answers.target_sector as string | undefined,
+        french_level_cecrl: (answers.french_level_cecrl as string) || null,
+        main_goal: (answers.main_goal as string) || null,
+        target_sector: (answers.target_sector as string) || null,
         lead_route: answers.leadRoute ?? null,
         lead_score: answers.leadScore ?? null,
         distance_to_job: answers.distance_to_job ?? null,
-        work_right: answers.work_right as string | undefined,
-        literacy: answers.literacy as string | undefined,
-        barriers: Array.isArray(answers.barriers) ? answers.barriers : null,
-      });
+        work_right: (answers.work_right as string) || null,
+        literacy: (answers.literacy as string) || null,
+        barriers: Array.isArray(answers.barriers) ? answers.barriers as string[] : null,
+      }]);
     } catch (error) {
       console.error("Error saving onboarding results:", error);
     }
