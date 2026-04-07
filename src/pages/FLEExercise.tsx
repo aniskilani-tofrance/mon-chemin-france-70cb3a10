@@ -14,6 +14,8 @@ import { FLEAlphaExercise } from "@/components/FLE/FLEAlphaMode";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { callFLEVoiceAI } from "@/lib/fleVoiceAI";
+import { useAdaptiveLearning } from "@/hooks/useAdaptiveLearning";
+import { useOfflineExercises } from "@/hooks/useOfflineExercises";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFLEUserProgress } from "@/hooks/useFLEProgress";
@@ -152,6 +154,8 @@ const FLEExercise = () => {
   const queryClient = useQueryClient();
   const tts = useTTS({ language: "fr" });
   const stt = useSpeechRecognition({ language: "fr" });
+  const { evaluateAndAdjust } = useAdaptiveLearning();
+  const { isOffline, cachedExercises, savePendingResult } = useOfflineExercises(moduleId);
   const isAlphaMode = userProgress?.estimated_level === "alpha" || userProgress?.estimated_level === "post_alpha";
 
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -382,10 +386,14 @@ const FLEExercise = () => {
       setCompletionData({ score, xpEarned, newBadges });
       setShowCompletion(true);
 
+      // Adaptive learning: evaluate and potentially adjust level
+      await evaluateAndAdjust();
+
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["fle-user-progress"] });
       queryClient.invalidateQueries({ queryKey: ["fle-module-progress"] });
       queryClient.invalidateQueries({ queryKey: ["fle-user-badges"] });
+      queryClient.invalidateQueries({ queryKey: ["fle-level-history"] });
     } catch (err) {
       console.error("Error completing module:", err);
       toast.error("Erreur lors de la sauvegarde");

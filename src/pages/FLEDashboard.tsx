@@ -7,6 +7,11 @@ import { Header } from "@/components/Header";
 import { FLETimeTracker } from "@/components/FLE/FLETimeTracker";
 import { FLEGenerateExercise } from "@/components/FLE/FLEGenerateExercise";
 import { FLEInstallPrompt } from "@/components/FLE/FLEInstallPrompt";
+import { FLEProgressChart } from "@/components/FLE/FLEProgressChart";
+import { FLESkillsRadar } from "@/components/FLE/FLESkillsRadar";
+import { FLEWeeklyGoal } from "@/components/FLE/FLEWeeklyGoal";
+import { FLEExportPDF } from "@/components/FLE/FLEExportPDF";
+import { FLEOfflineIndicator } from "@/components/FLE/FLEOfflineIndicator";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
 import { FLEDailyMission } from "@/components/FLE/FLEDailyMission";
 import { FLEWeeklyProgress } from "@/components/FLE/FLEWeeklyProgress";
@@ -186,6 +191,7 @@ const FLEDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
       <Header />
+      <FLEOfflineIndicator />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
         {/* Level change banner */}
         <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
@@ -256,12 +262,17 @@ const FLEDashboard = () => {
             </motion.div>
           )}
 
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
-              <Target className="h-4 w-4" />
-              {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
-            </Button>
-          </motion.div>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button variant="outline" size="sm" className="gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
+                <Target className="h-4 w-4" />
+                {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <FLEExportPDF />
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* Coach Marianne */}
@@ -309,6 +320,21 @@ const FLEDashboard = () => {
         {/* Time Tracker */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-6">
           <FLETimeTracker />
+        </motion.div>
+
+        {/* CECRL Progression + Skills Radar */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+            <FLEProgressChart />
+          </motion.div>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.19 }}>
+            <FLESkillsRadar />
+          </motion.div>
+        </div>
+
+        {/* Weekly goals */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.195 }} className="mb-6">
+          <FLEWeeklyGoal />
         </motion.div>
 
         {/* Weekly XP progress */}
