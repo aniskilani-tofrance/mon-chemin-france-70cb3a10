@@ -383,6 +383,19 @@ const FLEDashboard = () => {
           </motion.div>
         )}
 
+        {/* AI-generated exercises */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.33 }}
+          className="mb-6"
+        >
+          <FLEGenerateExercise
+            userLevel={progress.estimated_level}
+            theme={userProfile?.target_sector || undefined}
+          />
+        </motion.div>
+
         {/* Section title */}
         <motion.div
           initial={{ opacity: 0 }}
