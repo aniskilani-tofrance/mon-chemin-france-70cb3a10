@@ -680,8 +680,7 @@ const FLEExercise = () => {
             {isScenarioTree && currentExercise && !answered && (
               <div className="mb-6">
                 <ScenarioTreeExercise
-                  nodes={(currentExercise.choices as any)?.nodes || {}}
-                  startNodeId={(currentExercise.choices as any)?.startNodeId || "start"}
+                  tree={currentExercise.choices as any}
                   onComplete={async (isCorrect, score) => {
                     setAnswered(true);
                     if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
@@ -694,6 +693,30 @@ const FLEExercise = () => {
                     });
                     if (currentExercise) {
                       await saveExerciseResult(currentExercise.id, "scenario_tree", isCorrect, null, null);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Fill in the blank exercise */}
+            {isFillInBlank && currentExercise && !answered && (
+              <div className="mb-6">
+                <FillInBlankExercise
+                  sentence={currentExercise.prompt_text || "___"}
+                  correctAnswer={currentExercise.correct_answer || ""}
+                  onComplete={async (isCorrect, score) => {
+                    setAnswered(true);
+                    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
+                    setAiFeedback({
+                      score,
+                      feedback: isCorrect ? "Bravo, c'est le bon mot ! 🎉" : "Pas tout à fait…",
+                      correction: isCorrect ? null : `La bonne réponse était : ${currentExercise.correct_answer}`,
+                      encouragement: isCorrect ? "Continuez comme ça !" : "Vous progressez, continuez ! 💪",
+                      pronunciation_tip: null,
+                    });
+                    if (currentExercise) {
+                      await saveExerciseResult(currentExercise.id, "fill_in_blank", isCorrect, null, null);
                     }
                   }}
                 />
