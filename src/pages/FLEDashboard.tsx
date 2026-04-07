@@ -589,3 +589,6 @@ function LevelChangeBanner({ levelChange, onDismiss }: {
 }
 
 export default FLEDashboard;
+
+// PWA Install prompt is rendered at root level - re-export for App.tsx
+export { FLEInstallPrompt };
