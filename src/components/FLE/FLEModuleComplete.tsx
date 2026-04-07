@@ -40,6 +40,10 @@ export function FLEModuleComplete({
 }: FLEModuleCompleteProps) {
   const stars = getStars(score);
 
+  useEffect(() => {
+    playFanfare();
+  }, []);
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}

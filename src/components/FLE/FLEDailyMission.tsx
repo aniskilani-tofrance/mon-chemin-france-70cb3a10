@@ -114,7 +114,7 @@ export function FLEDailyMission({
           </div>
           <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
             <Button
-              onClick={onStart}
+              onClick={() => { playWhoosh(); onStart(); }}
               size="lg"
               className="gap-2 rounded-2xl font-bold text-base shadow-lg shadow-primary/20 px-6"
             >
