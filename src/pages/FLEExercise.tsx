@@ -148,9 +148,11 @@ const FLEExercise = () => {
   const { moduleId } = useParams<{ moduleId: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: userProgress } = useFLEUserProgress();
   const queryClient = useQueryClient();
   const tts = useTTS({ language: "fr" });
   const stt = useSpeechRecognition({ language: "fr" });
+  const isAlphaMode = userProgress?.estimated_level === "alpha" || userProgress?.estimated_level === "post_alpha";
 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showHint, setShowHint] = useState(false);
