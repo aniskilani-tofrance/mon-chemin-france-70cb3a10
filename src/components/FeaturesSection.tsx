@@ -14,6 +14,7 @@ export function FeaturesSection() {
   const f = t.featuresSection;
   const { user } = useAuth();
   const { data: onboardingResult, isLoading: obLoading } = useOnboardingResult();
+  const navigate = useNavigate();
   const [gateOpen, setGateOpen] = useState(false);
 
   const hasCompletedOnboarding = !!onboardingResult;
