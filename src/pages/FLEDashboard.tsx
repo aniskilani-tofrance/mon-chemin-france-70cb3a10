@@ -408,18 +408,20 @@ const FLEDashboard = () => {
         </motion.div>
 
         {/* Category filter */}
-        <div className="flex gap-2 mb-3">
+        <div className="flex gap-2 mb-3 overflow-x-auto pb-1 scrollbar-hide">
           {([
             { key: "all" as const, label: "📚 Tout" },
             { key: "quotidien" as const, label: "🏠 Quotidien" },
             { key: "professionnel" as const, label: "💼 Pro" },
+            { key: "certification" as const, label: "🎓 DELF/TCF" },
+            { key: "culture" as const, label: "🇫🇷 Civique" },
           ]).map((cat) => (
             <motion.button
               key={cat.key}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => { setCategoryFilter(cat.key); setThemeFilter(null); }}
-              className={`rounded-full px-4 py-2 text-sm font-bold transition-all border-2 ${
+              className={`shrink-0 rounded-full px-4 py-2 text-sm font-bold transition-all border-2 ${
                 categoryFilter === cat.key && !themeFilter
                   ? "bg-primary text-primary-foreground shadow-md border-primary"
                   : "bg-card border-border text-muted-foreground hover:bg-accent hover:border-accent-foreground/20"

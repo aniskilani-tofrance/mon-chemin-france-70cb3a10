@@ -92,6 +92,17 @@ export const THEME_META: Record<string, { label: string; icon: string }> = {
   proprete: { label: "Propreté", icon: "🧹" },
   logistique: { label: "Logistique", icon: "📦" },
   aide_personne: { label: "Aide à la personne", icon: "🤲" },
+  // Certification themes
+  delf_a1: { label: "DELF A1", icon: "🎧" },
+  delf_a2: { label: "DELF A2", icon: "🎧" },
+  tcf: { label: "TCF", icon: "📝" },
+  // Culture themes
+  republique: { label: "République", icon: "🇫🇷" },
+  institutions: { label: "Institutions", icon: "🏛️" },
+  droits_devoirs: { label: "Droits & Devoirs", icon: "⚖️" },
+  vivre_ensemble: { label: "Vivre ensemble", icon: "🤝" },
+  histoire: { label: "Histoire", icon: "📜" },
+  examen_cir: { label: "Examen CIR", icon: "🎓" },
 };
 
 export function useFLEModules() {
