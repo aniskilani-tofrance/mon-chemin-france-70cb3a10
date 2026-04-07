@@ -3,7 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { StaggerContainer, StaggerItem } from "@/components/AnimatedContainer";
 import { Mic, BookOpen, MapPin, ArrowRight } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { useOnboardingResult } from "@/hooks/useOnboardingResult";
