@@ -207,7 +207,24 @@ const FLEDashboard = () => {
                 </motion.span>
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  const newState = toggleSound();
+                  setSoundOn(newState);
+                  if (newState) playDing();
+                }}
+                className="flex items-center justify-center h-9 w-9 rounded-full border-2 border-muted bg-card shadow-sm transition-colors hover:bg-accent"
+                aria-label={soundOn ? "Couper les sons" : "Activer les sons"}
+                title={soundOn ? "Sons activés" : "Sons désactivés"}
+              >
+                {soundOn ? (
+                  <Volume2 className="h-4 w-4 text-primary" />
+                ) : (
+                  <VolumeX className="h-4 w-4 text-muted-foreground" />
+                )}
+              </motion.button>
               {progress.streak_days > 0 && (
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
