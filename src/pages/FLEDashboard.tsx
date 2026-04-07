@@ -191,6 +191,7 @@ const FLEDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
       <Header />
+      <FLEOfflineIndicator />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
         {/* Level change banner */}
         <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
