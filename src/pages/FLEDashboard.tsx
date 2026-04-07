@@ -90,6 +90,7 @@ const QUICK_ACCESS = [
 const FLEDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: onboardingResult, isLoading: obLoading } = useOnboardingResult();
   const { data: modules, isLoading: modulesLoading } = useFLEModules();
   const { data: userProgress, isLoading: progressLoading } = useFLEUserProgress();
   const { data: moduleProgress } = useFLEModuleProgress();
@@ -102,8 +103,17 @@ const FLEDashboard = () => {
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
+  const [gateOpen, setGateOpen] = useState(false);
 
-  const isLoading = modulesLoading || progressLoading;
+  const hasCompletedOnboarding = !!onboardingResult;
+  const isLoading = modulesLoading || progressLoading || obLoading;
+
+  // Show gate if user hasn't completed onboarding
+  useEffect(() => {
+    if (!obLoading && !hasCompletedOnboarding) {
+      setGateOpen(true);
+    }
+  }, [obLoading, hasCompletedOnboarding]);
 
   useEffect(() => {
     if (progressLoading || !userProgress || hasCheckedLevel.current) return;
