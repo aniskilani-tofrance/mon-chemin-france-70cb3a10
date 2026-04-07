@@ -255,26 +255,36 @@ export default function Login() {
             </Button>
             <div className="flex items-center gap-3 w-full">
               <Separator className="flex-1" />
-              <span className="text-xs text-muted-foreground">ou</span>
+              <span className="text-xs text-muted-foreground">comptes démo</span>
               <Separator className="flex-1" />
             </div>
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full"
-              disabled={loading}
-              onClick={() => {
-                setEmail("demo@tofrance.fr");
-                setPassword("Demo2025!");
-                const form = document.querySelector("form");
-                if (form) {
-                  setTimeout(() => form.requestSubmit(), 100);
-                }
-              }}
-            >
-              <UserCheck className="mr-2 h-4 w-4" />
-              Compte démo
-            </Button>
+            <div className="grid grid-cols-3 gap-2 w-full">
+              {[
+                { label: "Apprenant", email: "apprenant1@tofrance.fr", password: "Apprenant2025!", icon: "🎓" },
+                { label: "Formateur", email: "formateur@tofrance.fr", password: "Formateur2025!", icon: "👩‍🏫" },
+                { label: "Directeur", email: "directeur@tofrance.fr", password: "Directeur2025!", icon: "📊" },
+              ].map((demo) => (
+                <Button
+                  key={demo.label}
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="w-full text-xs h-auto py-2 flex-col gap-0.5"
+                  disabled={loading}
+                  onClick={() => {
+                    setEmail(demo.email);
+                    setPassword(demo.password);
+                    setTimeout(() => {
+                      const form = document.querySelector("form");
+                      if (form) form.requestSubmit();
+                    }, 100);
+                  }}
+                >
+                  <span className="text-base">{demo.icon}</span>
+                  {demo.label}
+                </Button>
+              ))}
+            </div>
             <p className="text-sm text-muted-foreground text-center">
               Pas encore de compte ?{" "}
               <Link to="/signup" className="text-primary hover:underline">
