@@ -193,6 +193,8 @@ const FLEDashboard = () => {
   };
 
   return (
+    <>
+    <FLEOnboardingGate open={gateOpen} onOpenChange={(v) => { setGateOpen(v); if (!v && !hasCompletedOnboarding) navigate("/"); }} />
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
       <Header />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
