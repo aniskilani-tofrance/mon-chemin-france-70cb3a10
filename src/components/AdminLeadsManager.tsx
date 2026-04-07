@@ -134,9 +134,8 @@ export function AdminLeadsManager() {
   const getProviderName = (id: string) => providers.find((p) => p.id === id)?.name || "—";
 
   const handleViewProfile = (profileId: string) => {
-    const profile = profiles[profileId];
-    if (profile) {
-      setSelectedProfile(profile);
+    if (profiles[profileId]) {
+      setSelectedProfileId(profileId);
       setDetailOpen(true);
     }
   };
