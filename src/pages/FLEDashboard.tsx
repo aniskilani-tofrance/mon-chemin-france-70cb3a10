@@ -260,7 +260,7 @@ const FLEDashboard = () => {
               lastModuleTitle={nextModule?.title}
               targetSector={userProfile?.target_sector}
               mainGoal={userProfile?.main_goal}
-              firstName={null}
+              firstName={userProfile?.first_name}
             />
           </motion.div>
         )}

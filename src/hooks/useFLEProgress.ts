@@ -177,7 +177,7 @@ export function useUserProfile() {
       if (!user) return null;
       const { data, error } = await supabase
         .from("profiles")
-        .select("main_goal, target_sector, french_level_cecrl, french_level, literacy")
+        .select("first_name, main_goal, target_sector, french_level_cecrl, french_level, literacy")
         .eq("user_id", user.id)
         .maybeSingle();
       if (error) throw error;
