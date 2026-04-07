@@ -58,6 +58,7 @@ const EXERCISE_LABELS: Record<string, { icon: string; label: string; instruction
   vocal_dialogue: { icon: "🤖", label: "Dialogue avec Marianne", instruction: "Parlez avec Marianne" },
   drag_match: { icon: "🔗", label: "Associer", instruction: "Glissez chaque terme vers sa définition" },
   scenario_tree: { icon: "🌳", label: "Scénario", instruction: "Faites vos choix dans cette situation" },
+  fill_in_blank: { icon: "✍️", label: "Compléter", instruction: "Tapez le mot manquant dans la phrase" },
 };
 
 // XP calculation based on score
