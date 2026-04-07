@@ -6,6 +6,9 @@ import {
   Volume2, Mic, MicOff, RotateCcw, ArrowRight, ArrowLeft, 
   CheckCircle2, XCircle, Lightbulb, Loader2, Send
 } from "lucide-react";
+import { DragMatchExercise } from "@/components/FLE/DragMatchExercise";
+import { ScenarioTreeExercise } from "@/components/FLE/ScenarioTreeExercise";
+import { AudioSubmitButton } from "@/components/FLE/AudioSubmitButton";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
