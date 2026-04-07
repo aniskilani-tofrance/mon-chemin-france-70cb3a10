@@ -223,6 +223,7 @@ const FLEDashboard = () => {
       <Header />
       <FLEOfflineIndicator />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24 space-y-6">
+        <DemoBanner />
 
         {/* Level change banner */}
         <LevelChangeBanner levelChange={levelChange} onDismiss={() => setLevelChange(null)} />
