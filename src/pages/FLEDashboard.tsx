@@ -262,12 +262,17 @@ const FLEDashboard = () => {
             </motion.div>
           )}
 
-          <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
-            <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
-              <Target className="h-4 w-4" />
-              {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
-            </Button>
-          </motion.div>
+          <div className="flex gap-2 mt-3 flex-wrap">
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <Button variant="outline" size="sm" className="gap-2 rounded-full font-bold border-2" onClick={() => navigate("/placement-test")}>
+                <Target className="h-4 w-4" />
+                {progress.placement_completed ? "Refaire le test" : "Test de niveau"}
+              </Button>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}>
+              <FLEExportPDF />
+            </motion.div>
+          </div>
         </motion.div>
 
         {/* Coach Marianne */}
