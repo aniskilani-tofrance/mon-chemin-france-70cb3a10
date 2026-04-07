@@ -6,6 +6,9 @@ import {
   Volume2, Mic, MicOff, RotateCcw, ArrowRight, ArrowLeft, 
   CheckCircle2, XCircle, Lightbulb, Loader2, Send
 } from "lucide-react";
+import { DragMatchExercise } from "@/components/FLE/DragMatchExercise";
+import { ScenarioTreeExercise } from "@/components/FLE/ScenarioTreeExercise";
+import { AudioSubmitButton } from "@/components/FLE/AudioSubmitButton";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -52,6 +55,8 @@ const EXERCISE_LABELS: Record<string, { icon: string; label: string; instruction
   interview_sim: { icon: "🤝", label: "Simulation d'entretien", instruction: "Répondez comme dans un vrai entretien" },
   safety_instruction: { icon: "🦺", label: "Sécurité", instruction: "Comprenez cette consigne de sécurité" },
   vocal_dialogue: { icon: "🤖", label: "Dialogue avec Marianne", instruction: "Parlez avec Marianne" },
+  drag_match: { icon: "🔗", label: "Associer", instruction: "Glissez chaque terme vers sa définition" },
+  scenario_tree: { icon: "🌳", label: "Scénario", instruction: "Faites vos choix dans cette situation" },
 };
 
 // XP calculation based on score
@@ -447,6 +452,9 @@ const FLEExercise = () => {
     "listen_choose", "image_word_audio", "complete_dialogue", "safety_instruction"
   ].includes(currentExercise.exercise_type);
 
+  const isDragMatch = currentExercise?.exercise_type === "drag_match";
+  const isScenarioTree = currentExercise?.exercise_type === "scenario_tree";
+
   const choices = currentExercise?.choices as string[] | null;
 
   if (isLoading) {
@@ -629,6 +637,63 @@ const FLEExercise = () => {
                 )}
                 {stt.error && <p className="text-xs text-destructive">{stt.error}</p>}
                 {!stt.isSupported && <p className="text-xs text-destructive">La reconnaissance vocale n'est pas disponible sur ce navigateur.</p>}
+              </div>
+            )}
+
+            {/* Audio submit to formateur */}
+            {isOralExercise && answered && currentExercise && moduleId && (
+              <div className="mb-4">
+                <AudioSubmitButton exerciseId={currentExercise.id} moduleId={moduleId} />
+              </div>
+            )}
+
+            {/* Drag & Match exercise */}
+            {isDragMatch && currentExercise && !answered && (
+              <div className="mb-6">
+                <DragMatchExercise
+                  pairs={(currentExercise.choices as any[])?.map((c: any) => ({
+                    term: c.term || c.label || "",
+                    definition: c.definition || c.match || "",
+                  })) || []}
+                  onComplete={async (isCorrect, score) => {
+                    setAnswered(true);
+                    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
+                    setAiFeedback({
+                      score,
+                      feedback: isCorrect ? "Bravo, bonnes associations ! 🎉" : "Pas tout à fait, révisez les associations.",
+                      correction: null,
+                      encouragement: isCorrect ? "Excellent travail !" : "Continuez à pratiquer 💪",
+                      pronunciation_tip: null,
+                    });
+                    if (currentExercise) {
+                      await saveExerciseResult(currentExercise.id, "drag_match", isCorrect, null, null);
+                    }
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Scenario tree exercise */}
+            {isScenarioTree && currentExercise && !answered && (
+              <div className="mb-6">
+                <ScenarioTreeExercise
+                  nodes={(currentExercise.choices as any)?.nodes || {}}
+                  startNodeId={(currentExercise.choices as any)?.startNodeId || "start"}
+                  onComplete={async (isCorrect, score) => {
+                    setAnswered(true);
+                    if (isCorrect) { setCorrectCount((c) => c + 1); playSuccess(); } else { playError(); }
+                    setAiFeedback({
+                      score,
+                      feedback: isCorrect ? "Excellent choix dans cette situation ! 🎉" : "Pas le meilleur choix, mais vous apprenez !",
+                      correction: null,
+                      encouragement: isCorrect ? "Vous gérez bien les situations !" : "Réessayez pour explorer d'autres options 💪",
+                      pronunciation_tip: null,
+                    });
+                    if (currentExercise) {
+                      await saveExerciseResult(currentExercise.id, "scenario_tree", isCorrect, null, null);
+                    }
+                  }}
+                />
               </div>
             )}
 
