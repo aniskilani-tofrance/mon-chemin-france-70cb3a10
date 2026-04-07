@@ -67,6 +67,11 @@ export interface UserProfile {
   literacy: string | null;
 }
 
+/**
+ * Fetches user profile for FLE context.
+ * Identity fields come from profiles, orientation fields fall back to onboarding_results.
+ */
+
 // Theme metadata for display
 export const THEME_META: Record<string, { label: string; icon: string }> = {
   sante: { label: "Santé", icon: "🏥" },
