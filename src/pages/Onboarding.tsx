@@ -79,6 +79,27 @@ const Onboarding = () => {
     track("onboarding_completed", { route: answers.leadRoute ?? "unknown", score: answers.leadScore ?? 0 }, "/onboarding", language);
     const email = answers.contact_email as string | undefined;
 
+    // 1. Save onboarding results to database FIRST (secure audit trail)
+    try {
+      await supabase.from("onboarding_results").insert({
+        email: email || null,
+        language,
+        answers: answers as unknown as Record<string, unknown>,
+        french_level_cecrl: answers.french_level_cecrl as string | undefined,
+        main_goal: answers.main_goal as string | undefined,
+        target_sector: answers.target_sector as string | undefined,
+        lead_route: answers.leadRoute ?? null,
+        lead_score: answers.leadScore ?? null,
+        distance_to_job: answers.distance_to_job ?? null,
+        work_right: answers.work_right as string | undefined,
+        literacy: answers.literacy as string | undefined,
+        barriers: Array.isArray(answers.barriers) ? answers.barriers : null,
+      });
+    } catch (error) {
+      console.error("Error saving onboarding results:", error);
+    }
+
+    // 2. Save consents and match leads
     if (email) {
       localStorage.setItem("user_email", email);
 
