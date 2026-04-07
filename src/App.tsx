@@ -65,6 +65,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <OAuthRedirectHandler />
+          <FLEInstallPrompt />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
               <Route path="/" element={<Index />} />
