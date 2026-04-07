@@ -26,16 +26,22 @@ interface Lead {
 
 interface Profile {
   id: string;
+  user_id: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
   phone: string | null;
   city: string | null;
   postal_code: string | null;
+}
+
+interface OnboardingData {
   target_sector: string | null;
   french_level_cecrl: string | null;
   lead_score: number | null;
   main_goal: string | null;
+  lead_route: string | null;
+  barriers: string[] | null;
 }
 
 interface Provider {
@@ -73,9 +79,10 @@ const STATUS_COLORS: Record<string, "default" | "secondary" | "destructive" | "o
 export function AdminLeadsManager() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [onboardingMap, setOnboardingMap] = useState<Record<string, OnboardingData>>({});
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assigningProfileId, setAssigningProfileId] = useState<string | null>(null);
@@ -86,10 +93,11 @@ export function AdminLeadsManager() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [leadsRes, profilesRes, providersRes] = await Promise.all([
+    const [leadsRes, profilesRes, providersRes, onboardingRes] = await Promise.all([
       supabase.from("leads").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("id, first_name, last_name, email, phone, city, postal_code, target_sector, french_level_cecrl, lead_score, main_goal"),
+      supabase.from("profiles").select("id, user_id, first_name, last_name, email, phone, city, postal_code"),
       supabase.from("training_providers").select("id, name, provider_type"),
+      supabase.from("onboarding_results").select("user_id, target_sector, french_level_cecrl, lead_score, main_goal, lead_route, barriers"),
     ]);
 
     if (leadsRes.data) setLeads(leadsRes.data);
@@ -99,6 +107,23 @@ export function AdminLeadsManager() {
       setProfiles(map);
     }
     if (providersRes.data) setProviders(providersRes.data);
+
+    // Build onboarding data map keyed by profile.id (via user_id)
+    if (onboardingRes.data && profilesRes.data) {
+      const obMap: Record<string, OnboardingData> = {};
+      // Map user_id → profile.id
+      const userToProfile: Record<string, string> = {};
+      profilesRes.data.forEach((p) => {
+        if (p.user_id) userToProfile[p.user_id] = p.id;
+      });
+      onboardingRes.data.forEach((ob: any) => {
+        if (ob.user_id && userToProfile[ob.user_id]) {
+          obMap[userToProfile[ob.user_id]] = ob;
+        }
+      });
+      setOnboardingMap(obMap);
+    }
+
     setLoading(false);
   };
 
@@ -109,9 +134,8 @@ export function AdminLeadsManager() {
   const getProviderName = (id: string) => providers.find((p) => p.id === id)?.name || "—";
 
   const handleViewProfile = (profileId: string) => {
-    const profile = profiles[profileId];
-    if (profile) {
-      setSelectedProfile(profile);
+    if (profiles[profileId]) {
+      setSelectedProfileId(profileId);
       setDetailOpen(true);
     }
   };
@@ -295,22 +319,33 @@ export function AdminLeadsManager() {
           <DialogHeader>
             <DialogTitle>Détail du profil</DialogTitle>
           </DialogHeader>
-          {selectedProfile && (
-            <div className="space-y-3 pt-2 text-sm">
-              <div className="grid grid-cols-2 gap-2">
-                <div><span className="font-medium text-muted-foreground">Prénom :</span> {selectedProfile.first_name || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Nom :</span> {selectedProfile.last_name || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Email :</span> {selectedProfile.email || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Tél :</span> {selectedProfile.phone || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Ville :</span> {selectedProfile.city || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">CP :</span> {selectedProfile.postal_code || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Secteur :</span> {selectedProfile.target_sector || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Français :</span> {selectedProfile.french_level_cecrl || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Objectif :</span> {selectedProfile.main_goal || "—"}</div>
-                <div><span className="font-medium text-muted-foreground">Score :</span> {selectedProfile.lead_score ?? "—"}</div>
+          {selectedProfileId && profiles[selectedProfileId] && (() => {
+            const prof = profiles[selectedProfileId];
+            const ob = onboardingMap[selectedProfileId];
+            return (
+              <div className="space-y-3 pt-2 text-sm">
+                <div className="grid grid-cols-2 gap-2">
+                  <div><span className="font-medium text-muted-foreground">Prénom :</span> {prof.first_name || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Nom :</span> {prof.last_name || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Email :</span> {prof.email || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Tél :</span> {prof.phone || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Ville :</span> {prof.city || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">CP :</span> {prof.postal_code || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Secteur :</span> {ob?.target_sector || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Français :</span> {ob?.french_level_cecrl || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Objectif :</span> {ob?.main_goal || "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Score :</span> {ob?.lead_score ?? "—"}</div>
+                  <div><span className="font-medium text-muted-foreground">Route :</span> {ob?.lead_route || "—"}</div>
+                </div>
+                {ob?.barriers && ob.barriers.length > 0 && (
+                  <div>
+                    <span className="font-medium text-muted-foreground">Freins : </span>
+                    {ob.barriers.join(", ")}
+                  </div>
+                )}
               </div>
-            </div>
-          )}
+            );
+          })()}
         </DialogContent>
       </Dialog>
 

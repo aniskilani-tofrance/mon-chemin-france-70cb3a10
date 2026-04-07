@@ -41,10 +41,11 @@ interface UserProfile {
   last_name: string | null;
   full_name: string | null;
   email: string | null;
+  origin_country: string | null;
+  // Orientation data (from onboarding_results, merged at fetch time)
   main_goal: string | null;
   target_sector: string | null;
   french_level_cecrl: string | null;
-  origin_country: string | null;
 }
 
 interface ModuleProgress {
@@ -140,14 +141,32 @@ export default function AdminFLEProgress() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [fleRes, profileRes, modRes] = await Promise.all([
+    const [fleRes, profileRes, modRes, onboardingRes] = await Promise.all([
       supabase.from("fle_user_progress").select("*"),
-      supabase.from("profiles").select("id, user_id, first_name, last_name, full_name, email, main_goal, target_sector, french_level_cecrl, origin_country"),
+      supabase.from("profiles").select("id, user_id, first_name, last_name, full_name, email, origin_country"),
       supabase.from("fle_module_progress").select("user_id, module_id, exercises_done, exercises_total, score, completed_at"),
+      supabase.from("onboarding_results").select("user_id, main_goal, target_sector, french_level_cecrl"),
     ]);
 
     setFleUsers(fleRes.data || []);
-    setProfiles(profileRes.data || []);
+
+    // Build onboarding lookup by user_id
+    const obMap: Record<string, { main_goal: string | null; target_sector: string | null; french_level_cecrl: string | null }> = {};
+    (onboardingRes.data || []).forEach((ob: any) => {
+      if (ob.user_id) obMap[ob.user_id] = ob; // last one wins (most recent due to default ordering)
+    });
+
+    // Merge profiles with onboarding data
+    const mergedProfiles: UserProfile[] = (profileRes.data || []).map((p: any) => {
+      const ob = p.user_id ? obMap[p.user_id] : null;
+      return {
+        ...p,
+        main_goal: ob?.main_goal ?? null,
+        target_sector: ob?.target_sector ?? null,
+        french_level_cecrl: ob?.french_level_cecrl ?? null,
+      };
+    });
+    setProfiles(mergedProfiles);
 
     // Group module progress by user_id
     const grouped: Record<string, ModuleProgress[]> = {};
