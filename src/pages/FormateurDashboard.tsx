@@ -7,6 +7,7 @@ import { FormateurAssignations } from "@/components/Formateur/FormateurAssignati
 import { FormateurEvaluations } from "@/components/Formateur/FormateurEvaluations";
 import { FormateurAFEST } from "@/components/Formateur/FormateurAFEST";
 import { SEO } from "@/components/SEO";
+import { DemoBanner } from "@/components/DemoBanner";
 
 export default function FormateurDashboard() {
   return (
@@ -20,6 +21,7 @@ export default function FormateurDashboard() {
             <h1 className="text-lg font-semibold">Espace Formateur</h1>
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-auto">
+            <DemoBanner />
             <Routes>
               <Route index element={<FormateurApprenants />} />
               <Route path="contenus" element={<FormateurContenus />} />

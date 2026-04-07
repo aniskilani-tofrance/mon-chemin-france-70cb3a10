@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Users, BookOpen, TrendingUp, Clock, Download, BarChart3 } from "lucide-react";
+import { DemoBanner } from "@/components/DemoBanner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -139,6 +140,7 @@ export default function DirecteurDashboard() {
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8 max-w-6xl mx-auto space-y-6">
+      <DemoBanner />
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <BarChart3 className="h-7 w-7 text-primary" />
