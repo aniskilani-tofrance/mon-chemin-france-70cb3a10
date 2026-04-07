@@ -1331,6 +1331,7 @@ export type Database = {
         | "vocal_dialogue"
         | "scenario_tree"
         | "drag_match"
+        | "fill_in_blank"
       lead_status:
         | "pending"
         | "contacted"
@@ -1496,6 +1497,7 @@ export const Constants = {
         "vocal_dialogue",
         "scenario_tree",
         "drag_match",
+        "fill_in_blank",
       ],
       lead_status: [
         "pending",
