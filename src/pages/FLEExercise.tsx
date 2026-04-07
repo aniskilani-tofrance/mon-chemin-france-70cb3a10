@@ -386,10 +386,14 @@ const FLEExercise = () => {
       setCompletionData({ score, xpEarned, newBadges });
       setShowCompletion(true);
 
+      // Adaptive learning: evaluate and potentially adjust level
+      await evaluateAndAdjust();
+
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ["fle-user-progress"] });
       queryClient.invalidateQueries({ queryKey: ["fle-module-progress"] });
       queryClient.invalidateQueries({ queryKey: ["fle-user-badges"] });
+      queryClient.invalidateQueries({ queryKey: ["fle-level-history"] });
     } catch (err) {
       console.error("Error completing module:", err);
       toast.error("Erreur lors de la sauvegarde");
