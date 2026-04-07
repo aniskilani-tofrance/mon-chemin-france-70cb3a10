@@ -20,14 +20,15 @@
 #### 1.4 Carte enrichie Dashboard ✅
 - Niveau, XP, streak, progression, prochaine mission, message motivationnel
 
-### Phase 2 : Module de révision + écran de fin de module
+### Phase 2 : Module de révision + écran de fin de module ✅
 - Page `/fle/review` avec révision espacée (SM-2)
 - Alimentation automatique des items de révision
 - Écran de fin de module avec animation, score, badges
 
-### Phase 3 : Parcours thématiques + personnalisation profil
-- Filtres par thème (santé, transport, etc.)
-- Personnalisation selon profil ToFrance
+### Phase 3 : Parcours thématiques + personnalisation profil ✅
+- Filtres par thème (santé, transport, logement, etc.) avec chips scrollables
+- Personnalisation de l'ordre des modules selon profil ToFrance (objectif, secteur)
+- Message personnalisé affiché en haut du dashboard
 - Signaux d'orientation remontés
 
 ### Phase 4 : Coach quotidien + contenu enrichi
