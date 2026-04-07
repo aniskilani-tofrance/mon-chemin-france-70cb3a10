@@ -40,6 +40,7 @@ const FLEExercise = lazy(() => import("./pages/FLEExercise"));
 const FLEDialogue = lazy(() => import("./pages/FLEDialogue"));
 const FLEReview = lazy(() => import("./pages/FLEReview"));
 const FormateurDashboard = lazy(() => import("./pages/FormateurDashboard"));
+const DirecteurDashboard = lazy(() => import("./pages/DirecteurDashboard"));
 
 const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
 const PlacementTest = lazy(() => import("./pages/PlacementTest"));
@@ -52,6 +53,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { FormateurRoute } from "./components/FormateurRoute";
+import { DirecteurRoute } from "./components/DirecteurRoute";
 import { OAuthRedirectHandler } from "./components/OAuthRedirectHandler";
 import { FLEGatedRoute } from "./components/FLEGatedRoute";
 
@@ -93,6 +95,7 @@ const App = () => (
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
+              <Route path="/directeur" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
               <Route path="/fle" element={<FLEGatedRoute><FLEDashboard /></FLEGatedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<FLEGatedRoute><FLEExercise /></FLEGatedRoute>} />
               <Route path="/fle/dialogue" element={<FLEGatedRoute><FLEDialogue /></FLEGatedRoute>} />
