@@ -14,6 +14,8 @@ import { FLEAlphaExercise } from "@/components/FLE/FLEAlphaMode";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { callFLEVoiceAI } from "@/lib/fleVoiceAI";
+import { useAdaptiveLearning } from "@/hooks/useAdaptiveLearning";
+import { useOfflineExercises } from "@/hooks/useOfflineExercises";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useFLEUserProgress } from "@/hooks/useFLEProgress";
