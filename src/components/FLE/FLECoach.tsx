@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, VolumeX, RefreshCw, Sparkles } from "lucide-react";
+import { motion } from "framer-motion";
+import { Volume2, VolumeX, RefreshCw, Sparkles, MessageCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTTS } from "@/hooks/useTTS";
@@ -82,7 +82,6 @@ export function FLECoach({
     fetchCoach();
   }, [fetchCoach]);
 
-  // Auto-play TTS when coach data is loaded
   useEffect(() => {
     if (coachData && tts.isEnabled && !loading) {
       const fullText = [coachData.greeting, coachData.mission_suggestion, coachData.encouragement]
@@ -103,12 +102,13 @@ export function FLECoach({
 
   if (loading) {
     return (
-      <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4">
+      <div className="rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 p-5">
         <div className="flex items-start gap-3">
-          <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+          <div className="h-12 w-12 rounded-full bg-primary/10 animate-pulse" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-3/4" />
             <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-3 w-2/3" />
           </div>
         </div>
       </div>
@@ -119,75 +119,91 @@ export function FLECoach({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10 p-4"
+      initial={{ opacity: 0, y: 10, scale: 0.98 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: "spring", stiffness: 200 }}
+      className="relative overflow-hidden rounded-2xl border-2 border-primary/20 bg-gradient-to-br from-primary/5 via-accent/10 to-primary/5 p-5"
     >
-      <div className="flex items-start gap-3">
+      {/* Decorative blobs */}
+      <div className="absolute -top-8 -right-8 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+      <div className="absolute -bottom-6 -left-6 h-20 w-20 rounded-full bg-accent/20 blur-2xl" />
+
+      <div className="relative flex items-start gap-4">
         {/* Avatar Marianne */}
         <motion.div
-          animate={tts.isSpeaking ? { scale: [1, 1.08, 1] } : {}}
-          transition={tts.isSpeaking ? { repeat: Infinity, duration: 1.2 } : {}}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-lg"
+          animate={tts.isSpeaking
+            ? { scale: [1, 1.1, 1], boxShadow: ["0 0 0 0px rgba(var(--primary), 0.2)", "0 0 0 8px rgba(var(--primary), 0)", "0 0 0 0px rgba(var(--primary), 0.2)"] }
+            : {}
+          }
+          transition={tts.isSpeaking ? { repeat: Infinity, duration: 1.5 } : {}}
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-accent/30 text-xl shadow-lg border-2 border-primary/20"
         >
           🇫🇷
         </motion.div>
 
         <div className="flex-1 min-w-0">
-          {/* Greeting */}
-          <p className="text-sm font-semibold text-foreground leading-snug">
-            {coachData.greeting}
-          </p>
-
-          {/* Mission suggestion */}
-          {coachData.mission_suggestion && (
-            <p className="mt-1.5 text-sm text-muted-foreground leading-snug">
-              <Sparkles className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
-              {coachData.mission_suggestion}
+          {/* Speech bubble */}
+          <div className="relative rounded-2xl rounded-tl-sm bg-card/80 backdrop-blur-sm border border-border/50 p-3 shadow-sm">
+            <p className="text-sm font-bold text-foreground leading-relaxed">
+              {coachData.greeting}
             </p>
-          )}
 
-          {/* Encouragement */}
-          {coachData.encouragement && (
-            <p className="mt-1.5 text-xs text-primary font-medium">
-              {coachData.encouragement}
-            </p>
-          )}
+            {coachData.mission_suggestion && (
+              <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                <Sparkles className="inline h-3.5 w-3.5 mr-1 text-amber-500" />
+                {coachData.mission_suggestion}
+              </p>
+            )}
+
+            {coachData.encouragement && (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.3 }}
+                className="mt-2 text-xs font-bold text-primary bg-primary/5 rounded-lg px-2.5 py-1.5 inline-block"
+              >
+                💪 {coachData.encouragement}
+              </motion.p>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Actions */}
-      <div className="mt-3 flex items-center gap-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 gap-1.5 text-xs rounded-full"
-          onClick={handleReplay}
-          disabled={tts.isSpeaking}
-        >
-          <Volume2 className="h-3.5 w-3.5" />
-          {tts.isSpeaking ? "Écoute..." : "Écouter"}
-        </Button>
+      <div className="relative mt-3 flex items-center gap-2 pl-16">
+        <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="h-8 gap-1.5 text-xs rounded-full border-primary/30 bg-primary/5 hover:bg-primary/10"
+            onClick={handleReplay}
+            disabled={tts.isSpeaking}
+          >
+            <Volume2 className="h-3.5 w-3.5" />
+            {tts.isSpeaking ? "🔊 Écoute..." : "🔊 Écouter"}
+          </Button>
+        </motion.div>
 
         <Button
           variant="ghost"
           size="sm"
-          className="h-7 gap-1.5 text-xs rounded-full"
+          className="h-8 gap-1.5 text-xs rounded-full"
           onClick={tts.toggle}
         >
           {tts.isEnabled ? <Volume2 className="h-3.5 w-3.5" /> : <VolumeX className="h-3.5 w-3.5" />}
-          {tts.isEnabled ? "Son activé" : "Son coupé"}
         </Button>
 
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-7 gap-1.5 text-xs rounded-full ml-auto"
-          onClick={fetchCoach}
-          disabled={loading}
-        >
-          <RefreshCw className="h-3.5 w-3.5" />
-        </Button>
+        <motion.div whileHover={{ rotate: 180 }} transition={{ duration: 0.4 }} className="ml-auto">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 w-8 rounded-full p-0"
+            onClick={fetchCoach}
+            disabled={loading}
+          >
+            <RefreshCw className="h-3.5 w-3.5" />
+          </Button>
+        </motion.div>
       </div>
     </motion.div>
   );
