@@ -50,6 +50,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AdminRoute } from "./components/AdminRoute";
 import { OAuthRedirectHandler } from "./components/OAuthRedirectHandler";
+import { FLEGatedRoute } from "./components/FLEGatedRoute";
 
 const queryClient = new QueryClient();
 
@@ -87,10 +88,10 @@ const App = () => (
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
-              <Route path="/fle" element={<ProtectedRoute><FLEDashboard /></ProtectedRoute>} />
-              <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEExercise /></ProtectedRoute>} />
-              <Route path="/fle/dialogue" element={<ProtectedRoute><FLEDialogue /></ProtectedRoute>} />
-              <Route path="/fle/review" element={<ProtectedRoute><FLEReview /></ProtectedRoute>} />
+              <Route path="/fle" element={<ProtectedRoute><FLEGatedRoute><FLEDashboard /></FLEGatedRoute></ProtectedRoute>} />
+              <Route path="/fle/exercise/:moduleId" element={<ProtectedRoute><FLEGatedRoute><FLEExercise /></FLEGatedRoute></ProtectedRoute>} />
+              <Route path="/fle/dialogue" element={<ProtectedRoute><FLEGatedRoute><FLEDialogue /></FLEGatedRoute></ProtectedRoute>} />
+              <Route path="/fle/review" element={<ProtectedRoute><FLEGatedRoute><FLEReview /></FLEGatedRoute></ProtectedRoute>} />
               <Route path="/placement-test" element={<PlacementTestHome />} />
               <Route path="/placement-test/test" element={<PlacementTest />} />
               <Route path="/placement-test/results" element={<PlacementTestResults />} />

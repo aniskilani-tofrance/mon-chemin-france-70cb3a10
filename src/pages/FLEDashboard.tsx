@@ -19,8 +19,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 import { isSoundEnabled, toggleSound, playDing } from "@/lib/sounds";
-import { useOnboardingResult } from "@/hooks/useOnboardingResult";
-import { FLEOnboardingGate } from "@/components/FLEOnboardingGate";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
 type ThemeFilter = string | null;
@@ -90,7 +88,6 @@ const QUICK_ACCESS = [
 const FLEDashboard = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { data: onboardingResult, isLoading: obLoading } = useOnboardingResult();
   const { data: modules, isLoading: modulesLoading } = useFLEModules();
   const { data: userProgress, isLoading: progressLoading } = useFLEUserProgress();
   const { data: moduleProgress } = useFLEModuleProgress();
@@ -103,17 +100,8 @@ const FLEDashboard = () => {
   const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
-  const [gateOpen, setGateOpen] = useState(false);
 
-  const hasCompletedOnboarding = !!onboardingResult;
-  const isLoading = modulesLoading || progressLoading || obLoading;
-
-  // Show gate if user hasn't completed onboarding
-  useEffect(() => {
-    if (!obLoading && !hasCompletedOnboarding) {
-      setGateOpen(true);
-    }
-  }, [obLoading, hasCompletedOnboarding]);
+  const isLoading = modulesLoading || progressLoading;
 
   useEffect(() => {
     if (progressLoading || !userProgress || hasCheckedLevel.current) return;
@@ -193,8 +181,6 @@ const FLEDashboard = () => {
   };
 
   return (
-    <>
-    <FLEOnboardingGate open={gateOpen} onOpenChange={(v) => { setGateOpen(v); if (!v && !hasCompletedOnboarding) navigate("/"); }} />
     <div className="min-h-screen bg-gradient-to-b from-background via-background to-accent/5">
       <Header />
       <main className="mx-auto max-w-2xl px-4 pb-24 pt-20 sm:pt-24">
@@ -489,7 +475,6 @@ const FLEDashboard = () => {
         )}
       </main>
     </div>
-    </>
   );
 };
 
