@@ -67,6 +67,11 @@ export interface UserProfile {
   literacy: string | null;
 }
 
+/**
+ * Fetches user profile for FLE context.
+ * Identity fields come from profiles, orientation fields fall back to onboarding_results.
+ */
+
 // Theme metadata for display
 export const THEME_META: Record<string, { label: string; icon: string }> = {
   sante: { label: "Santé", icon: "🏥" },
@@ -175,13 +180,35 @@ export function useUserProfile() {
     queryKey: ["user-profile-fle", user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
+
+      // Fetch identity from profiles
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("first_name, main_goal, target_sector, french_level_cecrl, french_level, literacy")
         .eq("user_id", user.id)
         .maybeSingle();
-      if (error) throw error;
-      return data as unknown as UserProfile | null;
+      if (profileError) throw profileError;
+
+      // Fetch orientation fallback from onboarding_results
+      const { data: onboardingData } = await supabase
+        .from("onboarding_results")
+        .select("main_goal, target_sector, french_level_cecrl, literacy")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      // Merge: profiles identity + onboarding_results orientation as fallback
+      if (!profileData && !onboardingData) return null;
+
+      return {
+        first_name: profileData?.first_name ?? null,
+        main_goal: onboardingData?.main_goal ?? profileData?.main_goal ?? null,
+        target_sector: onboardingData?.target_sector ?? profileData?.target_sector ?? null,
+        french_level_cecrl: onboardingData?.french_level_cecrl ?? profileData?.french_level_cecrl ?? null,
+        french_level: profileData?.french_level ?? null,
+        literacy: onboardingData?.literacy ?? profileData?.literacy ?? null,
+      } as UserProfile;
     },
     enabled: !!user,
   });

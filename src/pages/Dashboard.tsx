@@ -9,6 +9,7 @@ import { LoadingScreen } from "@/components/LoadingScreen";
 import { EmptyState } from "@/components/LoadingScreen";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboardingResult } from "@/hooks/useOnboardingResult";
 import { supabase } from "@/integrations/supabase/client";
 import {
   User,
@@ -64,7 +65,8 @@ const CECRL_LABELS: Record<string, string> = {
   c1: "C1 – Autonome",
 };
 
-interface ProfileData {
+/** Identity-only profile from the profiles table */
+interface ProfileIdentity {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -74,15 +76,7 @@ interface ProfileData {
   city: string | null;
   postal_code: string | null;
   origin_country: string | null;
-  french_level_cecrl: string | null;
-  target_sector: string | null;
-  main_goal: string | null;
-  lead_route: string | null;
-  lead_score: number | null;
   previous_job: string | null;
-  work_right: string | null;
-  barriers: string[] | null;
-  skills: string[] | null;
   created_at: string;
 }
 
@@ -98,9 +92,22 @@ interface LeadData {
 
 const Dashboard = () => {
   const { user, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<ProfileData | null>(null);
+  const { data: onboarding, isLoading: onboardingLoading } = useOnboardingResult();
+  const [profile, setProfile] = useState<ProfileIdentity | null>(null);
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Also check legacy profiles columns as fallback for users who onboarded before the migration
+  const [legacyOrientation, setLegacyOrientation] = useState<{
+    lead_route: string | null;
+    lead_score: number | null;
+    french_level_cecrl: string | null;
+    work_right: string | null;
+    target_sector: string | null;
+    main_goal: string | null;
+    barriers: string[] | null;
+    skills: string[] | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -108,17 +115,40 @@ const Dashboard = () => {
     async function fetchData() {
       setLoading(true);
 
-      // Fetch profile
+      // Fetch identity-only profile
       const { data: profileData } = await supabase
         .from("profiles")
-        .select("*")
+        .select("id, first_name, last_name, full_name, email, phone, city, postal_code, origin_country, previous_job, created_at, lead_route, lead_score, french_level_cecrl, work_right, target_sector, main_goal, barriers, skills")
         .eq("user_id", user!.id)
         .maybeSingle();
 
-      setProfile(profileData);
-
       if (profileData) {
-        // Fetch leads with training and provider info
+        setProfile({
+          id: profileData.id,
+          first_name: profileData.first_name,
+          last_name: profileData.last_name,
+          full_name: profileData.full_name,
+          email: profileData.email,
+          phone: profileData.phone,
+          city: profileData.city,
+          postal_code: profileData.postal_code,
+          origin_country: profileData.origin_country,
+          previous_job: profileData.previous_job,
+          created_at: profileData.created_at,
+        });
+        // Keep legacy orientation data as fallback
+        setLegacyOrientation({
+          lead_route: profileData.lead_route,
+          lead_score: profileData.lead_score,
+          french_level_cecrl: profileData.french_level_cecrl,
+          work_right: profileData.work_right,
+          target_sector: profileData.target_sector,
+          main_goal: profileData.main_goal,
+          barriers: profileData.barriers,
+          skills: profileData.skills,
+        });
+
+        // Fetch leads
         const { data: leadsData } = await supabase
           .from("leads")
           .select(`
@@ -144,7 +174,8 @@ const Dashboard = () => {
     fetchData();
   }, [user]);
 
-  if (authLoading || loading) return <LoadingScreen />;
+  const isPageLoading = authLoading || loading || onboardingLoading;
+  if (isPageLoading) return <LoadingScreen />;
 
   if (!profile) {
     return (
@@ -169,7 +200,19 @@ const Dashboard = () => {
     );
   }
 
-  const routeInfo = ROUTE_INFO[profile.lead_route || "sas"] || ROUTE_INFO.sas;
+  // Orientation data: prefer onboarding_results, fall back to legacy profiles columns
+  const orientation = {
+    lead_route: onboarding?.lead_route ?? legacyOrientation?.lead_route ?? null,
+    lead_score: onboarding?.lead_score ?? legacyOrientation?.lead_score ?? null,
+    french_level_cecrl: onboarding?.french_level_cecrl ?? legacyOrientation?.french_level_cecrl ?? null,
+    work_right: onboarding?.work_right ?? legacyOrientation?.work_right ?? null,
+    target_sector: onboarding?.target_sector ?? legacyOrientation?.target_sector ?? null,
+    main_goal: onboarding?.main_goal ?? legacyOrientation?.main_goal ?? null,
+    barriers: onboarding?.barriers ?? legacyOrientation?.barriers ?? null,
+    skills: legacyOrientation?.skills ?? null, // skills only in profiles
+  };
+
+  const routeInfo = ROUTE_INFO[orientation.lead_route || "sas"] || ROUTE_INFO.sas;
   const displayName = profile.full_name || profile.first_name || user?.email?.split("@")[0] || "Candidat";
 
   return (
@@ -211,9 +254,9 @@ const Dashboard = () => {
                   <p className="mb-1 text-xs font-bold uppercase tracking-wider text-muted-foreground">Parcours recommandé</p>
                   <h2 className="mb-1 text-xl font-bold text-foreground">{routeInfo.label}</h2>
                   <p className="text-sm text-muted-foreground">{routeInfo.desc}</p>
-                  {profile.lead_score !== null && (
+                  {orientation.lead_score !== null && (
                     <div className="mt-3">
-                      <Badge variant="outline">Score de profil : {profile.lead_score}/100</Badge>
+                      <Badge variant="outline">Score de profil : {orientation.lead_score}/100</Badge>
                     </div>
                   )}
                 </div>
@@ -232,8 +275,8 @@ const Dashboard = () => {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  {profile.french_level_cecrl && (
-                    <ProfileRow icon={GraduationCap} label="Français" value={CECRL_LABELS[profile.french_level_cecrl] || profile.french_level_cecrl} />
+                  {orientation.french_level_cecrl && (
+                    <ProfileRow icon={GraduationCap} label="Français" value={CECRL_LABELS[orientation.french_level_cecrl] || orientation.french_level_cecrl} />
                   )}
                   {profile.city && (
                     <ProfileRow icon={MapPin} label="Ville" value={`${profile.city}${profile.postal_code ? ` (${profile.postal_code})` : ""}`} />
@@ -244,8 +287,8 @@ const Dashboard = () => {
                   {profile.previous_job && (
                     <ProfileRow icon={Briefcase} label="Métier précédent" value={profile.previous_job} />
                   )}
-                  {profile.work_right && (
-                    <ProfileRow icon={Shield} label="Droit au travail" value={profile.work_right === "yes" ? "Oui" : profile.work_right === "no" ? "Non" : profile.work_right} />
+                  {orientation.work_right && (
+                    <ProfileRow icon={Shield} label="Droit au travail" value={orientation.work_right === "yes" ? "Oui" : orientation.work_right === "no" ? "Non" : orientation.work_right} />
                   )}
                   {profile.email && (
                     <ProfileRow icon={Mail} label="Email" value={profile.email} />
@@ -329,26 +372,26 @@ const Dashboard = () => {
           </div>
 
           {/* Tags */}
-          {(profile.skills?.length || profile.barriers?.length) && (
+          {(orientation.skills?.length || orientation.barriers?.length) && (
             <AnimatedContainer delay={0.3} className="mt-6">
               <Card>
                 <CardContent className="p-6">
                   <div className="flex flex-wrap gap-6">
-                    {profile.skills && profile.skills.length > 0 && (
+                    {orientation.skills && orientation.skills.length > 0 && (
                       <div>
                         <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Compétences</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {profile.skills.map((s, i) => (
+                          {orientation.skills.map((s, i) => (
                             <Badge key={i} variant="secondary">{s}</Badge>
                           ))}
                         </div>
                       </div>
                     )}
-                    {profile.barriers && profile.barriers.length > 0 && (
+                    {orientation.barriers && orientation.barriers.length > 0 && (
                       <div>
                         <p className="mb-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">Freins identifiés</p>
                         <div className="flex flex-wrap gap-1.5">
-                          {profile.barriers.map((b, i) => (
+                          {orientation.barriers.map((b, i) => (
                             <Badge key={i} variant="outline" className="border-amber-300 text-amber-700">{b}</Badge>
                           ))}
                         </div>
