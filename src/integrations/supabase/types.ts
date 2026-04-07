@@ -424,7 +424,6 @@ export type Database = {
       }
       fle_user_progress: {
         Row: {
-          badges_earned: Json
           comprehension_score: number | null
           created_at: string
           daily_goal_minutes: number
@@ -438,7 +437,6 @@ export type Database = {
           placement_completed: boolean | null
           preferred_category: Database["public"]["Enums"]["fle_category"] | null
           streak_days: number | null
-          target_sector: string | null
           total_time_minutes: number | null
           total_xp: number | null
           updated_at: string
@@ -447,7 +445,6 @@ export type Database = {
           words_learned: number | null
         }
         Insert: {
-          badges_earned?: Json
           comprehension_score?: number | null
           created_at?: string
           daily_goal_minutes?: number
@@ -463,7 +460,6 @@ export type Database = {
             | Database["public"]["Enums"]["fle_category"]
             | null
           streak_days?: number | null
-          target_sector?: string | null
           total_time_minutes?: number | null
           total_xp?: number | null
           updated_at?: string
@@ -472,7 +468,6 @@ export type Database = {
           words_learned?: number | null
         }
         Update: {
-          badges_earned?: Json
           comprehension_score?: number | null
           created_at?: string
           daily_goal_minutes?: number
@@ -488,7 +483,6 @@ export type Database = {
             | Database["public"]["Enums"]["fle_category"]
             | null
           streak_days?: number | null
-          target_sector?: string | null
           total_time_minutes?: number | null
           total_xp?: number | null
           updated_at?: string
@@ -584,6 +578,63 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      onboarding_results: {
+        Row: {
+          answers: Json
+          barriers: string[] | null
+          completed_at: string | null
+          created_at: string
+          distance_to_job: number | null
+          email: string | null
+          french_level_cecrl: string | null
+          id: string
+          language: string
+          lead_route: string | null
+          lead_score: number | null
+          literacy: string | null
+          main_goal: string | null
+          target_sector: string | null
+          user_id: string | null
+          work_right: string | null
+        }
+        Insert: {
+          answers?: Json
+          barriers?: string[] | null
+          completed_at?: string | null
+          created_at?: string
+          distance_to_job?: number | null
+          email?: string | null
+          french_level_cecrl?: string | null
+          id?: string
+          language?: string
+          lead_route?: string | null
+          lead_score?: number | null
+          literacy?: string | null
+          main_goal?: string | null
+          target_sector?: string | null
+          user_id?: string | null
+          work_right?: string | null
+        }
+        Update: {
+          answers?: Json
+          barriers?: string[] | null
+          completed_at?: string | null
+          created_at?: string
+          distance_to_job?: number | null
+          email?: string | null
+          french_level_cecrl?: string | null
+          id?: string
+          language?: string
+          lead_route?: string | null
+          lead_score?: number | null
+          literacy?: string | null
+          main_goal?: string | null
+          target_sector?: string | null
+          user_id?: string | null
+          work_right?: string | null
+        }
+        Relationships: []
       }
       profiles: {
         Row: {
