@@ -84,7 +84,7 @@ const Onboarding = () => {
       await supabase.from("onboarding_results").insert([{
         email: email || null,
         language,
-        answers: answers as unknown as Record<string, unknown>,
+        answers: JSON.parse(JSON.stringify(answers)),
         french_level_cecrl: (answers.french_level_cecrl as string) || null,
         main_goal: (answers.main_goal as string) || null,
         target_sector: (answers.target_sector as string) || null,
