@@ -456,6 +456,7 @@ const FLEExercise = () => {
 
   const isDragMatch = currentExercise?.exercise_type === "drag_match";
   const isScenarioTree = currentExercise?.exercise_type === "scenario_tree";
+  const isFillInBlank = currentExercise?.exercise_type === "fill_in_blank";
 
   const choices = currentExercise?.choices as string[] | null;
 
