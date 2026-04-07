@@ -253,6 +253,33 @@ export type Database = {
           },
         ]
       }
+      fle_level_history: {
+        Row: {
+          changed_at: string
+          id: string
+          level: Database["public"]["Enums"]["cecrl_level"]
+          previous_level: Database["public"]["Enums"]["cecrl_level"] | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          id?: string
+          level: Database["public"]["Enums"]["cecrl_level"]
+          previous_level?: Database["public"]["Enums"]["cecrl_level"] | null
+          reason?: string
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          id?: string
+          level?: Database["public"]["Enums"]["cecrl_level"]
+          previous_level?: Database["public"]["Enums"]["cecrl_level"] | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       fle_module_progress: {
         Row: {
           completed_at: string | null
