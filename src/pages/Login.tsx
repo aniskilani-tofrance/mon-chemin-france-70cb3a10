@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
+import { detectUserRole, getRoleDashboardPath } from "@/hooks/useRoleCheck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,8 +42,8 @@ export default function Login() {
   };
 
   const redirectByRole = useCallback(async (userId: string) => {
-    const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    navigate(data ? "/admin" : "/dashboard");
+    const role = await detectUserRole(userId);
+    navigate(getRoleDashboardPath(role));
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
