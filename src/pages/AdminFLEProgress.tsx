@@ -29,7 +29,6 @@ interface FLEUser {
   total_time_minutes: number | null;
   last_activity_at: string | null;
   placement_completed: boolean | null;
-  target_sector: string | null;
   preferred_category: string | null;
   daily_goal_minutes: number;
   created_at: string;
@@ -109,7 +108,7 @@ function getRecommendation(user: FLEUser, profile: UserProfile | undefined): str
     return "💡 Proposer un accompagnement renforcé — l'apprenant a besoin de soutien";
   }
   if (profile?.main_goal === "trouver_emploi" && (user.estimated_level === "a1" || user.estimated_level === "a2")) {
-    return "🏢 Orienter vers un parcours FLE professionnel adapté au secteur " + (profile.target_sector || user.target_sector || "visé");
+    return "🏢 Orienter vers un parcours FLE professionnel adapté au secteur " + (profile.target_sector || "visé");
   }
   if (risk === "low" && (user.total_xp ?? 0) > 200) {
     return "⭐ Excellent progrès — féliciter et proposer le niveau suivant";
@@ -431,7 +430,7 @@ export default function AdminFLEProgress() {
                     <div><span className="text-muted-foreground">Email :</span> {selectedEnriched.profile?.email || "—"}</div>
                     <div><span className="text-muted-foreground">Pays :</span> {selectedEnriched.profile?.origin_country || "—"}</div>
                     <div><span className="text-muted-foreground">Objectif :</span> {selectedEnriched.profile?.main_goal || "—"}</div>
-                    <div><span className="text-muted-foreground">Secteur :</span> {selectedEnriched.target_sector || selectedEnriched.profile?.target_sector || "—"}</div>
+                    <div><span className="text-muted-foreground">Secteur :</span> {selectedEnriched.profile?.target_sector || "—"}</div>
                   </div>
 
                   {/* Stats Grid */}

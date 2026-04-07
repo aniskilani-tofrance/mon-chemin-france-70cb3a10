@@ -28,7 +28,6 @@ export interface FLEUserProgress {
   total_time_minutes: number;
   placement_completed: boolean;
   preferred_category: string;
-  target_sector: string | null;
   daily_goal_minutes: number;
   weekly_xp_target: number;
   daily_mission_completed_at: string | null;
