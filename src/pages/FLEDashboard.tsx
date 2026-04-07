@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FLECoach } from "@/components/FLE/FLECoach";
-import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info, Zap, RotateCcw, MessageCircle, Briefcase } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info, Zap, RotateCcw, MessageCircle, Briefcase, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isSoundEnabled, toggleSound, playDing } from "@/lib/sounds";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
 type ThemeFilter = string | null;
@@ -96,6 +97,7 @@ const FLEDashboard = () => {
 
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
   const [themeFilter, setThemeFilter] = useState<ThemeFilter>(null);
+  const [soundOn, setSoundOn] = useState(() => isSoundEnabled());
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
 
@@ -205,7 +207,24 @@ const FLEDashboard = () => {
                 </motion.span>
               </h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <motion.button
+                whileTap={{ scale: 0.9 }}
+                onClick={() => {
+                  const newState = toggleSound();
+                  setSoundOn(newState);
+                  if (newState) playDing();
+                }}
+                className="flex items-center justify-center h-9 w-9 rounded-full border-2 border-muted bg-card shadow-sm transition-colors hover:bg-accent"
+                aria-label={soundOn ? "Couper les sons" : "Activer les sons"}
+                title={soundOn ? "Sons activés" : "Sons désactivés"}
+              >
+                {soundOn ? (
+                  <Volume2 className="h-4 w-4 text-primary" />
+                ) : (
+                  <VolumeX className="h-4 w-4 text-muted-foreground" />
+                )}
+              </motion.button>
               {progress.streak_days > 0 && (
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}

@@ -2,6 +2,34 @@
 
 let audioCtx: AudioContext | null = null;
 
+const SOUND_STORAGE_KEY = "fle_sounds_enabled";
+
+/** Check if sounds are enabled (default: true) */
+export function isSoundEnabled(): boolean {
+  try {
+    const val = localStorage.getItem(SOUND_STORAGE_KEY);
+    return val !== "false";
+  } catch {
+    return true;
+  }
+}
+
+/** Toggle sound on/off, returns new state */
+export function toggleSound(): boolean {
+  const newState = !isSoundEnabled();
+  try {
+    localStorage.setItem(SOUND_STORAGE_KEY, String(newState));
+  } catch {}
+  return newState;
+}
+
+/** Set sound enabled/disabled */
+export function setSoundEnabled(enabled: boolean) {
+  try {
+    localStorage.setItem(SOUND_STORAGE_KEY, String(enabled));
+  } catch {}
+}
+
 function getCtx(): AudioContext {
   if (!audioCtx) audioCtx = new AudioContext();
   if (audioCtx.state === "suspended") audioCtx.resume();
@@ -10,6 +38,7 @@ function getCtx(): AudioContext {
 
 /** Short cheerful "ding" — module click, button tap */
 export function playDing() {
+  if (!isSoundEnabled()) return;
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
@@ -27,6 +56,7 @@ export function playDing() {
 
 /** Quick rising "whoosh" — navigation, starting an exercise */
 export function playWhoosh() {
+  if (!isSoundEnabled()) return;
   try {
     const ctx = getCtx();
     const bufferSize = ctx.sampleRate * 0.18;
@@ -52,6 +82,7 @@ export function playWhoosh() {
 
 /** Celebratory fanfare — level completed, badge earned */
 export function playFanfare() {
+  if (!isSoundEnabled()) return;
   try {
     const ctx = getCtx();
     const notes = [523.25, 659.25, 783.99, 1046.5]; // C5 E5 G5 C6
@@ -73,6 +104,7 @@ export function playFanfare() {
 
 /** Success chime — correct answer */
 export function playSuccess() {
+  if (!isSoundEnabled()) return;
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
@@ -90,6 +122,7 @@ export function playSuccess() {
 
 /** Error buzz — wrong answer */
 export function playError() {
+  if (!isSoundEnabled()) return;
   try {
     const ctx = getCtx();
     const osc = ctx.createOscillator();
