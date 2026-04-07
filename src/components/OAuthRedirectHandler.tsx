@@ -16,12 +16,8 @@ export function OAuthRedirectHandler() {
           if (location.pathname !== "/" && location.pathname !== "/login") return;
           handled.current = true;
 
-          const { data: isAdmin } = await supabase.rpc("has_role", {
-            _user_id: session.user.id,
-            _role: "admin",
-          });
-
-          navigate(isAdmin ? "/admin" : "/dashboard", { replace: true });
+          const role = await detectUserRole(session.user.id);
+          navigate(getRoleDashboardPath(role), { replace: true });
         }
       }
     );
