@@ -452,6 +452,9 @@ const FLEExercise = () => {
     "listen_choose", "image_word_audio", "complete_dialogue", "safety_instruction"
   ].includes(currentExercise.exercise_type);
 
+  const isDragMatch = currentExercise?.exercise_type === "drag_match";
+  const isScenarioTree = currentExercise?.exercise_type === "scenario_tree";
+
   const choices = currentExercise?.choices as string[] | null;
 
   if (isLoading) {
