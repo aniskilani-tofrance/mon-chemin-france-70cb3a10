@@ -5,14 +5,17 @@ import { useOnboardingResult } from "@/hooks/useOnboardingResult";
 import { FLEOnboardingGate } from "@/components/FLEOnboardingGate";
 import { LoadingScreen } from "@/components/LoadingScreen";
 
+const DEMO_EMAIL = "demo@tofrance.fr";
+
 export function FLEGatedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading: authLoading } = useAuth();
   const { data: onboardingResult, isLoading: obLoading } = useOnboardingResult();
   const [gateOpen, setGateOpen] = useState(false);
   const navigate = useNavigate();
 
-  const isLoading = authLoading || (user && obLoading);
-  const hasCompleted = !!onboardingResult;
+  const isDemo = user?.email === DEMO_EMAIL;
+  const isLoading = authLoading || (user && !isDemo && obLoading);
+  const hasCompleted = isDemo || !!onboardingResult;
 
   useEffect(() => {
     if (isLoading) return;
