@@ -108,7 +108,7 @@ function getRecommendation(user: FLEUser, profile: UserProfile | undefined): str
     return "💡 Proposer un accompagnement renforcé — l'apprenant a besoin de soutien";
   }
   if (profile?.main_goal === "trouver_emploi" && (user.estimated_level === "a1" || user.estimated_level === "a2")) {
-    return "🏢 Orienter vers un parcours FLE professionnel adapté au secteur " + (profile.target_sector || user.target_sector || "visé");
+    return "🏢 Orienter vers un parcours FLE professionnel adapté au secteur " + (profile.target_sector || "visé");
   }
   if (risk === "low" && (user.total_xp ?? 0) > 200) {
     return "⭐ Excellent progrès — féliciter et proposer le niveau suivant";
