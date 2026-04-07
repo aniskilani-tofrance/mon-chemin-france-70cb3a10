@@ -489,6 +489,7 @@ const FLEDashboard = () => {
         )}
       </main>
     </div>
+    </>
   );
 };
 
