@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { BookOpen, Mic, Brain, Flame, Star, Trophy, MessageCircle, Target, TrendingUp, TrendingDown, Sparkles, RotateCcw, Briefcase } from "lucide-react";
+import { BookOpen, Mic, Brain, Flame, Star, Trophy, Target, TrendingUp, TrendingDown, Sparkles, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Header } from "@/components/Header";
 import { FLELevelBadge } from "@/components/FLE/FLELevelBadge";
@@ -9,20 +9,81 @@ import { FLEWeeklyProgress } from "@/components/FLE/FLEWeeklyProgress";
 import { FLEPathwayMap } from "@/components/FLE/FLEPathwayMap";
 import { FLEBadgeCard } from "@/components/FLE/FLEBadgeCard";
 import { FLEStatsCard } from "@/components/FLE/FLEStatsCard";
-import { useFLEModules, useFLEUserProgress, useFLEModuleProgress, useFLEBadges, useFLEUserBadges } from "@/hooks/useFLEProgress";
+import {
+  useFLEModules, useFLEUserProgress, useFLEModuleProgress,
+  useFLEBadges, useFLEUserBadges, useUserProfile,
+  THEME_META, FLEModule,
+} from "@/hooks/useFLEProgress";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
+type ThemeFilter = string | null; // null = no theme filter
 
 const LEVEL_ORDER = ["alpha", "post_alpha", "a1", "a2", "b1"];
+
+// Sector → theme mapping for personalization
+const SECTOR_TO_THEMES: Record<string, string[]> = {
+  restauration: ["hotellerie"],
+  hotellerie: ["hotellerie"],
+  proprete: ["proprete"],
+  logistique: ["logistique"],
+  commerce: ["courses", "banque"],
+  "aide_personne": ["aide_personne", "sante"],
+  batiment: ["securite"],
+  sante: ["sante"],
+  transport: ["transports"],
+};
 
 function shouldUnlock(moduleLevel: string, userLevel: string, moduleIndex: number, previousCompleted: boolean): boolean {
   if (moduleIndex === 0) return true;
   const moduleLevelIdx = LEVEL_ORDER.indexOf(moduleLevel);
   const userLevelIdx = LEVEL_ORDER.indexOf(userLevel);
   return userLevelIdx >= moduleLevelIdx && previousCompleted;
+}
+
+// Sort modules by relevance to user profile
+function personalizeModules(modules: FLEModule[], profile: { main_goal?: string | null; target_sector?: string | null } | null): FLEModule[] {
+  if (!profile) return modules;
+
+  const priorityThemes = new Set<string>();
+
+  // If goal is work → prioritize professional themes
+  if (profile.main_goal === "travail" || profile.main_goal === "emploi") {
+    ["travail", "entretien", "cv", "securite"].forEach(t => priorityThemes.add(t));
+  }
+
+  // If target sector is set → prioritize sector themes
+  if (profile.target_sector) {
+    const sectorKey = profile.target_sector.toLowerCase().replace(/[éè]/g, "e").replace(/\s+/g, "_");
+    const themes = SECTOR_TO_THEMES[sectorKey] || [];
+    themes.forEach(t => priorityThemes.add(t));
+  }
+
+  if (priorityThemes.size === 0) return modules;
+
+  // Stable sort: priority modules first, rest after
+  return [...modules].sort((a, b) => {
+    const aPriority = priorityThemes.has(a.theme) ? 0 : 1;
+    const bPriority = priorityThemes.has(b.theme) ? 0 : 1;
+    if (aPriority !== bPriority) return aPriority - bPriority;
+    return a.sort_order - b.sort_order;
+  });
+}
+
+function getPersonalizedMessage(profile: { main_goal?: string | null; target_sector?: string | null; french_level_cecrl?: string | null } | null): string | null {
+  if (!profile) return null;
+  if (profile.target_sector && (profile.main_goal === "travail" || profile.main_goal === "emploi")) {
+    return `🎯 Parcours adapté pour l'emploi en ${profile.target_sector}`;
+  }
+  if (profile.main_goal === "travail" || profile.main_goal === "emploi") {
+    return "🎯 Parcours adapté pour la recherche d'emploi";
+  }
+  if (profile.main_goal === "autonomie" || profile.main_goal === "vie_quotidienne") {
+    return "🎯 Parcours adapté pour la vie quotidienne en France";
+  }
+  return null;
 }
 
 const FLEDashboard = () => {
@@ -33,7 +94,10 @@ const FLEDashboard = () => {
   const { data: moduleProgress } = useFLEModuleProgress();
   const { data: allBadges } = useFLEBadges();
   const { data: userBadges } = useFLEUserBadges();
-  const [filter, setFilter] = useState<CategoryFilter>("all");
+  const { data: userProfile } = useUserProfile();
+
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>("all");
+  const [themeFilter, setThemeFilter] = useState<ThemeFilter>(null);
   const [levelChange, setLevelChange] = useState<{ from: string; to: string; direction: "up" | "down" } | null>(null);
   const hasCheckedLevel = useRef(false);
 
@@ -73,9 +137,34 @@ const FLEDashboard = () => {
   const getModuleProgress = (moduleId: string) =>
     moduleProgress?.find((mp) => mp.module_id === moduleId);
 
-  const filteredModules = (modules || []).filter(
-    (m) => filter === "all" || m.category === filter
-  );
+  // Compute available themes from modules
+  const availableThemes = useMemo(() => {
+    if (!modules) return [];
+    const themes = [...new Set(modules.map(m => m.theme))];
+    return themes.filter(t => THEME_META[t]).sort();
+  }, [modules]);
+
+  // Filter & personalize modules
+  const filteredModules = useMemo(() => {
+    let result = modules || [];
+
+    // Category filter
+    if (categoryFilter !== "all") {
+      result = result.filter(m => m.category === categoryFilter);
+    }
+
+    // Theme filter
+    if (themeFilter) {
+      result = result.filter(m => m.theme === themeFilter);
+    }
+
+    // Personalize order if no specific theme filter active
+    if (!themeFilter) {
+      result = personalizeModules(result, userProfile);
+    }
+
+    return result;
+  }, [modules, categoryFilter, themeFilter, userProfile]);
 
   const completedCount = moduleProgress?.filter((mp) => mp.completed_at).length || 0;
   const earnedBadgeKeys = new Set((userBadges || []).map((b) => b.badge_key));
@@ -96,6 +185,12 @@ const FLEDashboard = () => {
     const today = new Date().toDateString();
     return new Date(progress.daily_mission_completed_at).toDateString() === today;
   })();
+
+  const personalizedMsg = getPersonalizedMessage(userProfile);
+
+  const handleThemeClick = (theme: string) => {
+    setThemeFilter(prev => prev === theme ? null : theme);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/5">
@@ -123,6 +218,19 @@ const FLEDashboard = () => {
             </div>
           </div>
           <p className="text-muted-foreground text-sm">Progressez à votre rythme avec des leçons courtes et pratiques.</p>
+
+          {/* Personalized message */}
+          {personalizedMsg && (
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="mt-2 flex items-center gap-2 rounded-lg bg-primary/5 border border-primary/10 px-3 py-2"
+            >
+              <Info className="h-4 w-4 text-primary shrink-0" />
+              <p className="text-sm text-foreground">{personalizedMsg}</p>
+            </motion.div>
+          )}
+
           <Button variant="outline" size="sm" className="mt-3 gap-2 rounded-full" onClick={() => navigate("/placement-test")}>
             <Target className="h-4 w-4" />
             {progress.placement_completed ? "Refaire le test de niveau" : "Passer le test de niveau"}
@@ -168,7 +276,7 @@ const FLEDashboard = () => {
             { icon: "📖", label: "Leçon du jour", onClick: () => nextModule && navigate(`/fle/exercise/${nextModule.id}`) },
             { icon: "🔄", label: "Réviser", onClick: () => navigate("/fle/review") },
             { icon: "🗣️", label: "Pratiquer l'oral", onClick: () => navigate("/fle/dialogue") },
-            { icon: "💼", label: "Français emploi", onClick: () => setFilter("professionnel") },
+            { icon: "💼", label: "Français emploi", onClick: () => { setCategoryFilter("professionnel"); setThemeFilter(null); } },
           ].map((item) => (
             <motion.button
               key={item.label}
@@ -207,7 +315,7 @@ const FLEDashboard = () => {
         )}
 
         {/* Category filter */}
-        <div className="flex gap-2 mb-4">
+        <div className="flex gap-2 mb-3">
           {([
             { key: "all" as const, label: "📚 Tout" },
             { key: "quotidien" as const, label: "🏠 Quotidien" },
@@ -215,9 +323,9 @@ const FLEDashboard = () => {
           ]).map((cat) => (
             <button
               key={cat.key}
-              onClick={() => setFilter(cat.key)}
+              onClick={() => { setCategoryFilter(cat.key); setThemeFilter(null); }}
               className={`rounded-full px-4 py-2 text-sm font-medium transition-all ${
-                filter === cat.key
+                categoryFilter === cat.key && !themeFilter
                   ? "bg-primary text-primary-foreground shadow-sm"
                   : "bg-card border border-border text-muted-foreground hover:bg-accent"
               }`}
@@ -227,13 +335,41 @@ const FLEDashboard = () => {
           ))}
         </div>
 
+        {/* Theme filter chips */}
+        {availableThemes.length > 0 && (
+          <div className="flex gap-2 mb-4 overflow-x-auto pb-2 scrollbar-hide">
+            {availableThemes.map((theme) => {
+              const meta = THEME_META[theme];
+              if (!meta) return null;
+              const isActive = themeFilter === theme;
+              return (
+                <button
+                  key={theme}
+                  onClick={() => handleThemeClick(theme)}
+                  className={`flex items-center gap-1.5 shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
+                    isActive
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "bg-card border border-border text-muted-foreground hover:bg-accent"
+                  }`}
+                >
+                  <span>{meta.icon}</span>
+                  {meta.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Pathway map */}
         {isLoading ? (
           [...Array(5)].map((_, i) => <Skeleton key={i} className="h-16 rounded-xl mb-2" />)
         ) : filteredModules.length === 0 ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-center py-12">
             <BookOpen className="h-12 w-12 mx-auto text-muted-foreground/30 mb-3" />
-            <p className="text-muted-foreground">Aucun module disponible.</p>
+            <p className="text-muted-foreground">Aucun module disponible pour ce filtre.</p>
+            <Button variant="link" onClick={() => { setCategoryFilter("all"); setThemeFilter(null); }} className="mt-2">
+              Voir tous les modules
+            </Button>
           </motion.div>
         ) : (
           <FLEPathwayMap

@@ -59,6 +59,36 @@ export interface FLEUserBadge {
   earned_at: string;
 }
 
+export interface UserProfile {
+  main_goal: string | null;
+  target_sector: string | null;
+  french_level_cecrl: string | null;
+  french_level: number | null;
+  literacy: string | null;
+}
+
+// Theme metadata for display
+export const THEME_META: Record<string, { label: string; icon: string }> = {
+  sante: { label: "Santé", icon: "🏥" },
+  transports: { label: "Transport", icon: "🚌" },
+  logement: { label: "Logement", icon: "🏠" },
+  courses: { label: "Courses", icon: "🛒" },
+  ecole: { label: "École", icon: "🎒" },
+  administratif: { label: "Démarches", icon: "📋" },
+  telephone: { label: "Téléphone", icon: "📱" },
+  banque: { label: "Banque", icon: "🏦" },
+  droits: { label: "Droits", icon: "⚖️" },
+  identite: { label: "Identité", icon: "🪪" },
+  securite: { label: "Sécurité", icon: "🦺" },
+  travail: { label: "Travail", icon: "💼" },
+  entretien: { label: "Entretien", icon: "🤝" },
+  cv: { label: "CV", icon: "📄" },
+  hotellerie: { label: "Hôtellerie", icon: "🍽️" },
+  proprete: { label: "Propreté", icon: "🧹" },
+  logistique: { label: "Logistique", icon: "📦" },
+  aide_personne: { label: "Aide à la personne", icon: "🤲" },
+};
+
 export function useFLEModules() {
   return useQuery({
     queryKey: ["fle-modules"],
@@ -134,6 +164,24 @@ export function useFLEUserBadges() {
         .eq("user_id", user.id);
       if (error) throw error;
       return (data || []) as unknown as FLEUserBadge[];
+    },
+    enabled: !!user,
+  });
+}
+
+export function useUserProfile() {
+  const { user } = useAuth();
+  return useQuery({
+    queryKey: ["user-profile-fle", user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("main_goal, target_sector, french_level_cecrl, french_level, literacy")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data as unknown as UserProfile | null;
     },
     enabled: !!user,
   });
