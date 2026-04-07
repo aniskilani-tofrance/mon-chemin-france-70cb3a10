@@ -306,6 +306,11 @@ const FLEDashboard = () => {
           </motion.div>
         )}
 
+        {/* Time Tracker */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} className="mb-6">
+          <FLETimeTracker />
+        </motion.div>
+
         {/* Weekly XP progress */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="mb-6">
           <FLEWeeklyProgress currentXP={progress.total_xp} targetXP={progress.weekly_xp_target} />
