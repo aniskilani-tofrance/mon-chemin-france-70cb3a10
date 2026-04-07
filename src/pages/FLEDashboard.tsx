@@ -18,6 +18,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "@/components/ui/skeleton";
+import { isSoundEnabled, toggleSound, playDing } from "@/lib/sounds";
 
 type CategoryFilter = "all" | "quotidien" | "professionnel";
 type ThemeFilter = string | null;
