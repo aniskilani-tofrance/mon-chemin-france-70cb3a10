@@ -26,16 +26,22 @@ interface Lead {
 
 interface Profile {
   id: string;
+  user_id: string | null;
   first_name: string | null;
   last_name: string | null;
   email: string | null;
   phone: string | null;
   city: string | null;
   postal_code: string | null;
+}
+
+interface OnboardingData {
   target_sector: string | null;
   french_level_cecrl: string | null;
   lead_score: number | null;
   main_goal: string | null;
+  lead_route: string | null;
+  barriers: string[] | null;
 }
 
 interface Provider {
@@ -73,9 +79,10 @@ const STATUS_COLORS: Record<string, "default" | "secondary" | "destructive" | "o
 export function AdminLeadsManager() {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [profiles, setProfiles] = useState<Record<string, Profile>>({});
+  const [onboardingMap, setOnboardingMap] = useState<Record<string, OnboardingData>>({});
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedProfile, setSelectedProfile] = useState<Profile | null>(null);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [detailOpen, setDetailOpen] = useState(false);
   const [assignOpen, setAssignOpen] = useState(false);
   const [assigningProfileId, setAssigningProfileId] = useState<string | null>(null);
@@ -86,10 +93,11 @@ export function AdminLeadsManager() {
 
   const fetchData = async () => {
     setLoading(true);
-    const [leadsRes, profilesRes, providersRes] = await Promise.all([
+    const [leadsRes, profilesRes, providersRes, onboardingRes] = await Promise.all([
       supabase.from("leads").select("*").order("created_at", { ascending: false }),
-      supabase.from("profiles").select("id, first_name, last_name, email, phone, city, postal_code, target_sector, french_level_cecrl, lead_score, main_goal"),
+      supabase.from("profiles").select("id, user_id, first_name, last_name, email, phone, city, postal_code"),
       supabase.from("training_providers").select("id, name, provider_type"),
+      supabase.from("onboarding_results").select("user_id, target_sector, french_level_cecrl, lead_score, main_goal, lead_route, barriers"),
     ]);
 
     if (leadsRes.data) setLeads(leadsRes.data);
@@ -99,6 +107,23 @@ export function AdminLeadsManager() {
       setProfiles(map);
     }
     if (providersRes.data) setProviders(providersRes.data);
+
+    // Build onboarding data map keyed by profile.id (via user_id)
+    if (onboardingRes.data && profilesRes.data) {
+      const obMap: Record<string, OnboardingData> = {};
+      // Map user_id → profile.id
+      const userToProfile: Record<string, string> = {};
+      profilesRes.data.forEach((p) => {
+        if (p.user_id) userToProfile[p.user_id] = p.id;
+      });
+      onboardingRes.data.forEach((ob: any) => {
+        if (ob.user_id && userToProfile[ob.user_id]) {
+          obMap[userToProfile[ob.user_id]] = ob;
+        }
+      });
+      setOnboardingMap(obMap);
+    }
+
     setLoading(false);
   };
 
