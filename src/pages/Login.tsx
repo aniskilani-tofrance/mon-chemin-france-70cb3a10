@@ -42,8 +42,8 @@ export default function Login() {
   };
 
   const redirectByRole = useCallback(async (userId: string) => {
-    const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    navigate(data ? "/admin" : "/dashboard");
+    const role = await detectUserRole(userId);
+    navigate(getRoleDashboardPath(role));
   }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
