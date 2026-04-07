@@ -29,7 +29,6 @@ interface FLEUser {
   total_time_minutes: number | null;
   last_activity_at: string | null;
   placement_completed: boolean | null;
-  target_sector: string | null;
   preferred_category: string | null;
   daily_goal_minutes: number;
   created_at: string;
