@@ -19,16 +19,6 @@ import { useAuth } from "@/hooks/useAuth";
 import { useFLEUserProgress } from "@/hooks/useFLEProgress";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { FLEModuleComplete } from "@/components/FLE/FLEModuleComplete";
-import { useTTS } from "@/hooks/useTTS";
-import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { callFLEVoiceAI } from "@/lib/fleVoiceAI";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/hooks/useAuth";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 
 interface Exercise {
   id: string;
