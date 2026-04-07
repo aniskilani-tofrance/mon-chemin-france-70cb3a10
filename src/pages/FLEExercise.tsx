@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { DragMatchExercise } from "@/components/FLE/DragMatchExercise";
 import { ScenarioTreeExercise } from "@/components/FLE/ScenarioTreeExercise";
+import { FillInBlankExercise } from "@/components/FLE/FillInBlankExercise";
 import { AudioSubmitButton } from "@/components/FLE/AudioSubmitButton";
 import { Header } from "@/components/Header";
 import { Button } from "@/components/ui/button";
