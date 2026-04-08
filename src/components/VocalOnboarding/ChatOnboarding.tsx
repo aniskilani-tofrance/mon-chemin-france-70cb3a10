@@ -585,14 +585,14 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const handleLocationSubmit = () => {
     const value = getLocationValue();
     if (!value.trim()) return;
-    if (!isValidAddress(value)) {
+    if (!isValidCity(value)) {
       setLocationError(
-        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
-        language === "en" ? "Please enter a full address (number, street, city)" :
-        language === "es" ? "Introduzca una dirección completa (número, calle, ciudad)" :
-        language === "pt" ? "Insira um endereço completo (número, rua, cidade)" :
-        language === "ru" ? "Введите полный адрес (номер, улица, город)" :
-        "Veuillez saisir une adresse complète (numéro, rue, ville)"
+        language === "ar" ? "يُرجى إدخال اسم مدينتك" :
+        language === "en" ? "Please enter your city name" :
+        language === "es" ? "Por favor, ingresa el nombre de tu ciudad" :
+        language === "pt" ? "Por favor, insira o nome da sua cidade" :
+        language === "ru" ? "Пожалуйста, введите название вашего города" :
+        "Veuillez entrer le nom de votre ville"
       );
       return;
     }

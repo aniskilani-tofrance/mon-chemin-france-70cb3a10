@@ -280,7 +280,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
           onKeyDown={onKeyDown as any}
         />
         <p className="mt-1.5 text-[10px] text-muted-foreground">
-          {isRTL ? "مثال: 12 شارع الجمهورية، باريس" : "Ex : 12 rue de la République, Lyon"}
+          {isRTL ? "مثال: ليون، باريس، مرسيليا" : "Ex : Lyon, Paris, Marseille"}
         </p>
       </div>
     );
