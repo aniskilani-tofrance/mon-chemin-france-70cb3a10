@@ -10,6 +10,7 @@ import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
+import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import {
@@ -43,9 +44,13 @@ const Onboarding = () => {
   const { language, setLanguage } = useLanguage();
   const tts = useTTS({ language });
   const { track } = useAnalytics();
+  const { user, loading: authLoading } = useAuth();
   const [step, setStep] = useState<OnboardingStep>("language");
   const [answers, setAnswers] = useState<OnboardingAnswers>({ tags: [] });
   const [onboardingStartedAt] = useState(() => Date.now());
+  const [resumeQuestion, setResumeQuestion] = useState<string | null>(null);
+  const [resumeCheckpointId, setResumeCheckpointId] = useState<string | null>(null);
+  const [checkpointLoaded, setCheckpointLoaded] = useState(false);
 
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
