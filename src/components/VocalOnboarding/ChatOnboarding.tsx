@@ -614,10 +614,29 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     <div className="flex flex-col h-full" dir={isRTL ? "rtl" : "ltr"}>
       <div className="flex items-center gap-3 mb-3 px-4 py-3 rounded-xl bg-card border border-border shrink-0">
         <div className="relative shrink-0" style={{ width: 48, height: 48 }}>
+          {/* Pulsing ring when speaking */}
+          {isSpeaking && (
+            <motion.div
+              className="absolute inset-0 rounded-full border-2 border-primary"
+              initial={{ scale: 1, opacity: 0.6 }}
+              animate={{ scale: [1, 1.3, 1], opacity: [0.6, 0, 0.6] }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            />
+          )}
+          {/* Spinning ring when TTS is loading (processing but not yet speaking) */}
+          {isProcessing && !isSpeaking && (
+            <motion.div
+              className="absolute inset-0 rounded-full border-2 border-transparent border-t-primary border-r-primary/50"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          )}
           <img
             src={marianneAvatar}
             alt="Marianne"
-            className="h-12 w-12 rounded-full object-cover object-top border-2 border-primary/30"
+            className={`h-12 w-12 rounded-full object-cover object-top border-2 ${
+              isSpeaking ? "border-primary" : "border-primary/30"
+            } transition-colors duration-300`}
           />
           <span className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card text-[8px]"
             style={{
