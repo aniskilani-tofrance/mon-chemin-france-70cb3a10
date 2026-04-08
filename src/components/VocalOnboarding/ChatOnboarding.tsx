@@ -517,8 +517,13 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         if (nextQId) {
           setQuestionHistory(prev => [...prev, currentQuestionId]);
           setCurrentQuestionId(nextQId);
+          // Trigger signup checkpoint after main_goal (if user not logged in and not already dismissed)
+          if (currentQuestionId === CHECKPOINT_AFTER_QUESTION && !user && !checkpointDismissed) {
+            setShowSignupCheckpoint(true);
+          }
         } else {
           setIsComplete(true);
+          markCheckpointComplete();
           setTimeout(() => onComplete(newAnswers), 1500);
         }
       }
