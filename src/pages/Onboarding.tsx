@@ -233,6 +233,8 @@ const Onboarding = () => {
                 <ChatOnboarding
                   onComplete={handleChatComplete}
                   initialAnswers={answers}
+                  resumeFromQuestion={resumeQuestion}
+                  resumeCheckpointId={resumeCheckpointId}
                 />
               </motion.div>
             )}
