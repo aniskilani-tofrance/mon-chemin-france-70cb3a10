@@ -671,7 +671,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         <div ref={chatEndRef} />
       </div>
 
-      {!isComplete && (
+      {!isComplete && !showSignupCheckpoint && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
           {lastMarianneMessage && (
             <Button
