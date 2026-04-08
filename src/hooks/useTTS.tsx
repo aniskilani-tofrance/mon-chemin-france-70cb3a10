@@ -10,7 +10,7 @@ const MAX_CACHEABLE_LENGTH = 500;
 
 const MANUAL_PLAYBACK_MESSAGE: Record<LanguageCode, string> = {
   fr: "Le navigateur a bloqué le démarrage automatique de la voix. Appuyez sur « Réécouter Marianne ».",
-  en: "Your browser blocked autoplay for voice. Press "Replay Marianne" to start it.",
+  en: "Your browser blocked autoplay for voice. Press \u201CReplay Marianne\u201D to start it.",
   ar: "حظر المتصفح تشغيل الصوت تلقائيًا. اضغطوا على «إعادة تشغيل ماريان». ",
   es: "El navegador bloqueó el inicio automático de la voz. Pulsa «Volver a escuchar a Marianne».",
   pt: "O navegador bloqueou o início automático da voz. Toque em «Ouvir Marianne novamente».",
