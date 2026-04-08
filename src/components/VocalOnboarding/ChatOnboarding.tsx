@@ -322,7 +322,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
         language === "es" ? "¡Bienvenido/a de nuevo! Continuemos donde lo dejamos 😊" :
         "Bon retour ! Reprenons là où vous en étiez 😊";
       
-      const questionText = getTranslatedText(question, "text", language);
+      const questionText = getTranslatedText(question as any, "text", language);
       const fullMsg = `${resumeMsg}\n\n${questionText}`;
       setMessages([{ role: "marianne", content: fullMsg }]);
       speakAndListen(fullMsg);
