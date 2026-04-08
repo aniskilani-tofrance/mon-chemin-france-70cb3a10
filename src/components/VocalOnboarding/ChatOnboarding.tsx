@@ -71,7 +71,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const [vocalMode, setVocalMode] = useState(true);
   const [showSignupCheckpoint, setShowSignupCheckpoint] = useState(false);
   const [checkpointDismissed, setCheckpointDismissed] = useState(false);
-  const [checkpointId, setCheckpointId] = useState<string | null>(null);
+  const [checkpointId, setCheckpointId] = useState<string | null>(resumeCheckpointId || null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
