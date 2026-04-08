@@ -19,6 +19,7 @@ import { Switch } from "@/components/ui/switch";
 import { AdminContactRequests } from "@/components/AdminContactRequests";
 import { AdminLeadsManager } from "@/components/AdminLeadsManager";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
+import { AdminCheckpointAnalytics } from "@/components/AdminCheckpointAnalytics";
 
 interface Provider {
   id: string;
@@ -346,6 +347,10 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         )}
+
+        <div className="mt-10">
+          <AdminCheckpointAnalytics />
+        </div>
 
         <div className="mt-10">
           <AdminAnalytics />
