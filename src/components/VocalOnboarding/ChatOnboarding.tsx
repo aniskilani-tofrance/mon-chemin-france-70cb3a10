@@ -55,6 +55,7 @@ interface ChatOnboardingProps {
 
 export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -65,7 +66,10 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
-  const [vocalMode, setVocalMode] = useState(true); // full vocal by default
+  const [vocalMode, setVocalMode] = useState(true);
+  const [showSignupCheckpoint, setShowSignupCheckpoint] = useState(false);
+  const [checkpointDismissed, setCheckpointDismissed] = useState(false);
+  const [checkpointId, setCheckpointId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
