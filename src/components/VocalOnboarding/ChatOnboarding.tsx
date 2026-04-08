@@ -287,7 +287,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     speak(text);
   }, [speak, resetSTT]);
 
-  // Greet on mount
+  // Speak pending signup/skip acknowledgment messages
+  useEffect(() => {
+    if (pendingSignupAck.current) {
+      const msg = pendingSignupAck.current;
+      pendingSignupAck.current = null;
+      speakAndListen(msg);
+    }
+    if (pendingSkipMsg.current) {
+      const msg = pendingSkipMsg.current;
+      pendingSkipMsg.current = null;
+      speakAndListen(msg);
+    }
+  }, [showSignupCheckpoint, speakAndListen]);
+
   useEffect(() => {
     if (hasGreeted.current) return;
     hasGreeted.current = true;
