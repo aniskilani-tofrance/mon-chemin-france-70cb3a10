@@ -51,9 +51,11 @@ const MIN_TEXT_LENGTH = 1;
 interface ChatOnboardingProps {
   onComplete: (answers: OnboardingAnswers) => void;
   initialAnswers: OnboardingAnswers;
+  resumeFromQuestion?: string | null;
+  resumeCheckpointId?: string | null;
 }
 
-export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
+export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion, resumeCheckpointId }: ChatOnboardingProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
