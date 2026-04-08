@@ -306,7 +306,11 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   useEffect(() => {
     if (hasGreeted.current) return;
     hasGreeted.current = true;
-    greet();
+    if (resumeFromQuestion) {
+      resumeGreet();
+    } else {
+      greet();
+    }
   }, []);
 
   const greet = async () => {
