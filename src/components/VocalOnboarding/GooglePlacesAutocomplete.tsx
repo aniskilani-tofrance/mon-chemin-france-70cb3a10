@@ -18,12 +18,12 @@ export interface GooglePlacesAutocompleteHandle {
 }
 
 const LOCATION_PLACEHOLDERS: Record<string, string> = {
-  fr: "12 rue de la République, Lyon",
-  en: "12 rue de la République, Paris",
-  ar: "12 شارع الجمهورية، باريس",
-  es: "12 rue de la République, Lyon",
-  pt: "12 rue de la République, Lyon",
-  ru: "12 rue de la République, Лион",
+  fr: "Lyon, Paris, Marseille…",
+  en: "Lyon, Paris, Marseille…",
+  ar: "ليون، باريس، مرسيليا…",
+  es: "Lyon, París, Marsella…",
+  pt: "Lyon, Paris, Marselha…",
+  ru: "Лион, Париж, Марсель…",
 };
 
 export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandle, GooglePlacesAutocompleteProps>(function GooglePlacesAutocomplete({
