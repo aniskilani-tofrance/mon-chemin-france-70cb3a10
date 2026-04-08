@@ -61,7 +61,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>(ONBOARDING_TREE.startQuestion);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string>(resumeFromQuestion || ONBOARDING_TREE.startQuestion);
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [answers, setAnswers] = useState<OnboardingAnswers>(initialAnswers);
   const [isComplete, setIsComplete] = useState(false);
