@@ -313,6 +313,27 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     }
   }, []);
 
+  const resumeGreet = async () => {
+    setIsProcessing(true);
+    try {
+      const question = ONBOARDING_TREE.questions[resumeFromQuestion!];
+      const resumeMsg = language === "ar" ? "مرحبًا بعودتكم! لنكمل من حيث توقّفنا 😊" :
+        language === "en" ? "Welcome back! Let's pick up where you left off 😊" :
+        language === "es" ? "¡Bienvenido/a de nuevo! Continuemos donde lo dejamos 😊" :
+        "Bon retour ! Reprenons là où vous en étiez 😊";
+      
+      const questionText = getTranslatedText(question, "text", language);
+      const fullMsg = `${resumeMsg}\n\n${questionText}`;
+      setMessages([{ role: "marianne", content: fullMsg }]);
+      speakAndListen(fullMsg);
+    } catch (err) {
+      console.error("Resume greet error:", err);
+      greet();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const greet = async () => {
     setIsProcessing(true);
     try {
