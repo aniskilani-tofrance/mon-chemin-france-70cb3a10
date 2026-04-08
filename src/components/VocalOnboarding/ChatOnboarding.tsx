@@ -11,8 +11,11 @@ import { callOnboardingChat } from "@/lib/onboardingChat";
 import { useTTS } from "@/hooks/useTTS";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { z } from "zod";
+import { OnboardingSignupWidget } from "./OnboardingSignupWidget";
 import {
   ONBOARDING_TREE,
   getNextQuestion,
@@ -52,6 +55,7 @@ interface ChatOnboardingProps {
 
 export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
   const { language } = useLanguage();
+  const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
@@ -62,7 +66,10 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [emailError, setEmailError] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
   const [rgpdAccepted, setRgpdAccepted] = useState(false);
-  const [vocalMode, setVocalMode] = useState(true); // full vocal by default
+  const [vocalMode, setVocalMode] = useState(true);
+  const [showSignupCheckpoint, setShowSignupCheckpoint] = useState(false);
+  const [checkpointDismissed, setCheckpointDismissed] = useState(false);
+  const [checkpointId, setCheckpointId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
@@ -97,10 +104,78 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
   });
 
+  // CHECKPOINT: question that triggers signup prompt (after main_goal ~50%)
+  const CHECKPOINT_AFTER_QUESTION = "main_goal";
+
+  // Save checkpoint to database
+  const saveCheckpoint = useCallback(async (userId: string | null, email: string | null, partialAnswers: OnboardingAnswers, step: string) => {
+    try {
+      if (checkpointId) {
+        await supabase.from("onboarding_checkpoints").update({
+          user_id: userId,
+          email,
+          partial_answers: JSON.parse(JSON.stringify(partialAnswers)),
+          current_step: step,
+          language,
+        }).eq("id", checkpointId);
+      } else {
+        const { data } = await supabase.from("onboarding_checkpoints").insert({
+          user_id: userId,
+          email,
+          partial_answers: JSON.parse(JSON.stringify(partialAnswers)),
+          current_step: step,
+          language,
+        }).select("id").single();
+        if (data) setCheckpointId(data.id);
+      }
+    } catch (err) {
+      console.error("Error saving checkpoint:", err);
+    }
+  }, [checkpointId, language]);
+
+  // Mark checkpoint as completed
+  const markCheckpointComplete = useCallback(async () => {
+    if (!checkpointId) return;
+    try {
+      await supabase.from("onboarding_checkpoints").update({
+        completed: true,
+        completed_at: new Date().toISOString(),
+      }).eq("id", checkpointId);
+    } catch (err) {
+      console.error("Error marking checkpoint complete:", err);
+    }
+  }, [checkpointId]);
+
+  // Handle signup completion from the widget (speak called in useEffect below)
+  const pendingSignupAck = useRef<string | null>(null);
+  const pendingSkipMsg = useRef<string | null>(null);
+
+  const handleSignupComplete = useCallback(async (userId: string, signupEmail: string) => {
+    await saveCheckpoint(userId, signupEmail, answers, currentQuestionId);
+    setShowSignupCheckpoint(false);
+    const ackMsg = language === "ar" ? "ممتاز! تم حفظ تقدّمكم. لنكمل معًا 😊" :
+      language === "en" ? "Great! Your progress is saved. Let's continue 😊" :
+      language === "es" ? "¡Genial! Tu progreso está guardado. Continuemos 😊" :
+      "Parfait ! Votre progression est sauvegardée. Continuons ensemble 😊";
+    setMessages(prev => [...prev, { role: "marianne", content: ackMsg }]);
+    pendingSignupAck.current = ackMsg;
+  }, [answers, currentQuestionId, saveCheckpoint, language]);
+
+  const handleSkipSignup = useCallback(() => {
+    setShowSignupCheckpoint(false);
+    setCheckpointDismissed(true);
+    const skipMsg = language === "ar" ? "لا مشكلة! لنكمل. يمكنكم إنشاء حساب لاحقًا." :
+      language === "en" ? "No problem! Let's continue. You can create an account later." :
+      language === "es" ? "¡Sin problema! Continuemos. Puedes crear una cuenta más tarde." :
+      "Pas de souci ! Continuons. Vous pourrez créer un compte plus tard.";
+    setMessages(prev => [...prev, { role: "marianne", content: skipMsg }]);
+    pendingSkipMsg.current = skipMsg;
+  }, [language]);
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isProcessing]);
+  }, [messages, isProcessing, showSignupCheckpoint]);
 
   // Sync transcript to input
   useEffect(() => {
@@ -212,7 +287,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     speak(text);
   }, [speak, resetSTT]);
 
-  // Greet on mount
+  // Speak pending signup/skip acknowledgment messages
+  useEffect(() => {
+    if (pendingSignupAck.current) {
+      const msg = pendingSignupAck.current;
+      pendingSignupAck.current = null;
+      speakAndListen(msg);
+    }
+    if (pendingSkipMsg.current) {
+      const msg = pendingSkipMsg.current;
+      pendingSkipMsg.current = null;
+      speakAndListen(msg);
+    }
+  }, [showSignupCheckpoint, speakAndListen]);
+
   useEffect(() => {
     if (hasGreeted.current) return;
     hasGreeted.current = true;
@@ -429,8 +517,13 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
         if (nextQId) {
           setQuestionHistory(prev => [...prev, currentQuestionId]);
           setCurrentQuestionId(nextQId);
+          // Trigger signup checkpoint after main_goal (if user not logged in and not already dismissed)
+          if (currentQuestionId === CHECKPOINT_AFTER_QUESTION && !user && !checkpointDismissed) {
+            setShowSignupCheckpoint(true);
+          }
         } else {
           setIsComplete(true);
+          markCheckpointComplete();
           setTimeout(() => onComplete(newAnswers), 1500);
         }
       }
@@ -565,10 +658,20 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           </motion.div>
         )}
 
+        {showSignupCheckpoint && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-1">
+            <OnboardingSignupWidget
+              language={language}
+              onSignupComplete={handleSignupComplete}
+              onSkip={handleSkipSignup}
+            />
+          </motion.div>
+        )}
+
         <div ref={chatEndRef} />
       </div>
 
-      {!isComplete && (
+      {!isComplete && !showSignupCheckpoint && (
         <div className="border-t border-border bg-background/80 backdrop-blur-sm pt-3 space-y-3">
           {lastMarianneMessage && (
             <Button

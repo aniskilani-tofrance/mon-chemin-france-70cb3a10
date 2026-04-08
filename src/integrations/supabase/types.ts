@@ -811,6 +811,54 @@ export type Database = {
           },
         ]
       }
+      onboarding_checkpoints: {
+        Row: {
+          completed: boolean
+          completed_at: string | null
+          created_at: string
+          current_step: string
+          email: string | null
+          id: string
+          language: string
+          partial_answers: Json
+          reminder_1h_sent: boolean
+          reminder_24h_sent: boolean
+          reminder_72h_sent: boolean
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_step?: string
+          email?: string | null
+          id?: string
+          language?: string
+          partial_answers?: Json
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          reminder_72h_sent?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean
+          completed_at?: string | null
+          created_at?: string
+          current_step?: string
+          email?: string | null
+          id?: string
+          language?: string
+          partial_answers?: Json
+          reminder_1h_sent?: boolean
+          reminder_24h_sent?: boolean
+          reminder_72h_sent?: boolean
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       onboarding_results: {
         Row: {
           answers: Json
