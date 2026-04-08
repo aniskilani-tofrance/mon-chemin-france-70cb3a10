@@ -658,6 +658,16 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
           </motion.div>
         )}
 
+        {showSignupCheckpoint && (
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="px-1">
+            <OnboardingSignupWidget
+              language={language}
+              onSignupComplete={handleSignupComplete}
+              onSkip={handleSkipSignup}
+            />
+          </motion.div>
+        )}
+
         <div ref={chatEndRef} />
       </div>
 
