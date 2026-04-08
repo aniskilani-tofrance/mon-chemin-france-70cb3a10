@@ -18,12 +18,12 @@ export interface GooglePlacesAutocompleteHandle {
 }
 
 const LOCATION_PLACEHOLDERS: Record<string, string> = {
-  fr: "12 rue de la République, Lyon",
-  en: "12 rue de la République, Paris",
-  ar: "12 شارع الجمهورية، باريس",
-  es: "12 rue de la République, Lyon",
-  pt: "12 rue de la République, Lyon",
-  ru: "12 rue de la République, Лион",
+  fr: "Lyon, Paris, Marseille…",
+  en: "Lyon, Paris, Marseille…",
+  ar: "ليون، باريس، مرسيليا…",
+  es: "Lyon, París, Marsella…",
+  pt: "Lyon, Paris, Marselha…",
+  ru: "Лион, Париж, Марсель…",
 };
 
 export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandle, GooglePlacesAutocompleteProps>(function GooglePlacesAutocomplete({
@@ -106,7 +106,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
     try {
       const el = new google.maps.places.PlaceAutocompleteElement({
         componentRestrictions: { country: "fr" },
-        types: ["address"],
+        types: ["(cities)"],
       });
 
       el.setAttribute("dir", isRTL ? "rtl" : "ltr");
@@ -280,7 +280,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
           onKeyDown={onKeyDown as any}
         />
         <p className="mt-1.5 text-[10px] text-muted-foreground">
-          {isRTL ? "مثال: 12 شارع الجمهورية، باريس" : "Ex : 12 rue de la République, Lyon"}
+          {isRTL ? "مثال: ليون، باريس، مرسيليا" : "Ex : Lyon, Paris, Marseille"}
         </p>
       </div>
     );

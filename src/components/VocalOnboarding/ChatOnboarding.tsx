@@ -27,13 +27,9 @@ import {
 
 const emailSchema = z.string().trim().email().max(255);
 
-// Validates that an address contains at least a number, a street name, and a city
-const ADDRESS_REGEX = /\d+.*[a-zA-ZÀ-ÿ]{2,}.*[a-zA-ZÀ-ÿ]{2,}/;
-function isValidAddress(value: string): boolean {
-  const trimmed = value.trim();
-  // Must have at least 3 parts (number + street + city) and match the pattern
-  const parts = trimmed.split(/[\s,]+/).filter(Boolean);
-  return parts.length >= 3 && ADDRESS_REGEX.test(trimmed);
+// Validates that a city name has at least 2 characters
+function isValidCity(value: string): boolean {
+  return value.trim().length >= 2;
 }
 
 interface ChatMessage {
@@ -389,15 +385,15 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
       }
     }
 
-    // Validate location (must be full address: number + street + city)
-    if (currentQuestionId === "location" && !isValidAddress(userText)) {
+    // Validate location (city name)
+    if (currentQuestionId === "location" && !isValidCity(userText)) {
       const errMsg =
-        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
-        language === "en" ? "Please enter a full address (number, street, city)" :
-        language === "es" ? "Por favor, ingresa una dirección completa (número, calle, ciudad)" :
-        language === "pt" ? "Por favor, insira um endereço completo (número, rua, cidade)" :
-        language === "ru" ? "Пожалуйста, введите полный адрес (номер, улица, город)" :
-        "Veuillez entrer une adresse complète (numéro, rue, ville)";
+        language === "ar" ? "يُرجى إدخال اسم مدينتك" :
+        language === "en" ? "Please enter your city name" :
+        language === "es" ? "Por favor, ingresa el nombre de tu ciudad" :
+        language === "pt" ? "Por favor, insira o nome da sua cidade" :
+        language === "ru" ? "Пожалуйста, введите название вашего города" :
+        "Veuillez entrer le nom de votre ville";
       setLocationError(errMsg);
       const errorMsg: ChatMessage = { role: "marianne", content: errMsg };
       setMessages(prev => [...prev, errorMsg]);
@@ -589,14 +585,14 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const handleLocationSubmit = () => {
     const value = getLocationValue();
     if (!value.trim()) return;
-    if (!isValidAddress(value)) {
+    if (!isValidCity(value)) {
       setLocationError(
-        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
-        language === "en" ? "Please enter a full address (number, street, city)" :
-        language === "es" ? "Introduzca una dirección completa (número, calle, ciudad)" :
-        language === "pt" ? "Insira um endereço completo (número, rua, cidade)" :
-        language === "ru" ? "Введите полный адрес (номер, улица, город)" :
-        "Veuillez saisir une adresse complète (numéro, rue, ville)"
+        language === "ar" ? "يُرجى إدخال اسم مدينتك" :
+        language === "en" ? "Please enter your city name" :
+        language === "es" ? "Por favor, ingresa el nombre de tu ciudad" :
+        language === "pt" ? "Por favor, insira o nome da sua cidade" :
+        language === "ru" ? "Пожалуйста, введите название вашего города" :
+        "Veuillez entrer le nom de votre ville"
       );
       return;
     }
