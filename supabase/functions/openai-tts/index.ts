@@ -5,15 +5,49 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Best OpenAI TTS voice per language for Marianne (female advisor)
+// Optimised voice per language for Marianne (female advisor)
+// shimmer = expressive female, nova = warm female
 const VOICE_MAP: Record<string, string> = {
-  fr: "shimmer",   // Neutral Parisian French, expressive female
-  en: "shimmer",   // Expressive English female
-  ar: "nova",      // Best female for Arabic
-  es: "nova",      // Warm natural Spanish female
-  pt: "nova",      // Clear Portuguese female
-  ru: "shimmer",   // Expressive Russian female
+  fr: "shimmer",
+  en: "shimmer",
+  ar: "nova",
+  es: "nova",
+  pt: "nova",
+  ru: "shimmer",
 };
+
+// BCP-47 language hints – prepended as an invisible instruction so the model
+// picks the right accent even on very short texts.
+const LANG_HINT: Record<string, string> = {
+  fr: "[Parle en français] ",
+  en: "[Speak in English] ",
+  ar: "[تحدث بالعربية] ",
+  es: "[Habla en español] ",
+  pt: "[Fale em português] ",
+  ru: "[Говори по-русски] ",
+};
+
+async function callOpenAITTS(
+  apiKey: string,
+  text: string,
+  voice: string,
+  speed: number,
+): Promise<Response> {
+  return fetch('https://api.openai.com/v1/audio/speech', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'tts-1-hd',
+      input: text,
+      voice,
+      speed,
+      response_format: 'mp3',
+    }),
+  });
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -38,27 +72,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    const selectedVoice = voice || VOICE_MAP[language || 'fr'] || 'nova';
-    const truncatedText = text.slice(0, 4096);
+    const lang = language || 'fr';
+    const selectedVoice = voice || VOICE_MAP[lang] || 'nova';
+    // Prepend invisible language hint for short texts to avoid accent confusion
+    const hint = LANG_HINT[lang] || '';
+    const truncatedText = (hint + text).slice(0, 4096);
+    const selectedSpeed = speed || 0.9;
 
-    const response = await fetch('https://api.openai.com/v1/audio/speech', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'tts-1-hd',
-        input: truncatedText,
-        voice: selectedVoice,
-        speed: speed || 0.9,
-        response_format: 'mp3',
-      }),
-    });
+    console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
+
+    // First attempt
+    let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
+
+    // Retry once on transient errors (5xx, network)
+    if (!response.ok && response.status >= 500) {
+      console.warn(`[openai-tts] Retry after ${response.status}`);
+      await new Promise(r => setTimeout(r, 1000));
+      response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI TTS error:', response.status, errorText);
+      console.error('[openai-tts] Error:', response.status, errorText);
       return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
