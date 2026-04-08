@@ -106,7 +106,7 @@ export const GooglePlacesAutocomplete = forwardRef<GooglePlacesAutocompleteHandl
     try {
       const el = new google.maps.places.PlaceAutocompleteElement({
         componentRestrictions: { country: "fr" },
-        types: ["address"],
+        types: ["(cities)"],
       });
 
       el.setAttribute("dir", isRTL ? "rtl" : "ltr");
