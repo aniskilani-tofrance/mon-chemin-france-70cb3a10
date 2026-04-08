@@ -146,20 +146,21 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     }
   }, [checkpointId]);
 
-  // Handle signup completion from the widget
+  // Handle signup completion from the widget (speak called in useEffect below)
+  const pendingSignupAck = useRef<string | null>(null);
+  const pendingSkipMsg = useRef<string | null>(null);
+
   const handleSignupComplete = useCallback(async (userId: string, signupEmail: string) => {
     await saveCheckpoint(userId, signupEmail, answers, currentQuestionId);
     setShowSignupCheckpoint(false);
-    // Add a Marianne message acknowledging the account creation
     const ackMsg = language === "ar" ? "ممتاز! تم حفظ تقدّمكم. لنكمل معًا 😊" :
       language === "en" ? "Great! Your progress is saved. Let's continue 😊" :
       language === "es" ? "¡Genial! Tu progreso está guardado. Continuemos 😊" :
       "Parfait ! Votre progression est sauvegardée. Continuons ensemble 😊";
     setMessages(prev => [...prev, { role: "marianne", content: ackMsg }]);
-    speakAndListen(ackMsg);
-  }, [answers, currentQuestionId, saveCheckpoint, language, speakAndListen]);
+    pendingSignupAck.current = ackMsg;
+  }, [answers, currentQuestionId, saveCheckpoint, language]);
 
-  // Handle skip signup
   const handleSkipSignup = useCallback(() => {
     setShowSignupCheckpoint(false);
     setCheckpointDismissed(true);
@@ -168,8 +169,8 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
       language === "es" ? "¡Sin problema! Continuemos. Puedes crear una cuenta más tarde." :
       "Pas de souci ! Continuons. Vous pourrez créer un compte plus tard.";
     setMessages(prev => [...prev, { role: "marianne", content: skipMsg }]);
-    speakAndListen(skipMsg);
-  }, [language, speakAndListen]);
+    pendingSkipMsg.current = skipMsg;
+  }, [language]);
 
   // Auto-scroll
   useEffect(() => {
