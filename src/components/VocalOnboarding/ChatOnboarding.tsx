@@ -385,15 +385,15 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
       }
     }
 
-    // Validate location (must be full address: number + street + city)
-    if (currentQuestionId === "location" && !isValidAddress(userText)) {
+    // Validate location (city name)
+    if (currentQuestionId === "location" && !isValidCity(userText)) {
       const errMsg =
-        language === "ar" ? "يُرجى إدخال عنوان كامل (رقم، شارع، مدينة)" :
-        language === "en" ? "Please enter a full address (number, street, city)" :
-        language === "es" ? "Por favor, ingresa una dirección completa (número, calle, ciudad)" :
-        language === "pt" ? "Por favor, insira um endereço completo (número, rua, cidade)" :
-        language === "ru" ? "Пожалуйста, введите полный адрес (номер, улица, город)" :
-        "Veuillez entrer une adresse complète (numéro, rue, ville)";
+        language === "ar" ? "يُرجى إدخال اسم مدينتك" :
+        language === "en" ? "Please enter your city name" :
+        language === "es" ? "Por favor, ingresa el nombre de tu ciudad" :
+        language === "pt" ? "Por favor, insira o nome da sua cidade" :
+        language === "ru" ? "Пожалуйста, введите название вашего города" :
+        "Veuillez entrer le nom de votre ville";
       setLocationError(errMsg);
       const errorMsg: ChatMessage = { role: "marianne", content: errMsg };
       setMessages(prev => [...prev, errorMsg]);
