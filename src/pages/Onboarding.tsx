@@ -55,6 +55,38 @@ const Onboarding = () => {
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
 
+  // Load checkpoint for authenticated users
+  useEffect(() => {
+    if (authLoading || checkpointLoaded) return;
+    setCheckpointLoaded(true);
+    if (!user) return;
+
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from("onboarding_checkpoints")
+          .select("id, partial_answers, current_step, language")
+          .eq("user_id", user.id)
+          .eq("completed", false)
+          .order("updated_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (data && data.current_step && data.partial_answers) {
+          const savedAnswers = data.partial_answers as Record<string, any>;
+          setAnswers(prev => ({ ...prev, ...savedAnswers }));
+          setResumeQuestion(data.current_step);
+          setResumeCheckpointId(data.id);
+          if (data.language) setLanguage(data.language as LanguageCode);
+          setStep("chat");
+          console.log("[Onboarding] Resuming from checkpoint:", data.current_step);
+        }
+      } catch (err) {
+        console.error("Error loading checkpoint:", err);
+      }
+    })();
+  }, [user, authLoading, checkpointLoaded]);
+
   useEffect(() => {
     track("onboarding_step", { step }, "/onboarding", language);
   }, [step]);
