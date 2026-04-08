@@ -51,15 +51,17 @@ const MIN_TEXT_LENGTH = 1;
 interface ChatOnboardingProps {
   onComplete: (answers: OnboardingAnswers) => void;
   initialAnswers: OnboardingAnswers;
+  resumeFromQuestion?: string | null;
+  resumeCheckpointId?: string | null;
 }
 
-export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingProps) {
+export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion, resumeCheckpointId }: ChatOnboardingProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputText, setInputText] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
-  const [currentQuestionId, setCurrentQuestionId] = useState<string>(ONBOARDING_TREE.startQuestion);
+  const [currentQuestionId, setCurrentQuestionId] = useState<string>(resumeFromQuestion || ONBOARDING_TREE.startQuestion);
   const [questionHistory, setQuestionHistory] = useState<string[]>([]);
   const [answers, setAnswers] = useState<OnboardingAnswers>(initialAnswers);
   const [isComplete, setIsComplete] = useState(false);
@@ -69,7 +71,7 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   const [vocalMode, setVocalMode] = useState(true);
   const [showSignupCheckpoint, setShowSignupCheckpoint] = useState(false);
   const [checkpointDismissed, setCheckpointDismissed] = useState(false);
-  const [checkpointId, setCheckpointId] = useState<string | null>(null);
+  const [checkpointId, setCheckpointId] = useState<string | null>(resumeCheckpointId || null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
@@ -304,8 +306,33 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
   useEffect(() => {
     if (hasGreeted.current) return;
     hasGreeted.current = true;
-    greet();
+    if (resumeFromQuestion) {
+      resumeGreet();
+    } else {
+      greet();
+    }
   }, []);
+
+  const resumeGreet = async () => {
+    setIsProcessing(true);
+    try {
+      const question = ONBOARDING_TREE.questions[resumeFromQuestion!];
+      const resumeMsg = language === "ar" ? "مرحبًا بعودتكم! لنكمل من حيث توقّفنا 😊" :
+        language === "en" ? "Welcome back! Let's pick up where you left off 😊" :
+        language === "es" ? "¡Bienvenido/a de nuevo! Continuemos donde lo dejamos 😊" :
+        "Bon retour ! Reprenons là où vous en étiez 😊";
+      
+      const questionText = getTranslatedText(question as any, "text", language);
+      const fullMsg = `${resumeMsg}\n\n${questionText}`;
+      setMessages([{ role: "marianne", content: fullMsg }]);
+      speakAndListen(fullMsg);
+    } catch (err) {
+      console.error("Resume greet error:", err);
+      greet();
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const greet = async () => {
     setIsProcessing(true);
