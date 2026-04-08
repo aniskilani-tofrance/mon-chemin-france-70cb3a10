@@ -349,6 +349,10 @@ export default function AdminDashboard() {
         )}
 
         <div className="mt-10">
+          <AdminCheckpointAnalytics />
+        </div>
+
+        <div className="mt-10">
           <AdminAnalytics />
         </div>
 
