@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
     // Prepend invisible language hint for short texts to avoid accent confusion
     const hint = LANG_HINT[lang] || '';
     const truncatedText = (hint + text).slice(0, 4096);
-    const selectedSpeed = speed || 0.9;
+    const selectedSpeed = speed || 1.05;
 
     console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
 
