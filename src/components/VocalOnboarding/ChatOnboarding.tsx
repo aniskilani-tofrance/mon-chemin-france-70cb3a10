@@ -104,10 +104,77 @@ export function ChatOnboarding({ onComplete, initialAnswers }: ChatOnboardingPro
     language,
   });
 
+  // CHECKPOINT: question that triggers signup prompt (after main_goal ~50%)
+  const CHECKPOINT_AFTER_QUESTION = "main_goal";
+
+  // Save checkpoint to database
+  const saveCheckpoint = useCallback(async (userId: string | null, email: string | null, partialAnswers: OnboardingAnswers, step: string) => {
+    try {
+      if (checkpointId) {
+        await supabase.from("onboarding_checkpoints").update({
+          user_id: userId,
+          email,
+          partial_answers: JSON.parse(JSON.stringify(partialAnswers)),
+          current_step: step,
+          language,
+        }).eq("id", checkpointId);
+      } else {
+        const { data } = await supabase.from("onboarding_checkpoints").insert({
+          user_id: userId,
+          email,
+          partial_answers: JSON.parse(JSON.stringify(partialAnswers)),
+          current_step: step,
+          language,
+        }).select("id").single();
+        if (data) setCheckpointId(data.id);
+      }
+    } catch (err) {
+      console.error("Error saving checkpoint:", err);
+    }
+  }, [checkpointId, language]);
+
+  // Mark checkpoint as completed
+  const markCheckpointComplete = useCallback(async () => {
+    if (!checkpointId) return;
+    try {
+      await supabase.from("onboarding_checkpoints").update({
+        completed: true,
+        completed_at: new Date().toISOString(),
+      }).eq("id", checkpointId);
+    } catch (err) {
+      console.error("Error marking checkpoint complete:", err);
+    }
+  }, [checkpointId]);
+
+  // Handle signup completion from the widget
+  const handleSignupComplete = useCallback(async (userId: string, signupEmail: string) => {
+    await saveCheckpoint(userId, signupEmail, answers, currentQuestionId);
+    setShowSignupCheckpoint(false);
+    // Add a Marianne message acknowledging the account creation
+    const ackMsg = language === "ar" ? "ممتاز! تم حفظ تقدّمكم. لنكمل معًا 😊" :
+      language === "en" ? "Great! Your progress is saved. Let's continue 😊" :
+      language === "es" ? "¡Genial! Tu progreso está guardado. Continuemos 😊" :
+      "Parfait ! Votre progression est sauvegardée. Continuons ensemble 😊";
+    setMessages(prev => [...prev, { role: "marianne", content: ackMsg }]);
+    speakAndListen(ackMsg);
+  }, [answers, currentQuestionId, saveCheckpoint, language, speakAndListen]);
+
+  // Handle skip signup
+  const handleSkipSignup = useCallback(() => {
+    setShowSignupCheckpoint(false);
+    setCheckpointDismissed(true);
+    const skipMsg = language === "ar" ? "لا مشكلة! لنكمل. يمكنكم إنشاء حساب لاحقًا." :
+      language === "en" ? "No problem! Let's continue. You can create an account later." :
+      language === "es" ? "¡Sin problema! Continuemos. Puedes crear una cuenta más tarde." :
+      "Pas de souci ! Continuons. Vous pourrez créer un compte plus tard.";
+    setMessages(prev => [...prev, { role: "marianne", content: skipMsg }]);
+    speakAndListen(skipMsg);
+  }, [language, speakAndListen]);
+
   // Auto-scroll
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, isProcessing]);
+  }, [messages, isProcessing, showSignupCheckpoint]);
 
   // Sync transcript to input
   useEffect(() => {
