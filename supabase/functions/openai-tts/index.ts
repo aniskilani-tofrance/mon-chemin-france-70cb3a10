@@ -6,25 +6,15 @@ const corsHeaders = {
 };
 
 // Optimised voice per language for Marianne (female advisor)
-// shimmer = expressive female, nova = warm female
+// nova = warm female with good accent for most languages
+// alloy = neutral, good for French without English accent
 const VOICE_MAP: Record<string, string> = {
-  fr: "shimmer",
+  fr: "nova",
   en: "shimmer",
   ar: "nova",
   es: "nova",
   pt: "nova",
-  ru: "shimmer",
-};
-
-// BCP-47 language hints – prepended as an invisible instruction so the model
-// picks the right accent even on very short texts.
-const LANG_HINT: Record<string, string> = {
-  fr: "[Parle en français] ",
-  en: "[Speak in English] ",
-  ar: "[تحدث بالعربية] ",
-  es: "[Habla en español] ",
-  pt: "[Fale em português] ",
-  ru: "[Говори по-русски] ",
+  ru: "nova",
 };
 
 async function callOpenAITTS(
@@ -74,10 +64,10 @@ Deno.serve(async (req) => {
 
     const lang = language || 'fr';
     const selectedVoice = voice || VOICE_MAP[lang] || 'nova';
-    // Prepend invisible language hint for short texts to avoid accent confusion
-    const hint = LANG_HINT[lang] || '';
-    const truncatedText = (hint + text).slice(0, 4096);
-    const selectedSpeed = speed || 1.05;
+    // No language hint prefix – OpenAI TTS infers language from the text itself.
+    // Adding text hints like "[Parle en français]" causes TTS to pronounce them literally.
+    const truncatedText = text.slice(0, 4096);
+    const selectedSpeed = speed || 0.95;
 
     console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
 
