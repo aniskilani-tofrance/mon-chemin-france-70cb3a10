@@ -53,10 +53,10 @@ export function AdminCheckpointAnalytics() {
 
   const stats = useMemo(() => {
     const total = filtered.length;
-    const withAccount = checkpoints.filter((c) => c.user_id);
-    const withoutAccount = checkpoints.filter((c) => !c.user_id);
-    const completed = checkpoints.filter((c) => c.completed);
-    const abandoned = checkpoints.filter((c) => !c.completed);
+    const withAccount = filtered.filter((c) => c.user_id);
+    const withoutAccount = filtered.filter((c) => !c.user_id);
+    const completed = filtered.filter((c) => c.completed);
+    const abandoned = filtered.filter((c) => !c.completed);
 
     // Resumed = checkpoints where a reminder was sent AND then completed
     const reminded = checkpoints.filter(
