@@ -36,6 +36,20 @@ export function DirecteurLearnerDetail() {
   const [learners, setLearners] = useState<LearnerDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedFormateur, setSelectedFormateur] = useState<string>("all");
+
+  const formateurOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    learners.forEach((l) => {
+      if (!map.has(l.formateur_name)) map.set(l.formateur_name, l.formateur_name);
+    });
+    return Array.from(map.keys()).sort();
+  }, [learners]);
+
+  const filteredLearners = useMemo(() => {
+    if (selectedFormateur === "all") return learners;
+    return learners.filter((l) => l.formateur_name === selectedFormateur);
+  }, [learners, selectedFormateur]);
 
   useEffect(() => {
     fetchLearners();
