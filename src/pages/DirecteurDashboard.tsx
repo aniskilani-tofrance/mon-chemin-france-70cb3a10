@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,9 @@ import { Loader2, Users, BookOpen, TrendingUp, Clock, Download, BarChart3 } from
 import { DemoBanner } from "@/components/DemoBanner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DirecteurLearnerDetail } from "@/components/Directeur/DirecteurLearnerDetail";
+import { DirecteurOnboardingResults } from "@/components/Directeur/DirecteurOnboardingResults";
 
 interface FormateurRow {
   id: string;
@@ -47,9 +50,7 @@ export default function DirecteurDashboard() {
   async function fetchData() {
     setLoading(true);
 
-    // 1. Get all formateur-learner links
     const { data: links } = await supabase.from("formateur_learners").select("*");
-    // 2. Get profiles for formateur names
     const formateurIds = [...new Set((links || []).map((l) => l.formateur_id))];
     const learnerIds = [...new Set((links || []).map((l) => l.learner_id))];
 
@@ -60,17 +61,11 @@ export default function DirecteurDashboard() {
 
     const profileMap = new Map((profiles || []).map((p) => [p.user_id, p]));
 
-    // 3. Get all module progress
     const { data: progress } = await supabase.from("fle_module_progress").select("*");
-
-    // 4. Get sessions for total hours
     const { data: sessions } = await supabase.from("fle_sessions").select("duration_seconds, user_id");
-
-    // 5. Get modules for sector info
     const { data: modules } = await supabase.from("fle_modules").select("id, sector, category");
     const moduleMap = new Map((modules || []).map((m) => [m.id, m]));
 
-    // Compute KPIs
     setTotalLearners(learnerIds.length);
 
     const completed = (progress || []).filter((p) => p.completed_at);
@@ -82,7 +77,6 @@ export default function DirecteurDashboard() {
     const totalSec = (sessions || []).reduce((s, r) => s + (r.duration_seconds || 0), 0);
     setTotalHours(Math.round(totalSec / 3600));
 
-    // Sector chart
     const sectorMap: Record<string, number> = {};
     completed.forEach((p) => {
       const mod = moduleMap.get(p.module_id);
@@ -95,7 +89,6 @@ export default function DirecteurDashboard() {
         .sort((a, b) => b.count - a.count)
     );
 
-    // Formateur table
     const rows: FormateurRow[] = formateurIds.map((fId) => {
       const profile = profileMap.get(fId);
       const name = profile?.full_name || [profile?.first_name, profile?.last_name].filter(Boolean).join(" ") || fId.slice(0, 8);
@@ -105,13 +98,7 @@ export default function DirecteurDashboard() {
       const scores = learnerProgress.filter((p) => p.score != null).map((p) => p.score!);
       const avg = scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
-      return {
-        id: fId,
-        name,
-        learnerCount: myLearners.length,
-        completedModules: completedCount,
-        avgScore: avg,
-      };
+      return { id: fId, name, learnerCount: myLearners.length, completedModules: completedCount, avgScore: avg };
     });
     setFormateurs(rows);
     setLoading(false);
@@ -188,65 +175,84 @@ export default function DirecteurDashboard() {
         </Card>
       </div>
 
-      {/* Bar chart by sector */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Modules complétés par secteur</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {sectorData.length === 0 ? (
-            <p className="text-center text-muted-foreground py-8">Pas encore de données</p>
-          ) : (
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={sectorData}>
-                <XAxis dataKey="sector" tick={{ fontSize: 11 }} />
-                <YAxis allowDecimals={false} />
-                <Tooltip />
-                <Bar dataKey="count" name="Complétés" radius={[6, 6, 0, 0]}>
-                  {sectorData.map((_, i) => (
-                    <Cell key={i} fill={SECTOR_COLORS[i % SECTOR_COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
-          )}
-        </CardContent>
-      </Card>
+      {/* Tabs */}
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Vue d'ensemble</TabsTrigger>
+          <TabsTrigger value="learners">Apprenants</TabsTrigger>
+          <TabsTrigger value="onboarding">Onboarding Marianne</TabsTrigger>
+        </TabsList>
 
-      {/* Formateur table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Suivi par formateur</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {formateurs.length === 0 ? (
-            <p className="text-muted-foreground text-sm">Aucun formateur trouvé</p>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Formateur</TableHead>
-                  <TableHead className="text-center">Apprenants</TableHead>
-                  <TableHead className="text-center">Modules complétés</TableHead>
-                  <TableHead className="text-center">Score moyen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {formateurs.map((f) => (
-                  <TableRow key={f.id}>
-                    <TableCell className="font-medium">{f.name}</TableCell>
-                    <TableCell className="text-center">
-                      <Badge variant="secondary">{f.learnerCount}</Badge>
-                    </TableCell>
-                    <TableCell className="text-center">{f.completedModules}</TableCell>
-                    <TableCell className="text-center">{f.avgScore}%</TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+        <TabsContent value="overview" className="space-y-6">
+          {/* Bar chart by sector */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Modules complétés par secteur</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {sectorData.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">Pas encore de données</p>
+              ) : (
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={sectorData}>
+                    <XAxis dataKey="sector" tick={{ fontSize: 11 }} />
+                    <YAxis allowDecimals={false} />
+                    <Tooltip />
+                    <Bar dataKey="count" name="Complétés" radius={[6, 6, 0, 0]}>
+                      {sectorData.map((_, i) => (
+                        <Cell key={i} fill={SECTOR_COLORS[i % SECTOR_COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Formateur table */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Suivi par formateur</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {formateurs.length === 0 ? (
+                <p className="text-muted-foreground text-sm">Aucun formateur trouvé</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Formateur</TableHead>
+                      <TableHead className="text-center">Apprenants</TableHead>
+                      <TableHead className="text-center">Modules complétés</TableHead>
+                      <TableHead className="text-center">Score moyen</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {formateurs.map((f) => (
+                      <TableRow key={f.id}>
+                        <TableCell className="font-medium">{f.name}</TableCell>
+                        <TableCell className="text-center">
+                          <Badge variant="secondary">{f.learnerCount}</Badge>
+                        </TableCell>
+                        <TableCell className="text-center">{f.completedModules}</TableCell>
+                        <TableCell className="text-center">{f.avgScore}%</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="learners">
+          <DirecteurLearnerDetail />
+        </TabsContent>
+
+        <TabsContent value="onboarding">
+          <DirecteurOnboardingResults />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
