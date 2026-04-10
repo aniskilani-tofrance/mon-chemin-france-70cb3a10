@@ -64,10 +64,10 @@ Deno.serve(async (req) => {
 
     const lang = language || 'fr';
     const selectedVoice = voice || VOICE_MAP[lang] || 'nova';
-    // Prepend invisible language hint for short texts to avoid accent confusion
-    const hint = LANG_HINT[lang] || '';
-    const truncatedText = (hint + text).slice(0, 4096);
-    const selectedSpeed = speed || 1.05;
+    // No language hint prefix – OpenAI TTS infers language from the text itself.
+    // Adding text hints like "[Parle en français]" causes TTS to pronounce them literally.
+    const truncatedText = text.slice(0, 4096);
+    const selectedSpeed = speed || 0.95;
 
     console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
 
