@@ -137,16 +137,31 @@ export function DirecteurLearnerDetail() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Détail des apprenants ({learners.length})
-        </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Détail des apprenants ({filteredLearners.length})
+          </CardTitle>
+          {formateurOptions.length > 1 && (
+            <Select value={selectedFormateur} onValueChange={setSelectedFormateur}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Tous les formateurs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les formateurs</SelectItem>
+                {formateurOptions.map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {learners.length === 0 ? (
+        {filteredLearners.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Aucun apprenant trouvé</p>
         ) : (
-          learners.map((l) => {
+          filteredLearners.map((l) => {
             const isExpanded = expandedId === l.learner_id;
             const completedCount = l.modules.filter((m) => m.completed_at).length;
             return (
