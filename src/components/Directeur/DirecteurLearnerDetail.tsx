@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Progress } from "@/components/ui/progress";
 import { Loader2, User, ChevronDown, ChevronRight, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface LearnerDetail {
   learner_id: string;
@@ -35,6 +36,20 @@ export function DirecteurLearnerDetail() {
   const [learners, setLearners] = useState<LearnerDetail[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [selectedFormateur, setSelectedFormateur] = useState<string>("all");
+
+  const formateurOptions = useMemo(() => {
+    const map = new Map<string, string>();
+    learners.forEach((l) => {
+      if (!map.has(l.formateur_name)) map.set(l.formateur_name, l.formateur_name);
+    });
+    return Array.from(map.keys()).sort();
+  }, [learners]);
+
+  const filteredLearners = useMemo(() => {
+    if (selectedFormateur === "all") return learners;
+    return learners.filter((l) => l.formateur_name === selectedFormateur);
+  }, [learners, selectedFormateur]);
 
   useEffect(() => {
     fetchLearners();
@@ -122,16 +137,31 @@ export function DirecteurLearnerDetail() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Détail des apprenants ({learners.length})
-        </CardTitle>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <CardTitle className="flex items-center gap-2">
+            <User className="h-5 w-5" />
+            Détail des apprenants ({filteredLearners.length})
+          </CardTitle>
+          {formateurOptions.length > 1 && (
+            <Select value={selectedFormateur} onValueChange={setSelectedFormateur}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder="Tous les formateurs" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les formateurs</SelectItem>
+                {formateurOptions.map((name) => (
+                  <SelectItem key={name} value={name}>{name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-2">
-        {learners.length === 0 ? (
+        {filteredLearners.length === 0 ? (
           <p className="text-muted-foreground text-center py-8">Aucun apprenant trouvé</p>
         ) : (
-          learners.map((l) => {
+          filteredLearners.map((l) => {
             const isExpanded = expandedId === l.learner_id;
             const completedCount = l.modules.filter((m) => m.completed_at).length;
             return (
