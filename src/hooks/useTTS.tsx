@@ -5,8 +5,8 @@ import { toast } from "sonner";
 
 const SUPPORTED_TTS_LANGUAGES: LanguageCode[] = ["fr", "en", "ar", "es", "pt", "ru"];
 const TTS_ENABLED_KEY = "tts_enabled";
-const MAX_CACHE_ENTRIES = 20;
-const MAX_CACHEABLE_LENGTH = 500;
+const MAX_CACHE_ENTRIES = 50;
+const MAX_CACHEABLE_LENGTH = 1000;
 
 const MANUAL_PLAYBACK_MESSAGE: Record<LanguageCode, string> = {
   fr: "Le navigateur a bloqué le démarrage automatique de la voix. Appuyez sur « Réécouter Marianne ».",
