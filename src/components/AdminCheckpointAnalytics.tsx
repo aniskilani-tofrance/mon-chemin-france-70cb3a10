@@ -124,11 +124,23 @@ export function AdminCheckpointAnalytics() {
           <RotateCcw className="h-7 w-7 text-primary" />
           <h2 className="text-2xl font-bold text-foreground">Analytics Checkpoints</h2>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Rafraîchir
-        </Button>
-      </div>
+        <div className="flex items-center gap-2">
+          <ToggleGroup
+            type="single"
+            value={period}
+            onValueChange={(v) => v && setPeriod(v as PeriodFilter)}
+            size="sm"
+          >
+            <ToggleGroupItem value="7">7j</ToggleGroupItem>
+            <ToggleGroupItem value="30">30j</ToggleGroupItem>
+            <ToggleGroupItem value="90">90j</ToggleGroupItem>
+            <ToggleGroupItem value="all">Tout</ToggleGroupItem>
+          </ToggleGroup>
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Rafraîchir
+          </Button>
+        </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
