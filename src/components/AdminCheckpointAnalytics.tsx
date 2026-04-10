@@ -30,6 +30,7 @@ const PIE_COLORS = ["hsl(142,70%,40%)", "hsl(0,70%,50%)", "hsl(45,90%,50%)"];
 export function AdminCheckpointAnalytics() {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<PeriodFilter>("all");
 
   const fetchData = async () => {
     setLoading(true);
