@@ -45,8 +45,14 @@ export function AdminCheckpointAnalytics() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const filtered = useMemo(() => {
+    if (period === "all") return checkpoints;
+    const cutoff = subDays(new Date(), Number(period)).toISOString();
+    return checkpoints.filter((c) => c.created_at >= cutoff);
+  }, [checkpoints, period]);
+
   const stats = useMemo(() => {
-    const total = checkpoints.length;
+    const total = filtered.length;
     const withAccount = checkpoints.filter((c) => c.user_id);
     const withoutAccount = checkpoints.filter((c) => !c.user_id);
     const completed = checkpoints.filter((c) => c.completed);
