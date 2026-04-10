@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, UserCheck, UserX, RotateCcw, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { subDays } from "date-fns";
+
+type PeriodFilter = "7" | "30" | "90" | "all";
 
 interface Checkpoint {
   id: string;
