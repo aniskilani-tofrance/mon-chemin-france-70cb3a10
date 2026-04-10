@@ -107,7 +107,7 @@ export function AdminCheckpointAnalytics() {
       accountPie,
       langMap,
     };
-  }, [checkpoints]);
+  }, [filtered]);
 
   if (loading) {
     return (
