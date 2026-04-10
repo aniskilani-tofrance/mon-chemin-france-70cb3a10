@@ -75,7 +75,7 @@ export function AdminCheckpointAnalytics() {
 
     // Language distribution
     const langMap: Record<string, number> = {};
-    checkpoints.forEach((c) => {
+    filtered.forEach((c) => {
       langMap[c.language] = (langMap[c.language] || 0) + 1;
     });
 
