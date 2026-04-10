@@ -59,7 +59,7 @@ export function AdminCheckpointAnalytics() {
     const abandoned = filtered.filter((c) => !c.completed);
 
     // Resumed = checkpoints where a reminder was sent AND then completed
-    const reminded = checkpoints.filter(
+    const reminded = filtered.filter(
       (c) => c.reminder_1h_sent || c.reminder_24h_sent || c.reminder_72h_sent
     );
     const remindedCompleted = reminded.filter((c) => c.completed);
