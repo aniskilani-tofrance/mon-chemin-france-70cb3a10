@@ -5,6 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { Loader2, RefreshCw, UserCheck, UserX, RotateCcw, CheckCircle2, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, PieChart, Pie } from "recharts";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { subDays } from "date-fns";
+
+type PeriodFilter = "7" | "30" | "90" | "all";
 
 interface Checkpoint {
   id: string;
@@ -26,6 +30,7 @@ const PIE_COLORS = ["hsl(142,70%,40%)", "hsl(0,70%,50%)", "hsl(45,90%,50%)"];
 export function AdminCheckpointAnalytics() {
   const [checkpoints, setCheckpoints] = useState<Checkpoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [period, setPeriod] = useState<PeriodFilter>("all");
 
   const fetchData = async () => {
     setLoading(true);
@@ -40,15 +45,21 @@ export function AdminCheckpointAnalytics() {
 
   useEffect(() => { fetchData(); }, []);
 
+  const filtered = useMemo(() => {
+    if (period === "all") return checkpoints;
+    const cutoff = subDays(new Date(), Number(period)).toISOString();
+    return checkpoints.filter((c) => c.created_at >= cutoff);
+  }, [checkpoints, period]);
+
   const stats = useMemo(() => {
-    const total = checkpoints.length;
-    const withAccount = checkpoints.filter((c) => c.user_id);
-    const withoutAccount = checkpoints.filter((c) => !c.user_id);
-    const completed = checkpoints.filter((c) => c.completed);
-    const abandoned = checkpoints.filter((c) => !c.completed);
+    const total = filtered.length;
+    const withAccount = filtered.filter((c) => c.user_id);
+    const withoutAccount = filtered.filter((c) => !c.user_id);
+    const completed = filtered.filter((c) => c.completed);
+    const abandoned = filtered.filter((c) => !c.completed);
 
     // Resumed = checkpoints where a reminder was sent AND then completed
-    const reminded = checkpoints.filter(
+    const reminded = filtered.filter(
       (c) => c.reminder_1h_sent || c.reminder_24h_sent || c.reminder_72h_sent
     );
     const remindedCompleted = reminded.filter((c) => c.completed);
@@ -64,7 +75,7 @@ export function AdminCheckpointAnalytics() {
 
     // Language distribution
     const langMap: Record<string, number> = {};
-    checkpoints.forEach((c) => {
+    filtered.forEach((c) => {
       langMap[c.language] = (langMap[c.language] || 0) + 1;
     });
 
@@ -96,7 +107,7 @@ export function AdminCheckpointAnalytics() {
       accountPie,
       langMap,
     };
-  }, [checkpoints]);
+  }, [filtered]);
 
   if (loading) {
     return (
@@ -113,10 +124,23 @@ export function AdminCheckpointAnalytics() {
           <RotateCcw className="h-7 w-7 text-primary" />
           <h2 className="text-2xl font-bold text-foreground">Analytics Checkpoints</h2>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Rafraîchir
-        </Button>
+        <div className="flex items-center gap-2">
+          <ToggleGroup
+            type="single"
+            value={period}
+            onValueChange={(v) => v && setPeriod(v as PeriodFilter)}
+            size="sm"
+          >
+            <ToggleGroupItem value="7">7j</ToggleGroupItem>
+            <ToggleGroupItem value="30">30j</ToggleGroupItem>
+            <ToggleGroupItem value="90">90j</ToggleGroupItem>
+            <ToggleGroupItem value="all">Tout</ToggleGroupItem>
+          </ToggleGroup>
+          <Button variant="outline" size="sm" onClick={fetchData}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Rafraîchir
+          </Button>
+        </div>
       </div>
 
       {/* KPI Cards */}
