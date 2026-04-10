@@ -6,25 +6,15 @@ const corsHeaders = {
 };
 
 // Optimised voice per language for Marianne (female advisor)
-// shimmer = expressive female, nova = warm female
+// nova = warm female with good accent for most languages
+// alloy = neutral, good for French without English accent
 const VOICE_MAP: Record<string, string> = {
-  fr: "shimmer",
+  fr: "nova",
   en: "shimmer",
   ar: "nova",
   es: "nova",
   pt: "nova",
-  ru: "shimmer",
-};
-
-// BCP-47 language hints – prepended as an invisible instruction so the model
-// picks the right accent even on very short texts.
-const LANG_HINT: Record<string, string> = {
-  fr: "[Parle en français] ",
-  en: "[Speak in English] ",
-  ar: "[تحدث بالعربية] ",
-  es: "[Habla en español] ",
-  pt: "[Fale em português] ",
-  ru: "[Говори по-русски] ",
+  ru: "nova",
 };
 
 async function callOpenAITTS(
