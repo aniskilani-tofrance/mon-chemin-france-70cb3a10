@@ -1,82 +1,44 @@
 
 
-# Audit et plan de fiabilisation du parcours vocal
+# Plan : Cahier des Charges ToFrance (.docx)
 
-## Problèmes identifiés
+## Objectif
+Générer un document Word professionnel et complet, destiné à un prestataire technique externe, documentant l'intégralité de la plateforme ToFrance avec une attention particulière sur le module Onboarding vocal (à repenser).
 
-1. **Accent TTS incohérent** : L'edge function `openai-tts` utilise des voix OpenAI (shimmer/nova) qui ont un accent anglophone résiduel sur certaines langues. Le modèle `tts-1-hd` ne garantit pas un accent natif parfait, surtout pour l'arabe et le russe.
+## Structure du document
 
-2. **Pas d'indication de langue dans le prompt TTS** : Le texte est envoyé tel quel a OpenAI sans instruction explicite de langue. OpenAI infère la langue du texte, mais peut se tromper sur des phrases courtes ou mélangées.
+Le cahier des charges couvrira :
 
-3. **Fallback Web Speech API fragile** : Si OpenAI échoue, le fallback Web Speech API sélectionne la première voix disponible pour la langue, sans préférence de qualité. Sur mobile, les voix peuvent être robotiques.
+1. **Page de garde** - Logo, titre, version, date, destinataire
+2. **Sommaire**
+3. **Présentation générale** - Vision, contexte, public cible (primo-arrivants), objectifs business
+4. **Architecture technique** - Stack (React/Vite/Tailwind/TypeScript/Supabase), hébergement, i18n (6 langues + RTL arabe)
+5. **Rôles et permissions** - 5 rôles (admin, directeur, formateur, provider, user), matrice RBAC, RLS policies
+6. **Modèle de données** - Schéma complet des 22 tables avec relations, enums, fonctions DB
+7. **Module par module :**
+   - **Landing page** - Sections, SEO, CTA
+   - **Onboarding vocal (A REPENSER)** - Flow actuel (Marianne conversationnel + decision tree), problèmes identifiés, axes d'amélioration proposés
+   - **Module FLE** - 30 modules, 14 types d'exercices, progression CECRL, adaptive learning, badges, spaced repetition, dialogue, offline
+   - **Dashboard apprenant** - Profil, parcours, progression FLE, résultats onboarding
+   - **Dashboard formateur** - 5 onglets (apprenants, contenus, assignations, évaluations audio, AFEST)
+   - **Dashboard directeur** - Vue globale apprenants, progression, résultats onboarding, filtre formateur
+   - **Dashboard admin** - Analytics, gestion users/rôles, leads, contact requests, FLE progress
+   - **Marketplace leads/partenaires** - Providers, trainings, sessions, matching, Stripe payments
+   - **Test de positionnement** - 71 questions A1-C2, cooldown 3 mois, mode formateur
+   - **Authentification** - Email/password, Google OAuth, redirection par rôle
+8. **Intégrations externes** - OpenAI (TTS + chat), Stripe (paiements), Resend (emails)
+9. **Edge Functions** - 13 fonctions serverless documentées
+10. **Points d'amélioration et recommandations** - Focus onboarding vocal : fiabilité TTS, simplification du flow, UX mobile
 
-4. **Pas de cache audio** : Chaque message Marianne déclenche un appel TTS, même pour des phrases récurrentes ("Merci", "C'est noté").
+## Implémentation technique
 
-5. **Race conditions potentielles** : Si l'utilisateur interagit vite, l'audio précédent peut ne pas être stoppé avant le nouveau, causant des chevauchements.
+- Script Node.js utilisant la bibliothèque `docx` pour générer le .docx
+- Mise en page professionnelle : couleurs ToFrance (vert #00504e / turquoise #17c3b2), typographie Arial
+- Tables pour le modèle de données et la matrice de rôles
+- Section "A repenser" en encadré coloré pour l'onboarding vocal
+- Export vers `/mnt/documents/cahier-des-charges-tofrance.docx`
+- QA visuelle via conversion PDF + images
 
-6. **Pas de retry sur erreur réseau** : Un échec TTS tombe directement en fallback sans retry.
-
-## Plan d'implémentation
-
-### 1. Améliorer la qualité vocale OpenAI (edge function `openai-tts`)
-- Ajouter un préfixe de langue invisible au texte envoyé pour forcer l'accent correct (ex: pour l'arabe, ajouter un caractère SSML-like ou un hint de langue)
-- Passer au modèle `tts-1-hd` (déjà fait) mais ajouter le paramètre `language` si OpenAI le supporte dans les futures API
-- Tester `alloy` comme alternative a `shimmer` pour le français (accent plus neutre)
-
-### 2. Ajouter un cache audio côté client (`useTTS`)
-- Maintenir un `Map<string, string>` (texte hash -> blob URL) pour éviter les appels répétés
-- Limiter le cache à ~20 entrées (LRU simple)
-- Réduire la latence et le coût API sur les phrases récurrentes
-
-### 3. Fiabiliser le fallback Web Speech API
-- Prioriser les voix Google ("Google français") sur Chrome quand disponibles
-- Ajouter un délai `voiceschanged` pour attendre le chargement des voix sur mobile
-- Filtrer les voix par qualité (préférer `localService: false` = voix cloud)
-
-### 4. Ajouter un retry avec backoff sur l'edge function TTS
-- 1 retry après 1s en cas d'erreur réseau (pas sur 429/402)
-- Si le retry échoue, tomber en fallback Web Speech
-
-### 5. Corriger les race conditions audio
-- Ajouter un `requestId` incrémental : ignorer les réponses obsolètes
-- S'assurer que `stop()` est toujours appelé avant `speak()`
-
-### 6. Améliorer la sélection de voix par langue dans l'edge function
-- Français : tester `echo` (plus masculin mais accent français natif) vs `shimmer` ; garder `shimmer` si meilleur
-- Arabe : `nova` est bon, mais ajouter un fallback `alloy` si la prononciation est meilleure
-- Ajouter un log de la voix utilisée pour debug
-
-## Fichiers modifiés
-
-| Fichier | Changement |
-|---------|------------|
-| `supabase/functions/openai-tts/index.ts` | Retry logic, meilleure sélection de voix, log voix |
-| `src/hooks/useTTS.tsx` | Cache audio LRU, retry 1x, requestId anti-race, meilleure sélection voix fallback |
-| `src/components/VocalOnboarding/ChatOnboarding.tsx` | Aucun changement structurel, bénéficie des améliorations TTS |
-
-## Détails techniques
-
-### Cache audio (useTTS)
-```text
-Map<hash(text+lang), blobURL>
-  - Max 20 entries
-  - Evict oldest on overflow
-  - Skip cache for texts > 500 chars
-```
-
-### Retry pattern (useTTS)
-```text
-speak(text)
-  -> call openai-tts
-     -> if network error, retry 1x after 1s
-        -> if still fails, fallbackSpeak()
-     -> if 429/402, fallbackSpeak() immediately
-```
-
-### Voice selection improvement (fallback)
-```text
-Prefer: Google voices > other cloud voices > local voices
-Filter: voice.lang starts with target BCP47
-Sort: !localService first, then by name containing "Google"
-```
+## Estimation
+~40-60 pages, généré en un seul script.
 
