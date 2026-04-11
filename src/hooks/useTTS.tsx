@@ -236,9 +236,11 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     // 1. Check cache
     const cached = cacheGet(text, language);
     if (cached) {
+      setWasCached(true);
       playBlobUrl(cached, myId);
       return;
     }
+    setWasCached(false);
 
     // 2. Call edge function with 1 retry
     let attempt = 0;
