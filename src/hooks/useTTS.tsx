@@ -308,5 +308,5 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     });
   }, [stop]);
 
-  return { isSpeaking, isEnabled, isSupported: langSupported, speak, stop, toggle };
+  return { isSpeaking, isEnabled, isSupported: langSupported, wasCached, speak, stop, toggle };
 }
