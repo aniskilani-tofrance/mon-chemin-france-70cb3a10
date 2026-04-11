@@ -867,8 +867,9 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                 </p>
               )}
               {isSpeaking && !isListening && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
                   {language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle..."}
+                  {wasCached && <span className="text-yellow-500" title="Servi depuis le cache">⚡</span>}
                 </p>
               )}
               <div className="flex items-center gap-2 w-full">
