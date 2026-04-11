@@ -85,6 +85,7 @@ export interface UseTTSReturn {
 
 export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [wasCached, setWasCached] = useState(false);
   const [isEnabled, setIsEnabled] = useState(() => {
     const stored = localStorage.getItem(TTS_ENABLED_KEY);
     return stored === null ? true : stored === "true";
