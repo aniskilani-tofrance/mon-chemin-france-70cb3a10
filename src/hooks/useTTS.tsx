@@ -77,6 +77,7 @@ export interface UseTTSReturn {
   isSpeaking: boolean;
   isEnabled: boolean;
   isSupported: boolean;
+  wasCached: boolean;
   speak: (text: string) => void;
   stop: () => void;
   toggle: () => void;
@@ -84,6 +85,7 @@ export interface UseTTSReturn {
 
 export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSReturn {
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [wasCached, setWasCached] = useState(false);
   const [isEnabled, setIsEnabled] = useState(() => {
     const stored = localStorage.getItem(TTS_ENABLED_KEY);
     return stored === null ? true : stored === "true";
@@ -234,9 +236,11 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     // 1. Check cache
     const cached = cacheGet(text, language);
     if (cached) {
+      setWasCached(true);
       playBlobUrl(cached, myId);
       return;
     }
+    setWasCached(false);
 
     // 2. Call edge function with 1 retry
     let attempt = 0;
@@ -306,5 +310,5 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     });
   }, [stop]);
 
-  return { isSpeaking, isEnabled, isSupported: langSupported, speak, stop, toggle };
+  return { isSpeaking, isEnabled, isSupported: langSupported, wasCached, speak, stop, toggle };
 }

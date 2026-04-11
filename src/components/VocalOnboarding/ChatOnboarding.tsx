@@ -86,7 +86,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const lastMarianneMessage = [...messages].reverse().find((msg) => msg.role === "marianne")?.content ?? "";
 
   // TTS with onEnd to auto-start mic
-  const { speak, isSpeaking } = useTTS({
+  const { speak, isSpeaking, wasCached } = useTTS({
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
@@ -867,8 +867,9 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                 </p>
               )}
               {isSpeaking && !isListening && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-muted-foreground flex items-center gap-1">
                   {language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle..."}
+                  {wasCached && <span className="text-yellow-500" title="Servi depuis le cache">⚡</span>}
                 </p>
               )}
               <div className="flex items-center gap-2 w-full">
