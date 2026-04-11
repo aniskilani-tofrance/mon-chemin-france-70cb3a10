@@ -77,6 +77,7 @@ export interface UseTTSReturn {
   isSpeaking: boolean;
   isEnabled: boolean;
   isSupported: boolean;
+  wasCached: boolean;
   speak: (text: string) => void;
   stop: () => void;
   toggle: () => void;
