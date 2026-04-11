@@ -86,7 +86,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const lastMarianneMessage = [...messages].reverse().find((msg) => msg.role === "marianne")?.content ?? "";
 
   // TTS with onEnd to auto-start mic
-  const { speak, isSpeaking } = useTTS({
+  const { speak, isSpeaking, wasCached } = useTTS({
     language,
     onEnd: () => {
       const qId = currentQuestionIdRef.current;
