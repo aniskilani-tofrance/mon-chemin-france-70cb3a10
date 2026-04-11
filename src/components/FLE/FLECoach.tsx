@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
-import { Volume2, VolumeX, RefreshCw, Sparkles, MessageCircle } from "lucide-react";
+import { Volume2, VolumeX, RefreshCw, Sparkles, MessageCircle, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useTTS } from "@/hooks/useTTS";
@@ -181,6 +181,7 @@ export function FLECoach({
           >
             <Volume2 className="h-3.5 w-3.5" />
             {tts.isSpeaking ? "🔊 Écoute..." : "🔊 Écouter"}
+            {tts.isSpeaking && tts.wasCached && <Zap className="h-3 w-3 text-yellow-500" />}
           </Button>
         </motion.div>
 
