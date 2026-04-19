@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
+import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
 
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
@@ -21,7 +22,7 @@ import {
   LeadRoute,
 } from "@/lib/decisionTree";
 
-type OnboardingStep = "language" | "chat" | "complete";
+type OnboardingStep = "language" | "path-choice" | "chat" | "complete";
 
 interface OnboardingAnswers extends TreeOnboardingAnswers {
   leadRoute?: LeadRoute;
@@ -94,6 +95,11 @@ const Onboarding = () => {
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
+    setStep("path-choice");
+  };
+
+  const handleSelectVisualPath = () => {
+    track("onboarding_path_selected", { path: "visual" }, "/onboarding", language);
     setStep("chat");
   };
 
@@ -220,6 +226,13 @@ const Onboarding = () => {
           <AnimatePresence mode="wait">
             {step === "language" && (
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
+            )}
+
+            {step === "path-choice" && (
+              <OnboardingPathChoice
+                key="path-choice"
+                onSelectVisual={handleSelectVisualPath}
+              />
             )}
 
             {step === "chat" && (
