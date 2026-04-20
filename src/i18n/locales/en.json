@@ -221,15 +221,74 @@
     "weekend_ok": "Weekend possible"
   },
   "routes": {
-    "route_a": { "label": "FLE Path", "description": "French as a foreign language training", "icon": "📖" },
-    "route_b": { "label": "Training Path", "description": "Vocational training", "icon": "🎓" },
-    "route_c": { "label": "Employment Path", "description": "Ready to work — direct connection with employers", "icon": "💼" },
-    "sas": { "label": "Guidance Path", "description": "Personalized orientation and support", "icon": "🤝" }
+    "route_a": {
+      "label": "FLE Path",
+      "description": "French as a foreign language training",
+      "icon": "📖"
+    },
+    "route_b": {
+      "label": "Training Path",
+      "description": "Vocational training",
+      "icon": "🎓"
+    },
+    "route_c": {
+      "label": "Employment Path",
+      "description": "Ready to work — direct connection with employers",
+      "icon": "💼"
+    },
+    "sas": {
+      "label": "Guidance Path",
+      "description": "Personalized orientation and support",
+      "icon": "🤝"
+    }
   },
   "ui": {
     "next": "Next",
     "skip": "Skip",
     "finish": "Finish",
     "copyWhatsapp": "Copy WhatsApp message"
+  },
+  "onboardingVisual": {
+    "progress": {
+      "step": "Question {{current}} of {{total}}"
+    },
+    "actions": {
+      "previous": "Previous",
+      "next": "Continue",
+      "skip": "Skip",
+      "replay": "Replay question"
+    },
+    "target_sector": {
+      "question": "Which sector interests you?",
+      "subtitle": "Pick the one you like most (or skip)",
+      "choices": {
+        "btp": "Construction",
+        "logistique": "Logistics",
+        "proprete": "Cleaning",
+        "aide_personne": "Personal care",
+        "hotellerie": "Hospitality",
+        "commerce": "Retail"
+      }
+    },
+    "barriers": {
+      "question": "Do you have any difficulties?",
+      "subtitle": "Multiple choices — select all that apply",
+      "choices": {
+        "transport": "Transport",
+        "childcare": "Childcare",
+        "schedule": "Schedule",
+        "housing": "Housing",
+        "health": "Health",
+        "none": "None"
+      }
+    },
+    "email": {
+      "question": "Your email so we can contact you",
+      "subtitle": "An advisor will personally support you",
+      "label": "Email address",
+      "consent_lead": "I agree to be contacted by ToFrance and its partners (training providers, employers).",
+      "consent_marketing": "I'd like to receive news and tips by email (optional).",
+      "submit": "Finish"
+    }
   }
 }

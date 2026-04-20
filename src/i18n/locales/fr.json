@@ -221,15 +221,74 @@
     "weekend_ok": "Week-end possible"
   },
   "routes": {
-    "route_a": { "label": "Parcours FLE", "description": "Formation en français langue étrangère", "icon": "📖" },
-    "route_b": { "label": "Parcours Formation", "description": "Formation professionnelle qualifiante", "icon": "🎓" },
-    "route_c": { "label": "Parcours Emploi", "description": "Prêt à travailler — mise en relation directe avec employeurs", "icon": "💼" },
-    "sas": { "label": "Parcours Accompagnement", "description": "Orientation et accompagnement personnalisé", "icon": "🤝" }
+    "route_a": {
+      "label": "Parcours FLE",
+      "description": "Formation en français langue étrangère",
+      "icon": "📖"
+    },
+    "route_b": {
+      "label": "Parcours Formation",
+      "description": "Formation professionnelle qualifiante",
+      "icon": "🎓"
+    },
+    "route_c": {
+      "label": "Parcours Emploi",
+      "description": "Prêt à travailler — mise en relation directe avec employeurs",
+      "icon": "💼"
+    },
+    "sas": {
+      "label": "Parcours Accompagnement",
+      "description": "Orientation et accompagnement personnalisé",
+      "icon": "🤝"
+    }
   },
   "ui": {
     "next": "Suivant",
     "skip": "Passer",
     "finish": "Terminer",
     "copyWhatsapp": "Copier le message WhatsApp"
+  },
+  "onboardingVisual": {
+    "progress": {
+      "step": "Question {{current}} sur {{total}}"
+    },
+    "actions": {
+      "previous": "Précédent",
+      "next": "Continuer",
+      "skip": "Passer",
+      "replay": "Réécouter la question"
+    },
+    "target_sector": {
+      "question": "Quel secteur vous intéresse ?",
+      "subtitle": "Choisissez celui qui vous attire le plus (ou passez)",
+      "choices": {
+        "btp": "Bâtiment / BTP",
+        "logistique": "Logistique",
+        "proprete": "Propreté",
+        "aide_personne": "Aide à la personne",
+        "hotellerie": "Hôtellerie / Restauration",
+        "commerce": "Commerce"
+      }
+    },
+    "barriers": {
+      "question": "Avez-vous des difficultés ?",
+      "subtitle": "Plusieurs choix possibles — sélectionnez tout ce qui s'applique",
+      "choices": {
+        "transport": "Transport",
+        "childcare": "Garde d'enfants",
+        "schedule": "Horaires",
+        "housing": "Logement",
+        "health": "Santé",
+        "none": "Aucune difficulté"
+      }
+    },
+    "email": {
+      "question": "Votre email pour qu'on vous recontacte",
+      "subtitle": "Un conseiller vous accompagnera personnellement",
+      "label": "Adresse email",
+      "consent_lead": "J'accepte d'être contacté par ToFrance et ses partenaires (organismes de formation, employeurs).",
+      "consent_marketing": "Je souhaite recevoir des actualités et conseils par email (facultatif).",
+      "submit": "Terminer"
+    }
   }
 }
