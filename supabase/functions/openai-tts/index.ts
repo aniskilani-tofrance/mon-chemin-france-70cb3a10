@@ -94,6 +94,9 @@ Deno.serve(async (req) => {
   try {
     const { text, language, voice, speed } = await req.json();
 
+  try {
+    const { text, language, voice, speed } = await req.json();
+
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'text is required' }), {
         status: 400,
@@ -102,62 +105,58 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
+    const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
+
+    const lang = language || 'fr';
+    const truncatedText = text.slice(0, 4096);
+    const selectedSpeed = speed || 0.95;
+
+    console.log(`[tts] lang=${lang} chars=${text.length} elevenlabs=${!!elevenKey}`);
+
+    // ──────────────────────────────────────────────────────────────
+    // 1) Tentative ElevenLabs (toutes langues) — voix natives premium
+    // ──────────────────────────────────────────────────────────────
+    if (elevenKey) {
+      const elVoiceId = ELEVENLABS_VOICE_MAP[lang] || ELEVENLABS_VOICE_MAP.fr;
+      try {
+        const elResp = await callElevenLabsTTS(elevenKey, truncatedText, elVoiceId);
+        if (elResp.ok) {
+          const audioBuffer = await elResp.arrayBuffer();
+          const base64 = base64Encode(audioBuffer);
+          console.log(`[tts] ElevenLabs OK lang=${lang} voice=${elVoiceId}`);
+          return new Response(JSON.stringify({ audio_base64: base64, provider: 'elevenlabs' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const errText = await elResp.text();
+        console.warn(`[tts] ElevenLabs failed (${elResp.status}) lang=${lang}: ${errText} — fallback OpenAI`);
+      } catch (err) {
+        console.warn(`[tts] ElevenLabs threw lang=${lang}, fallback OpenAI:`, err);
+      }
+    }
+
+    // ──────────────────────────────────────────────────────────────
+    // 2) Fallback OpenAI TTS
+    // ──────────────────────────────────────────────────────────────
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+      return new Response(JSON.stringify({ error: 'No TTS provider available' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const lang = language || 'fr';
-    const selectedVoice = voice || VOICE_MAP[lang] || 'nova';
-    // No language hint prefix – OpenAI TTS infers language from the text itself.
-    // Adding text hints like "[Parle en français]" causes TTS to pronounce them literally.
-    const truncatedText = text.slice(0, 4096);
-    const selectedSpeed = speed || 0.95;
-
-    console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
-
-    // ──────────────────────────────────────────────────────────────
-    // Arabe : tenter ElevenLabs (voix native) en priorité, fallback OpenAI
-    // ──────────────────────────────────────────────────────────────
-    if (lang === 'ar') {
-      const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
-      if (elevenKey) {
-        try {
-          console.log('[openai-tts] Arabic → trying ElevenLabs native voice');
-          const elResp = await callElevenLabsTTS(elevenKey, truncatedText, ELEVENLABS_AR_VOICE_ID);
-          if (elResp.ok) {
-            const audioBuffer = await elResp.arrayBuffer();
-            const base64 = base64Encode(audioBuffer);
-            console.log('[openai-tts] ElevenLabs success for Arabic');
-            return new Response(JSON.stringify({ audio_base64: base64, provider: 'elevenlabs' }), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-          const errText = await elResp.text();
-          console.warn(`[openai-tts] ElevenLabs failed (${elResp.status}): ${errText} — falling back to OpenAI`);
-        } catch (err) {
-          console.warn('[openai-tts] ElevenLabs threw, falling back to OpenAI:', err);
-        }
-      } else {
-        console.warn('[openai-tts] ELEVENLABS_API_KEY missing — using OpenAI for Arabic');
-      }
-    }
-
-    // First attempt
+    const selectedVoice = voice || OPENAI_VOICE_MAP[lang] || 'nova';
     let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
 
-    // Retry once on transient errors (5xx, network)
     if (!response.ok && response.status >= 500) {
-      console.warn(`[openai-tts] Retry after ${response.status}`);
+      console.warn(`[tts] OpenAI retry after ${response.status}`);
       await new Promise(r => setTimeout(r, 1000));
       response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
     }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[openai-tts] Error:', response.status, errorText);
+      console.error('[tts] OpenAI error:', response.status, errorText);
       return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -167,12 +166,17 @@ Deno.serve(async (req) => {
     const audioBuffer = await response.arrayBuffer();
     const base64 = base64Encode(audioBuffer);
 
-    return new Response(JSON.stringify({ audio_base64: base64 }), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
+    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+  } catch (error) {
+    console.error('TTS function error:', error);
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+});
   } catch (error) {
     console.error('TTS function error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
