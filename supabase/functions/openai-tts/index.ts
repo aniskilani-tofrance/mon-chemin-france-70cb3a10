@@ -15,19 +15,21 @@ const OPENAI_VOICE_MAP: Record<string, string> = {
   ru: "shimmer",
 };
 
-// ElevenLabs voices per language (toutes féminines, multilingual v2).
+// ElevenLabs voices per language — TOUTES FÉMININES, NATIVES quand possible.
 // Marianne = conseillère chaleureuse → voix douces et naturelles.
-// - fr: Charlotte (XB0fDUnXU5powFXDhCwa) → française naturelle
-// - en: Sarah (EXAVITQu4vr4xnSDxMaL) → US doux et clair
-// - es/pt/ru: Charlotte → multilingue v2
-// - ar: Sana (mZ8K1MPRiT5wDQaasg3i) → voix native arabe
+// - fr: Charlotte         XB0fDUnXU5powFXDhCwa  → française conversationnelle
+// - en: Sarah             EXAVITQu4vr4xnSDxMaL  → US doux et clair
+// - es: Lucía             Nh2zY9kknu6z4pZy6FhD  → espagnole native (Espagne)
+// - pt: Camila            uVKHymY7OYMd6OailpG5  → portugaise BR native
+// - ar: Sana              mZ8K1MPRiT5wDQaasg3i  → arabe native
+// - ru: Tatyana           ymDCYd8puC7gYjxIamPt  → russe native
 const ELEVENLABS_VOICE_MAP: Record<string, string> = {
   fr: "XB0fDUnXU5powFXDhCwa",
   en: "EXAVITQu4vr4xnSDxMaL",
-  es: "XB0fDUnXU5powFXDhCwa",
-  pt: "XB0fDUnXU5powFXDhCwa",
+  es: "Nh2zY9kknu6z4pZy6FhD",
+  pt: "uVKHymY7OYMd6OailpG5",
   ar: "mZ8K1MPRiT5wDQaasg3i",
-  ru: "XB0fDUnXU5powFXDhCwa",
+  ru: "ymDCYd8puC7gYjxIamPt",
 };
 
 async function callOpenAITTS(
