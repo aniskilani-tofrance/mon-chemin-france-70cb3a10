@@ -5,30 +5,23 @@ import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
-
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
-import { ChatOnboarding } from "@/components/VocalOnboarding/ChatOnboarding";
+import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
+import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
-import {
-  calculateLeadScore,
-  calculateDistanceToJob,
-  determineRoute,
-  OnboardingAnswers as TreeOnboardingAnswers,
-  LeadRoute,
-} from "@/lib/decisionTree";
+import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
+import { computeOrientation } from "@/lib/orientationEngine";
+import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 
-type OnboardingStep = "language" | "path-choice" | "chat" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "email" | "complete";
 
-interface OnboardingAnswers extends TreeOnboardingAnswers {
-  leadRoute?: LeadRoute;
-  leadScore?: number;
-  consent_lead_sharing?: boolean;
-  consent_marketing?: boolean;
+interface VisualAnswers {
+  [questionId: string]: string | string[];
 }
 
 const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string; disable: string }> = {
@@ -40,53 +33,24 @@ const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string
   ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },
 };
 
+const TOTAL_STEPS = VISUAL_QUESTIONS.length + 1; // +1 pour l'email
+
 const Onboarding = () => {
   const navigate = useNavigate();
   const { language, setLanguage } = useLanguage();
   const tts = useTTS({ language });
   const { track } = useAnalytics();
-  const { user, loading: authLoading } = useAuth();
+  const { user } = useAuth();
+
   const [step, setStep] = useState<OnboardingStep>("language");
-  const [answers, setAnswers] = useState<OnboardingAnswers>({ tags: [] });
+  const [questionIndex, setQuestionIndex] = useState(0);
+  const [answers, setAnswers] = useState<VisualAnswers>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
-  const [resumeQuestion, setResumeQuestion] = useState<string | null>(null);
-  const [resumeCheckpointId, setResumeCheckpointId] = useState<string | null>(null);
-  const [checkpointLoaded, setCheckpointLoaded] = useState(false);
+  const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
 
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
-
-  // Load checkpoint for authenticated users
-  useEffect(() => {
-    if (authLoading || checkpointLoaded) return;
-    setCheckpointLoaded(true);
-    if (!user) return;
-
-    (async () => {
-      try {
-        const { data } = await supabase
-          .from("onboarding_checkpoints")
-          .select("id, partial_answers, current_step, language")
-          .eq("user_id", user.id)
-          .eq("completed", false)
-          .order("updated_at", { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        if (data && data.current_step && data.partial_answers) {
-          const savedAnswers = data.partial_answers as Record<string, any>;
-          setAnswers(prev => ({ ...prev, ...savedAnswers }));
-          setResumeQuestion(data.current_step);
-          setResumeCheckpointId(data.id);
-          if (data.language) setLanguage(data.language as LanguageCode);
-          setStep("chat");
-          console.log("[Onboarding] Resuming from checkpoint:", data.current_step);
-        }
-      } catch (err) {
-        console.error("Error loading checkpoint:", err);
-      }
-    })();
-  }, [user, authLoading, checkpointLoaded]);
 
   useEffect(() => {
     track("onboarding_step", { step }, "/onboarding", language);
@@ -100,100 +64,157 @@ const Onboarding = () => {
 
   const handleSelectVisualPath = () => {
     track("onboarding_path_selected", { path: "visual" }, "/onboarding", language);
-    setStep("chat");
+    setStep("visual-quiz");
+    setQuestionIndex(0);
   };
 
-  const handleChatComplete = useCallback((chatAnswers: TreeOnboardingAnswers) => {
-    const route = determineRoute(chatAnswers);
-    const score = calculateLeadScore(chatAnswers);
-    const distanceToJob = calculateDistanceToJob(chatAnswers);
-    const finalAnswers: OnboardingAnswers = {
-      ...answers,
-      ...chatAnswers,
-      leadRoute: route,
-      leadScore: score.total,
-      distance_to_job: distanceToJob,
-    };
-    setAnswers(finalAnswers);
-    setStep("complete");
-  }, [answers]);
+  const currentQuestion = VISUAL_QUESTIONS[questionIndex];
 
-  const handleComplete = useCallback(async () => {
-    track("onboarding_completed", { route: answers.leadRoute ?? "unknown", score: answers.leadScore ?? 0 }, "/onboarding", language);
-    const email = answers.contact_email as string | undefined;
+  const handleAnswerChange = (value: string | string[]) => {
+    if (!currentQuestion) return;
+    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+  };
 
-    // 1. Save onboarding results to database FIRST (secure audit trail)
-    try {
-      await supabase.from("onboarding_results").insert([{
-        email: email || null,
-        language,
-        answers: JSON.parse(JSON.stringify(answers)),
-        french_level_cecrl: (answers.french_level_cecrl as string) || null,
-        main_goal: (answers.main_goal as string) || null,
-        target_sector: (answers.target_sector as string) || null,
-        lead_route: answers.leadRoute ?? null,
-        lead_score: answers.leadScore ?? null,
-        distance_to_job: answers.distance_to_job ?? null,
-        work_right: (answers.work_right as string) || null,
-        literacy: (answers.literacy as string) || null,
-        barriers: Array.isArray(answers.barriers) ? answers.barriers as string[] : null,
-      }]);
-    } catch (error) {
-      console.error("Error saving onboarding results:", error);
+  const handleNext = () => {
+    if (!currentQuestion) return;
+    track(
+      "onboarding_question_answered",
+      { questionId: currentQuestion.id },
+      "/onboarding",
+      language
+    );
+
+    if (questionIndex < VISUAL_QUESTIONS.length - 1) {
+      setQuestionIndex((i) => i + 1);
+    } else {
+      setStep("email");
     }
+  };
 
-    // 2. Save consents and match leads
-    if (email) {
-      localStorage.setItem("user_email", email);
+  const handlePrevious = () => {
+    if (step === "email") {
+      setStep("visual-quiz");
+      setQuestionIndex(VISUAL_QUESTIONS.length - 1);
+      return;
+    }
+    if (questionIndex > 0) {
+      setQuestionIndex((i) => i - 1);
+    } else {
+      setStep("path-choice");
+    }
+  };
+
+  const handleEmailSubmit = useCallback(
+    async (data: { email: string; consent_lead_sharing: boolean; consent_marketing: boolean }) => {
+      setIsSubmitting(true);
+
+      // Normalisation : barriers en array, autres en string
+      const flat: Record<string, any> = {};
+      for (const [k, v] of Object.entries(answers)) {
+        flat[k] = v;
+      }
+
+      // Calcul orientation via le moteur v2
+      const v2Answers = mapAnswersToV2({
+        main_goal: flat.main_goal,
+        work_right: flat.work_right,
+        french_level_cecrl: flat.french_level_cecrl,
+        target_sector: flat.target_sector,
+        barriers: flat.barriers,
+        contact_48h: flat.contact_48h,
+      });
+      const orientation = computeOrientation(v2Answers);
+
+      // Tracking complet
+      track(
+        "onboarding_completed",
+        { route: orientation.parcours, score: orientation.score },
+        "/onboarding",
+        language
+      );
 
       try {
+        // 1. Insertion onboarding_results
+        await supabase.from("onboarding_results").insert([
+          {
+            email: data.email,
+            language,
+            answers: JSON.parse(JSON.stringify({ ...flat, contact_email: data.email })),
+            french_level_cecrl: (flat.french_level_cecrl as string) || null,
+            main_goal: (flat.main_goal as string) || null,
+            target_sector: (flat.target_sector as string) || null,
+            lead_route: orientation.parcours,
+            lead_score: orientation.score,
+            work_right: (flat.work_right as string) || null,
+            literacy: (flat.literacy as string) || null,
+            barriers: Array.isArray(flat.barriers) ? (flat.barriers as string[]) : null,
+          },
+        ]);
+      } catch (error) {
+        console.error("Error saving onboarding results:", error);
+      }
+
+      // 2. Consents + match leads
+      try {
+        localStorage.setItem("user_email", data.email);
         const consentsToInsert = [
           {
-            email,
+            email: data.email,
             consent_type: "lead_sharing" as const,
-            consented: answers.consent_lead_sharing ?? false,
-            consented_at: answers.consent_lead_sharing ? new Date().toISOString() : null,
+            consented: data.consent_lead_sharing,
+            consented_at: data.consent_lead_sharing ? new Date().toISOString() : null,
             consent_text_version: "4.0",
           },
           {
-            email,
+            email: data.email,
             consent_type: "marketing" as const,
-            consented: answers.consent_marketing ?? false,
-            consented_at: answers.consent_marketing ? new Date().toISOString() : null,
+            consented: data.consent_marketing,
+            consented_at: data.consent_marketing ? new Date().toISOString() : null,
             consent_text_version: "4.0",
           },
         ];
-
-        await supabase.from("consents").upsert(consentsToInsert, {
-          onConflict: "email,consent_type",
-        });
+        await supabase
+          .from("consents")
+          .upsert(consentsToInsert, { onConflict: "email,consent_type" });
 
         await supabase.functions.invoke("match-leads", {
-          body: { answers, onboardingStartedAt },
+          body: {
+            answers: { ...flat, contact_email: data.email, leadRoute: orientation.parcours, leadScore: orientation.score },
+            onboardingStartedAt,
+          },
         });
       } catch (error) {
         console.error("Error saving consents or matching:", error);
       }
-    }
 
-    localStorage.setItem("onboarding_answers", JSON.stringify(answers));
-    navigate("/confirmation");
-  }, [answers, navigate, language, track, onboardingStartedAt]);
+      const finalAnswers = {
+        ...flat,
+        contact_email: data.email,
+        leadRoute: orientation.parcours,
+        leadScore: orientation.score,
+      };
+      localStorage.setItem("onboarding_answers", JSON.stringify(finalAnswers));
 
-  // Convert answers for CompletionStep display
-  const displayAnswers: Record<string, string> = {};
-  for (const [key, value] of Object.entries(answers)) {
-    if (value !== undefined && key !== "consent_lead_sharing" && key !== "consent_marketing") {
-      if (key === "tags" && Array.isArray(value)) {
-        displayAnswers[key] = value.join(",");
-      } else if (typeof value === "boolean") {
-        displayAnswers[key] = value ? "yes" : "no";
-      } else {
-        displayAnswers[key] = String(value);
+      // Pour CompletionStep
+      const display: Record<string, string> = {};
+      for (const [key, value] of Object.entries(finalAnswers)) {
+        if (value === undefined || value === null) continue;
+        if (Array.isArray(value)) display[key] = value.join(",");
+        else display[key] = String(value);
       }
-    }
-  }
+      setCompletionAnswers(display);
 
+      setIsSubmitting(false);
+      setStep("complete");
+    },
+    [answers, language, onboardingStartedAt, track]
+  );
+
+  const handleComplete = useCallback(() => {
+    navigate("/confirmation");
+  }, [navigate]);
+
+  // ─── Rendu ───────────────────────────────────────────
   return (
     <div
       className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex flex-col"
@@ -221,8 +242,8 @@ const Onboarding = () => {
         </motion.button>
       )}
 
-      <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-4 sm:pt-24 overflow-hidden">
-        <div className="w-full max-w-2xl h-full">
+      <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-8 sm:pt-24 overflow-y-auto">
+        <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait">
             {step === "language" && (
               <LanguageStep key="language" onSelect={handleLanguageSelect} />
@@ -235,27 +256,41 @@ const Onboarding = () => {
               />
             )}
 
-            {step === "chat" && (
-              <motion.div
-                key="chat"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                className="h-[calc(100vh-7rem)]"
-              >
-                <ChatOnboarding
-                  onComplete={handleChatComplete}
-                  initialAnswers={answers}
-                  resumeFromQuestion={resumeQuestion}
-                  resumeCheckpointId={resumeCheckpointId}
-                />
-              </motion.div>
+            {step === "visual-quiz" && currentQuestion && (
+              <VisualQuestionStep
+                key={currentQuestion.id}
+                question={currentQuestion}
+                value={answers[currentQuestion.id]}
+                onChange={handleAnswerChange}
+                onNext={handleNext}
+                onPrevious={handlePrevious}
+                isFirst={questionIndex === 0}
+                isLast={questionIndex === VISUAL_QUESTIONS.length - 1}
+                progressPercent={getProgressPercent(questionIndex, VISUAL_QUESTIONS.length)}
+                questionNumber={questionIndex + 1}
+                totalQuestions={TOTAL_STEPS}
+                tts={tts}
+              />
+            )}
+
+            {step === "email" && (
+              <EmailStep
+                key="email"
+                initialEmail={(answers.contact_email as string) || ""}
+                onSubmit={handleEmailSubmit}
+                onPrevious={handlePrevious}
+                isSubmitting={isSubmitting}
+                progressPercent={100}
+                questionNumber={TOTAL_STEPS}
+                totalQuestions={TOTAL_STEPS}
+                tts={tts}
+              />
             )}
 
             {step === "complete" && (
               <CompletionStep
                 key="complete"
-                answers={displayAnswers}
+                answers={completionAnswers}
                 onComplete={handleComplete}
               />
             )}
