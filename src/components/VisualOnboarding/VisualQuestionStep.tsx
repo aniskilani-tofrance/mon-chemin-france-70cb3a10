@@ -10,6 +10,7 @@ import {
 } from "@/components/VocalOnboarding/PhotoLanguageChoice";
 import type { VisualQuestion } from "@/lib/visualQuestions";
 import type { useTTS } from "@/hooks/useTTS";
+import { playPreSpeech } from "@/lib/sounds";
 
 interface VisualQuestionStepProps {
   question: VisualQuestion;
@@ -52,20 +53,22 @@ export function VisualQuestionStep({
   const intro = subtitle ? `${title}. ${subtitle}` : title;
   const ttsText = `${intro}. ${optionsSpoken}.`;
 
-  // ─── TTS auto à chaque nouvelle question ──────────────────
+  // ─── TTS auto à chaque nouvelle question (avec ding pré-roll) ──────────────────
   useEffect(() => {
     if (!tts.isEnabled || !tts.isSupported) return;
     if (lastSpokenRef.current === question.id) return;
     lastSpokenRef.current = question.id;
 
-    // Délai léger pour laisser l'animation d'entrée se faire
-    const t = setTimeout(() => tts.speak(ttsText), 350);
+    // Joue un petit "ding-ding" subtil immédiatement, puis la voix après le ding
+    playPreSpeech();
+    const t = setTimeout(() => tts.speak(ttsText), 380);
     return () => clearTimeout(t);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id, tts.isEnabled, tts.isSupported]);
 
   const handleReplay = () => {
-    tts.speak(ttsText);
+    playPreSpeech();
+    setTimeout(() => tts.speak(ttsText), 280);
   };
 
   // ─── Sélection ───────────────────────────────────────────

@@ -12,6 +12,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { AnimatedAgent } from "./AnimatedAgent";
 import { PhotoLanguageChoice, PhotoLanguageGrid } from "./PhotoLanguageChoice";
 import { GooglePlacesAutocomplete } from "./GooglePlacesAutocomplete";
+import { playPreSpeech } from "@/lib/sounds";
 import { z } from "zod";
 
 // Email validation schema
@@ -61,10 +62,11 @@ export function DecisionQuestion({
     ? ti18n(i18nSubtitleKey)
     : getTranslatedText(question.subtitle, language);
 
-  // Auto-speak question text
+  // Auto-speak question text avec un petit "ding-ding" pré-roll
   useEffect(() => {
     if (tts.isSupported && tts.isEnabled && questionText) {
-      const timer = setTimeout(() => tts.speak(questionText), 400);
+      playPreSpeech();
+      const timer = setTimeout(() => tts.speak(questionText), 430);
       return () => clearTimeout(timer);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
