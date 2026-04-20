@@ -253,6 +253,7 @@ const Onboarding = () => {
       }
 
       // Magic link → crée le compte automatiquement et permet la reprise
+      let magicSent = false;
       if (!user) {
         try {
           const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -266,7 +267,9 @@ const Onboarding = () => {
           if (otpError) {
             console.error("Magic link error:", otpError);
           } else {
+            magicSent = true;
             setMagicLinkSent(true);
+            setSubmittedEmail(data.email);
           }
         } catch (e) {
           console.error("OTP exception:", e);
@@ -295,10 +298,42 @@ const Onboarding = () => {
       await markCompleted();
 
       setIsSubmitting(false);
-      setStep("complete");
+      // Si magic link envoyé → écran de confirmation, sinon directement complete
+      setStep(magicSent ? "magic-link-sent" : "complete");
     },
     [answers, postalCode, language, onboardingStartedAt, track, user, persistCheckpoint, markCompleted]
   );
+
+  const handleResendMagicLink = useCallback(async () => {
+    if (!submittedEmail || isResending) return;
+    setIsResending(true);
+    try {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: submittedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/onboarding?resume=1`,
+          shouldCreateUser: true,
+          data: { language, source: "onboarding_visual_resend" },
+        },
+      });
+      if (otpError) {
+        toast({
+          title: "Erreur",
+          description: otpError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email renvoyé",
+          description: "Un nouveau lien magique vous a été envoyé.",
+        });
+      }
+    } catch (e) {
+      console.error("Resend OTP exception:", e);
+    } finally {
+      setIsResending(false);
+    }
+  }, [submittedEmail, isResending, language]);
 
   const handleComplete = useCallback(() => {
     navigate("/confirmation");
