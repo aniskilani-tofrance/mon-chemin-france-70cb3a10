@@ -250,8 +250,9 @@ export function useTTS({ language, onStart, onEnd }: UseTTSOptions): UseTTSRetur
     while (attempt < MAX_ATTEMPTS) {
       attempt++;
       try {
+        // Aucune `speed` envoyée → l'edge function utilise 0.95 (réglage Marianne unifié).
         const { data, error } = await supabase.functions.invoke("openai-tts", {
-          body: { text, language, speed: 0.9 },
+          body: { text, language },
         });
 
         if (controller.signal.aborted || myId !== requestIdRef.current) return;
