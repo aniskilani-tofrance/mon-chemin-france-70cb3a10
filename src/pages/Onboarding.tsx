@@ -39,7 +39,7 @@ const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string
   ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },
 };
 
-// TOTAL_STEPS dynamique : calculé via activeQuestions (certaines questions sont conditionnelles)
+// totalSteps dynamique : calculé via activeQuestions (certaines questions sont conditionnelles)
 
 const Onboarding = () => {
   const navigate = useNavigate();
@@ -100,7 +100,7 @@ const Onboarding = () => {
       // Détermine la dernière question répondue → on saute à la SUIVANTE non répondue
       // (ou au postal-code / email si toutes les questions sont OK)
       let lastAnsweredIdx = -1;
-      VISUAL_QUESTIONS.forEach((q, i) => {
+      activeQuestions.forEach((q, i) => {
         const v = partial[q.id];
         const has = Array.isArray(v) ? v.length > 0 : !!v;
         if (has) lastAnsweredIdx = Math.max(lastAnsweredIdx, i);
@@ -113,17 +113,17 @@ const Onboarding = () => {
 
       if (cs === "email" || (partial.postal_code && partial.contact_email)) {
         resolvedStep = "email";
-      } else if (cs === "postal-code" || (lastAnsweredIdx === VISUAL_QUESTIONS.length - 1 && !partial.postal_code)) {
+      } else if (cs === "postal-code" || (lastAnsweredIdx === activeQuestions.length - 1 && !partial.postal_code)) {
         resolvedStep = "postal-code";
       } else {
         // Saut direct à la dernière question répondue (ou la suivante non répondue)
         resolvedStep = "visual-quiz";
         if (lastAnsweredIdx >= 0) {
           // On reprend SUR la dernière question répondue pour permettre de la modifier
-          resolvedIdx = Math.min(lastAnsweredIdx, VISUAL_QUESTIONS.length - 1);
+          resolvedIdx = Math.min(lastAnsweredIdx, activeQuestions.length - 1);
         } else if (cs?.startsWith("q:")) {
           const qid = cs.slice(2);
-          const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
+          const idx = activeQuestions.findIndex((q) => q.id === qid);
           if (idx >= 0) resolvedIdx = idx;
         }
       }
@@ -135,14 +135,14 @@ const Onboarding = () => {
       // Toast sonner avec position dans le parcours
       const stepLabel =
         resolvedStep === "email"
-          ? TOTAL_STEPS
+          ? totalSteps
           : resolvedStep === "postal-code"
-          ? VISUAL_QUESTIONS.length + 1
+          ? activeQuestions.length + 1
           : resolvedIdx + 1;
       sonnerToast.success(t("onboardingVisual.resume.toast_title"), {
         description: t("onboardingVisual.resume.toast_description", {
           current: stepLabel,
-          total: TOTAL_STEPS,
+          total: totalSteps,
         }),
         duration: 5000,
         icon: "👋",
@@ -181,7 +181,7 @@ const Onboarding = () => {
     setQuestionIndex(0);
   };
 
-  const currentQuestion = VISUAL_QUESTIONS[questionIndex];
+  const currentQuestion = activeQuestions[questionIndex];
 
   const handleAnswerChange = (value: string | string[]) => {
     if (!currentQuestion) return;
@@ -194,10 +194,10 @@ const Onboarding = () => {
     if (!currentQuestion) return;
     track("onboarding_question_answered", { questionId: currentQuestion.id }, "/onboarding", language);
 
-    if (questionIndex < VISUAL_QUESTIONS.length - 1) {
+    if (questionIndex < activeQuestions.length - 1) {
       const nextIdx = questionIndex + 1;
       setQuestionIndex(nextIdx);
-      persistCheckpoint(`q:${VISUAL_QUESTIONS[nextIdx].id}`, answers);
+      persistCheckpoint(`q:${activeQuestions[nextIdx].id}`, answers);
     } else {
       setStep("postal-code");
       persistCheckpoint("postal-code", answers);
@@ -211,7 +211,7 @@ const Onboarding = () => {
     }
     if (step === "postal-code") {
       setStep("visual-quiz");
-      setQuestionIndex(VISUAL_QUESTIONS.length - 1);
+      setQuestionIndex(activeQuestions.length - 1);
       return;
     }
     if (questionIndex > 0) {
@@ -389,16 +389,16 @@ const Onboarding = () => {
     step === "visual-quiz"
       ? questionIndex + 1
       : step === "postal-code"
-      ? VISUAL_QUESTIONS.length + 1
+      ? activeQuestions.length + 1
       : step === "email"
-      ? TOTAL_STEPS
+      ? totalSteps
       : 1;
 
   const progressPercent =
     step === "visual-quiz"
-      ? getProgressPercent(questionIndex, VISUAL_QUESTIONS.length)
+      ? getProgressPercent(questionIndex, activeQuestions.length)
       : step === "postal-code"
-      ? Math.round(((VISUAL_QUESTIONS.length + 1) / TOTAL_STEPS) * 100)
+      ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
       : 100;
 
   return (
@@ -481,10 +481,10 @@ const Onboarding = () => {
                 onNext={handleNext}
                 onPrevious={handlePrevious}
                 isFirst={questionIndex === 0}
-                isLast={questionIndex === VISUAL_QUESTIONS.length - 1}
+                isLast={questionIndex === activeQuestions.length - 1}
                 progressPercent={progressPercent}
                 questionNumber={stepNumber}
-                totalQuestions={TOTAL_STEPS}
+                totalQuestions={totalSteps}
                 tts={tts}
               />
             )}
@@ -497,7 +497,7 @@ const Onboarding = () => {
                 onPrevious={handlePrevious}
                 progressPercent={progressPercent}
                 questionNumber={stepNumber}
-                totalQuestions={TOTAL_STEPS}
+                totalQuestions={totalSteps}
                 tts={tts}
               />
             )}
@@ -510,8 +510,8 @@ const Onboarding = () => {
                 onPrevious={handlePrevious}
                 isSubmitting={isSubmitting}
                 progressPercent={100}
-                questionNumber={TOTAL_STEPS}
-                totalQuestions={TOTAL_STEPS}
+                questionNumber={totalSteps}
+                totalQuestions={totalSteps}
                 tts={tts}
               />
             )}
