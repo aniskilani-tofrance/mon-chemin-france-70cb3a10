@@ -97,11 +97,12 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     ],
   },
 
-  // 3 — Objectif principal
+  // 3 — Objectif principal (multi : on peut combiner ex. apprendre français + trouver emploi)
   {
     id: "main_goal",
     titleKey: "questionnaire.main_goal.question",
-    type: "single",
+    subtitleKey: "questionnaire.main_goal.subtitle",
+    type: "multi",
     columns: 2,
     options: [
       { id: "learn_french", labelKey: "questionnaire.main_goal.choices.learn_french", icon: "📚", illustration: goalLearn },
