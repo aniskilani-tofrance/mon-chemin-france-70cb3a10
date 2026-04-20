@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { AnimatedAgent } from "./AnimatedAgent";
+import { playPreSpeech } from "@/lib/sounds";
 
 const MARIANNE_INTRO: Record<string, string> = {
   fr: "Bonjour ! Je suis Marianne, votre conseillère. Je suis là pour vous aider à trouver la formation idéale. Répondez à quelques questions et je vous proposerai des solutions adaptées à votre profil.",
@@ -49,9 +50,11 @@ export function MarianneIntroStep({ onContinue }: MarianneIntroStepProps) {
   useEffect(() => {
     if (!tts.isSupported || !tts.isEnabled || !introText) return;
 
+    // Petit "ding-ding" subtil avant que Marianne ne commence à parler
+    playPreSpeech();
     const timer = window.setTimeout(() => {
       tts.speak(introText);
-    }, 450);
+    }, 480);
 
     return () => {
       window.clearTimeout(timer);

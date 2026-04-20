@@ -54,6 +54,29 @@ export function playDing() {
   } catch {}
 }
 
+/** Subtle two-note "pre-speech" cue — signals that Marianne is about to talk */
+export function playPreSpeech() {
+  if (!isSoundEnabled()) return;
+  try {
+    const ctx = getCtx();
+    // Two soft sine notes (E5 → A5), very short and gentle
+    const notes = [659.25, 880];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.09;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.07, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.2);
+    });
+  } catch {}
+}
+
 /** Quick rising "whoosh" — navigation, starting an exercise */
 export function playWhoosh() {
   if (!isSoundEnabled()) return;
