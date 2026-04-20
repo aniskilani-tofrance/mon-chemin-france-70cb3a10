@@ -423,6 +423,41 @@ const Onboarding = () => {
 
       <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-8 sm:pt-24 overflow-y-auto">
         <div className="w-full max-w-2xl">
+          <AnimatePresence>
+            {resumed && step !== "complete" && step !== "magic-link-sent" && step !== "language" && (
+              <motion.div
+                key="resume-banner"
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                transition={{ duration: 0.35 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <RotateCcw className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 text-sm">
+                    <p className="font-semibold text-foreground">
+                      {t("onboardingVisual.resume.toast_title")}
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      {t("onboardingVisual.resume.banner")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setResumed(false)}
+                    aria-label="Close"
+                    className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <AnimatePresence mode="wait">
             {step === "language" && <LanguageStep key="language" onSelect={handleLanguageSelect} />}
 
