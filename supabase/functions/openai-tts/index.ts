@@ -6,15 +6,26 @@ const corsHeaders = {
 };
 
 // Optimised voice per language for Marianne (female advisor)
-// nova = warm female with good accent for most languages
-// alloy = neutral, good for French without English accent
+// All OpenAI TTS voices are multilingual but each has a distinct timbre / accent.
+// Voices are restricted to feminine ones (nova / shimmer / alloy) to stay coherent
+// with Marianne's character.
+//
+// - fr: nova    → warm, natural French, no English accent (validated)
+// - en: shimmer → soft female with neutral US accent, clearer than nova for EN
+// - es: nova    → excellent Spanish prosody, very natural
+// - pt: nova    → close to PT-BR, warm tone
+// - ar: shimmer → softer Arabic rendering than nova (less anglo accent)
+// - ru: shimmer → more neutral Russian than nova (which sounds heavily EN)
+//
+// Web Speech fallback (handled client-side) covers cases where OpenAI's accent
+// is too foreign — especially for AR.
 const VOICE_MAP: Record<string, string> = {
   fr: "nova",
   en: "shimmer",
-  ar: "nova",
   es: "nova",
   pt: "nova",
-  ru: "nova",
+  ar: "shimmer",
+  ru: "shimmer",
 };
 
 async function callOpenAITTS(
