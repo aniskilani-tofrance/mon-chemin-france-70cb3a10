@@ -48,6 +48,12 @@ export interface UserResponses {
     | "aucune" | "autre"
   >;
   q9_besoins?: Array<"logement" | "admin" | "sante" | "autre">;
+  /** L'utilisateur souhaite faire reconnaître un diplôme étranger */
+  q_recognize_diploma?: boolean;
+  /** Niveau du diplôme d'origine (si q_recognize_diploma) */
+  q_diploma_level?: "secondary" | "bac" | "bachelor" | "master" | "doctorate" | "no_diploma";
+  /** Souhaite continuer dans son domaine de compétence ? */
+  q_continue_field?: "yes" | "no" | "unsure";
 }
 
 export interface MetierMatch {
