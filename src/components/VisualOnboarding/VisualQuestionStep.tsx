@@ -44,6 +44,8 @@ export function VisualQuestionStep({
   const title = t(question.titleKey);
   const subtitle = question.subtitleKey ? t(question.subtitleKey) : "";
   // Construit la lecture : titre + sous-titre + options numérotées « 1. … 2. … »
+  // Pour les écrans "info", les "options" sont des illustrations pédagogiques (pas cliquables) :
+  // on les énumère quand même à l'oral, mais sans logique de sélection.
   const optionsSpoken = question.options
     .map((opt, i) => `${i + 1}. ${t(opt.labelKey)}`)
     .join(". ");
