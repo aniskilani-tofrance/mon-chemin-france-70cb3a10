@@ -167,6 +167,12 @@ export const PARCOURS_META: Record<
     description:
       "Tu as des besoins prioritaires au-delà de l'emploi ou la formation. On te met en relation avec les bons interlocuteurs.",
   },
+  RECONNAISSANCE: {
+    emoji: "🎖️",
+    label: "Reconnaissance de diplôme étranger",
+    description:
+      "Tu as un diplôme obtenu à l'étranger. On t'oriente vers ENIC-NARIC pour le faire reconnaître, et vers les métiers en tension de ton domaine accessibles avec des formations courtes.",
+  },
 };
 
 export const ACTIONS_LABELS: Record<ActionId, string> = {
