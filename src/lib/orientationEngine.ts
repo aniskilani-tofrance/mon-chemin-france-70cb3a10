@@ -257,6 +257,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
         ? "⚠️ Droit de travail non établi — orientation administrative obligatoire avant toute démarche."
         : "⚠️ Droit de travail incertain — une vérification est nécessaire avant toute orientation."
     );
+  } else if (r.q_recognize_diploma) {
+    // ── PRIORITÉ 1bis : Reconnaissance de diplôme étranger ──
+    parcoursId = "RECONNAISSANCE";
+    actions.push("RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    alertes.push(
+      "🎖️ Reconnaissance de diplôme : démarche ENIC-NARIC à engager. En parallèle, des métiers en tension peuvent être accessibles via une formation courte."
+    );
+    if (r.q_continue_field === "no") {
+      alertes.push("🔄 Reconversion souhaitée — accompagnement orientation prioritaire.");
+    }
   } else {
     // ── PRIORITÉ 2 : Orientation par intention (Q1) ──
     switch (r.q1_interet) {
