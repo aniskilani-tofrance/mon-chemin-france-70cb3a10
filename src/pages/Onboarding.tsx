@@ -67,6 +67,13 @@ const Onboarding = () => {
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
 
+  // Filtre les questions selon les conditions showIf (parcours conditionnels)
+  const activeQuestions = useMemo(
+    () => VISUAL_QUESTIONS.filter((q) => !q.showIf || q.showIf(answers)),
+    [answers]
+  );
+  const totalSteps = activeQuestions.length + 2; // + postal + email
+
   // ─── Reprise via ?resume=1 ou utilisateur connecté ──────────
   useEffect(() => {
     if (resumeAttemptedRef.current) return;
