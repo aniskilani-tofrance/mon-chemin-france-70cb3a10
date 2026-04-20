@@ -329,6 +329,7 @@
       "step3": "Você será conectado automaticamente",
       "spam_hint": "Não esqueça de verificar a pasta de spam se não encontrar.",
       "resend": "Reenviar email",
+      "resend_in": "Reenviar em {{seconds}} s",
       "continue": "Ver minha orientação"
     },
     "resume": {

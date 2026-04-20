@@ -329,6 +329,7 @@
       "step3": "You'll be automatically signed in",
       "spam_hint": "Don't forget to check your spam folder if you can't find it.",
       "resend": "Resend email",
+      "resend_in": "Resend in {{seconds}}s",
       "continue": "See my guidance"
     },
     "resume": {
