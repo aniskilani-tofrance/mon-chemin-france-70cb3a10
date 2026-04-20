@@ -50,6 +50,38 @@ async function callOpenAITTS(
   });
 }
 
+// ElevenLabs – voix arabe native (Sana, féminine, multilingue v2)
+// Voice ID "Sana" : mZ8K1MPRiT5wDQaasg3i — voix arabe native chaleureuse.
+// Fallback : "Rachel" multilingue (21m00Tcm4TlvDq8ikWAM) si Sana indispo.
+const ELEVENLABS_AR_VOICE_ID = 'mZ8K1MPRiT5wDQaasg3i';
+
+async function callElevenLabsTTS(
+  apiKey: string,
+  text: string,
+  voiceId: string,
+): Promise<Response> {
+  return fetch(
+    `https://api.elevenlabs.io/v1/text-to-speech/${voiceId}?output_format=mp3_44100_128`,
+    {
+      method: 'POST',
+      headers: {
+        'xi-api-key': apiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text,
+        model_id: 'eleven_multilingual_v2',
+        voice_settings: {
+          stability: 0.55,
+          similarity_boost: 0.8,
+          style: 0.25,
+          use_speaker_boost: true,
+        },
+      }),
+    },
+  );
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -81,6 +113,33 @@ Deno.serve(async (req) => {
     const selectedSpeed = speed || 0.95;
 
     console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
+
+    // ──────────────────────────────────────────────────────────────
+    // Arabe : tenter ElevenLabs (voix native) en priorité, fallback OpenAI
+    // ──────────────────────────────────────────────────────────────
+    if (lang === 'ar') {
+      const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
+      if (elevenKey) {
+        try {
+          console.log('[openai-tts] Arabic → trying ElevenLabs native voice');
+          const elResp = await callElevenLabsTTS(elevenKey, truncatedText, ELEVENLABS_AR_VOICE_ID);
+          if (elResp.ok) {
+            const audioBuffer = await elResp.arrayBuffer();
+            const base64 = base64Encode(audioBuffer);
+            console.log('[openai-tts] ElevenLabs success for Arabic');
+            return new Response(JSON.stringify({ audio_base64: base64, provider: 'elevenlabs' }), {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            });
+          }
+          const errText = await elResp.text();
+          console.warn(`[openai-tts] ElevenLabs failed (${elResp.status}): ${errText} — falling back to OpenAI`);
+        } catch (err) {
+          console.warn('[openai-tts] ElevenLabs threw, falling back to OpenAI:', err);
+        }
+      } else {
+        console.warn('[openai-tts] ELEVENLABS_API_KEY missing — using OpenAI for Arabic');
+      }
+    }
 
     // First attempt
     let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
