@@ -56,8 +56,23 @@ const BESOIN_MAP: Record<string, "logement" | "admin" | "sante" | "autre"> = {
 };
 
 export function mapAnswersToV2(answers: LegacyAnswers): UserResponses {
-  // q1_interet
-  const q1 = GOAL_MAP[answers.main_goal || ""] ?? "nsp";
+  // q1_interet — main_goal peut être multi (string CSV ou array). Priorité: travail+francais=mixte, sinon travail > formation > francais.
+  const rawGoal = answers.main_goal;
+  const goals = Array.isArray(rawGoal)
+    ? rawGoal
+    : typeof rawGoal === "string"
+      ? rawGoal.split(",").map((s) => s.trim()).filter(Boolean)
+      : [];
+  const mappedGoals = goals.map((g) => GOAL_MAP[g]).filter(Boolean) as Array<UserResponses["q1_interet"]>;
+  const hasFrench = mappedGoals.includes("francais");
+  const hasJob = mappedGoals.includes("travail");
+  const hasTraining = mappedGoals.includes("formation");
+  let q1: UserResponses["q1_interet"];
+  if (hasJob && hasFrench) q1 = "mixte";
+  else if (hasJob) q1 = "travail";
+  else if (hasTraining) q1 = "formation";
+  else if (hasFrench) q1 = "francais";
+  else q1 = mappedGoals[0] ?? "nsp";
 
   // q2_droit_travailler
   const workRight = answers.work_right;
