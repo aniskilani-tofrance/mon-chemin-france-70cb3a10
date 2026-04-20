@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
@@ -43,6 +45,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const tts = useTTS({ language });
   const { track } = useAnalytics();
   const { user } = useAuth();
@@ -58,6 +61,7 @@ const Onboarding = () => {
   const [isResending, setIsResending] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
+  const [resumed, setResumed] = useState(false);
   const resumeAttemptedRef = useRef(false);
 
   const isRTL = language === "ar";
