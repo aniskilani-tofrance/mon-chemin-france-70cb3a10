@@ -114,11 +114,13 @@
       }
     },
     "mobility": {
-      "question": "Qual é a sua mobilidade geográfica?",
+      "question": "Como você se desloca?",
+      "subtitle": "Várias opções possíveis",
       "choices": {
-        "local": "Local (< 30 km)",
-        "regional": "Regional (30-100 km)",
-        "national": "Nacional"
+        "walk": "A pé",
+        "bike": "De bicicleta",
+        "car": "De carro",
+        "transit": "Transporte público"
       }
     },
     "funding_status": {
@@ -164,6 +166,27 @@
     "contact_email": {
       "question": "Qual é o seu email?",
       "subtitle": "Para receber sua orientação personalizada"
+    },
+    "gender_age": {
+      "question": "Você é…",
+      "subtitle": "Selecione o que te descreve",
+      "choices": {
+        "woman_under25": "Mulher – menos de 25 anos",
+        "woman_25_45": "Mulher – 25 a 45 anos",
+        "woman_over45": "Mulher – mais de 45 anos",
+        "man_under25": "Homem – menos de 25 anos",
+        "man_25_45": "Homem – 25 a 45 anos",
+        "man_over45": "Homem – mais de 45 anos"
+      }
+    },
+    "current_situation": {
+      "question": "Qual é a sua situação atual?",
+      "choices": {
+        "jobseeker": "Procurando emprego",
+        "employee": "Trabalhando (assalariado)",
+        "student": "Estudante ou em formação",
+        "inactive": "Sem atividade no momento"
+      }
     }
   },
   "completion": {
@@ -288,7 +311,14 @@
       "label": "Endereço de email",
       "consent_lead": "Aceito ser contatado pela ToFrance e seus parceiros (centros de formação, empregadores).",
       "consent_marketing": "Quero receber notícias e dicas por email (opcional).",
-      "submit": "Concluir"
+      "submit": "Concluir",
+      "magic_link_note": "Você poderá retomar seu percurso mais tarde através de um link enviado por email."
+    },
+    "postal_code": {
+      "question": "Qual é o seu código postal?",
+      "subtitle": "Para propor oportunidades perto de você",
+      "label": "Código postal",
+      "error": "Digite um código postal válido de 5 dígitos"
     }
   }
 }

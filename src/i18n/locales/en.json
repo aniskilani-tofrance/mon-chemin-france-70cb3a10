@@ -114,11 +114,13 @@
       }
     },
     "mobility": {
-      "question": "What is your geographical mobility?",
+      "question": "How do you get around?",
+      "subtitle": "Multiple choices possible",
       "choices": {
-        "local": "Local (< 30 km)",
-        "regional": "Regional (30-100 km)",
-        "national": "National"
+        "walk": "On foot",
+        "bike": "By bike",
+        "car": "By car",
+        "transit": "Public transport"
       }
     },
     "funding_status": {
@@ -164,6 +166,27 @@
     "contact_email": {
       "question": "What is your email?",
       "subtitle": "To receive your personalized guidance"
+    },
+    "gender_age": {
+      "question": "You are…",
+      "subtitle": "Select what describes you",
+      "choices": {
+        "woman_under25": "Woman – under 25",
+        "woman_25_45": "Woman – 25 to 45",
+        "woman_over45": "Woman – over 45",
+        "man_under25": "Man – under 25",
+        "man_25_45": "Man – 25 to 45",
+        "man_over45": "Man – over 45"
+      }
+    },
+    "current_situation": {
+      "question": "What is your current situation?",
+      "choices": {
+        "jobseeker": "Jobseeker",
+        "employee": "Employed",
+        "student": "Student or in training",
+        "inactive": "Currently inactive"
+      }
     }
   },
   "completion": {
@@ -288,7 +311,14 @@
       "label": "Email address",
       "consent_lead": "I agree to be contacted by ToFrance and its partners (training providers, employers).",
       "consent_marketing": "I'd like to receive news and tips by email (optional).",
-      "submit": "Finish"
+      "submit": "Finish",
+      "magic_link_note": "You can resume your journey later via a link sent to your email."
+    },
+    "postal_code": {
+      "question": "What is your postal code?",
+      "subtitle": "To suggest opportunities near you",
+      "label": "Postal code",
+      "error": "Enter a valid 5-digit postal code"
     }
   }
 }
