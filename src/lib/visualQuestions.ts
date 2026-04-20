@@ -42,7 +42,7 @@ import secAide from "@/assets/onboarding/sector_aide_personne.jpg";
 import secHotel from "@/assets/onboarding/sector_hotellerie.jpg";
 import secCom from "@/assets/onboarding/sector_commerce.jpg";
 
-export type VisualQuestionType = "single" | "multi";
+export type VisualQuestionType = "single" | "multi" | "info";
 
 export interface VisualOption {
   id: string;
@@ -54,6 +54,9 @@ export interface VisualOption {
   illustration?: string;
 }
 
+/** Réponses déjà collectées (utilisé par showIf) */
+export type AnswersMap = Record<string, string | string[] | undefined>;
+
 export interface VisualQuestion {
   id: string;
   titleKey: string;
@@ -63,7 +66,19 @@ export interface VisualQuestion {
   options: VisualOption[];
   /** Si true, optionnel — bouton « Passer » disponible */
   optional?: boolean;
+  /** Affichage conditionnel basé sur les réponses précédentes */
+  showIf?: (answers: AnswersMap) => boolean;
+  /** Pour les écrans purement informatifs : texte du bouton de validation */
+  infoCtaKey?: string;
 }
+
+/** Helper : main_goal peut être string ou string[] (multi-choice) */
+const goalIncludes = (answers: AnswersMap, goal: string): boolean => {
+  const v = answers.main_goal;
+  if (Array.isArray(v)) return v.includes(goal);
+  if (typeof v === "string") return v.split(",").map((s) => s.trim()).includes(goal);
+  return false;
+};
 
 export const VISUAL_QUESTIONS: VisualQuestion[] = [
   // 1 — Genre + âge (NOUVEAU)
@@ -108,8 +123,63 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
       { id: "learn_french", labelKey: "questionnaire.main_goal.choices.learn_french", icon: "📚", illustration: goalLearn },
       { id: "find_job", labelKey: "questionnaire.main_goal.choices.find_job", icon: "💼", illustration: goalJob },
       { id: "job_training", labelKey: "questionnaire.main_goal.choices.job_training", icon: "🎓", illustration: goalTraining },
+      { id: "recognize_diploma", labelKey: "questionnaire.main_goal.choices.recognize_diploma", icon: "🎖️" },
       { id: "need_help", labelKey: "questionnaire.main_goal.choices.need_help", icon: "🤝", illustration: goalHelp },
     ],
+  },
+
+  // 3.a — Niveau du diplôme d'origine (conditionnel : si recognize_diploma)
+  {
+    id: "diploma_level",
+    titleKey: "questionnaire.diploma_level.question",
+    subtitleKey: "questionnaire.diploma_level.subtitle",
+    type: "single",
+    columns: 2,
+    options: [
+      { id: "secondary", labelKey: "questionnaire.diploma_level.choices.secondary", icon: "🏫" },
+      { id: "bac", labelKey: "questionnaire.diploma_level.choices.bac", icon: "📜" },
+      { id: "bachelor", labelKey: "questionnaire.diploma_level.choices.bachelor", icon: "🎓" },
+      { id: "master", labelKey: "questionnaire.diploma_level.choices.master", icon: "📚" },
+      { id: "doctorate", labelKey: "questionnaire.diploma_level.choices.doctorate", icon: "🧑‍🔬" },
+      { id: "no_diploma", labelKey: "questionnaire.diploma_level.choices.no_diploma", icon: "❓" },
+    ],
+    showIf: (a) => goalIncludes(a, "recognize_diploma"),
+  },
+
+  // 3.b — Continuer dans son domaine de compétence ?
+  {
+    id: "continue_field",
+    titleKey: "questionnaire.continue_field.question",
+    subtitleKey: "questionnaire.continue_field.subtitle",
+    type: "single",
+    columns: 3,
+    options: [
+      { id: "yes", labelKey: "questionnaire.continue_field.choices.yes", icon: "✅" },
+      { id: "no", labelKey: "questionnaire.continue_field.choices.no", icon: "🔄" },
+      { id: "unsure", labelKey: "questionnaire.continue_field.choices.unsure", icon: "🤔" },
+    ],
+    showIf: (a) => goalIncludes(a, "recognize_diploma"),
+  },
+
+  // 3.c — Écran info : ENIC-NARIC + métiers en tension
+  {
+    id: "tension_jobs_info",
+    titleKey: "questionnaire.tension_jobs_info.question",
+    subtitleKey: "questionnaire.tension_jobs_info.subtitle",
+    type: "info",
+    columns: 3,
+    options: [
+      { id: "btp", labelKey: "questionnaire.tension_jobs_info.sectors.btp", icon: "🏗️" },
+      { id: "aide_personne", labelKey: "questionnaire.tension_jobs_info.sectors.aide_personne", icon: "❤️" },
+      { id: "hotellerie", labelKey: "questionnaire.tension_jobs_info.sectors.hotellerie", icon: "🍽️" },
+      { id: "logistique", labelKey: "questionnaire.tension_jobs_info.sectors.logistique", icon: "📦" },
+      { id: "proprete", labelKey: "questionnaire.tension_jobs_info.sectors.proprete", icon: "🧹" },
+      { id: "sante", labelKey: "questionnaire.tension_jobs_info.sectors.sante", icon: "🩺" },
+      { id: "securite", labelKey: "questionnaire.tension_jobs_info.sectors.securite", icon: "🛡️" },
+      { id: "transport", labelKey: "questionnaire.tension_jobs_info.sectors.transport", icon: "🚚" },
+    ],
+    infoCtaKey: "questionnaire.tension_jobs_info.cta",
+    showIf: (a) => goalIncludes(a, "recognize_diploma"),
   },
 
   // 4 — Niveau de français parlé (CECRL)

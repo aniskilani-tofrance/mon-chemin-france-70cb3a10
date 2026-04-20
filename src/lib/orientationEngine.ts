@@ -17,13 +17,14 @@ export type Secteur =
   | "nsp";
 
 export type ParcoursId =
-  | "ADMIN"       // Blocage — droit de travail non établi
-  | "INSERTION"   // Travail rapide
-  | "FORMATION"   // TP/CQP
-  | "FRANCAIS"    // FLE/FOS pur
-  | "MIXTE"       // Français + métier combinés
-  | "ORIENTATION" // Indécis — besoin d'un conseiller
-  | "ECOUTE";     // Besoins spécifiques (hors emploi/formation)
+  | "ADMIN"          // Blocage — droit de travail non établi
+  | "INSERTION"      // Travail rapide
+  | "FORMATION"      // TP/CQP
+  | "FRANCAIS"       // FLE/FOS pur
+  | "MIXTE"          // Français + métier combinés
+  | "ORIENTATION"    // Indécis — besoin d'un conseiller
+  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation)
+  | "RECONNAISSANCE"; // Reconnaissance de diplôme étranger (ENIC-NARIC)
 
 export type ActionId =
   | "AIDE_FRANCE_TRAVAIL"
@@ -47,6 +48,12 @@ export interface UserResponses {
     | "aucune" | "autre"
   >;
   q9_besoins?: Array<"logement" | "admin" | "sante" | "autre">;
+  /** L'utilisateur souhaite faire reconnaître un diplôme étranger */
+  q_recognize_diploma?: boolean;
+  /** Niveau du diplôme d'origine (si q_recognize_diploma) */
+  q_diploma_level?: "secondary" | "bac" | "bachelor" | "master" | "doctorate" | "no_diploma";
+  /** Souhaite continuer dans son domaine de compétence ? */
+  q_continue_field?: "yes" | "no" | "unsure";
 }
 
 export interface MetierMatch {
@@ -166,6 +173,12 @@ export const PARCOURS_META: Record<
     description:
       "Tu as des besoins prioritaires au-delà de l'emploi ou la formation. On te met en relation avec les bons interlocuteurs.",
   },
+  RECONNAISSANCE: {
+    emoji: "🎖️",
+    label: "Reconnaissance de diplôme étranger",
+    description:
+      "Tu as un diplôme obtenu à l'étranger. On t'oriente vers ENIC-NARIC pour le faire reconnaître, et vers les métiers en tension de ton domaine accessibles avec des formations courtes.",
+  },
 };
 
 export const ACTIONS_LABELS: Record<ActionId, string> = {
@@ -244,6 +257,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
         ? "⚠️ Droit de travail non établi — orientation administrative obligatoire avant toute démarche."
         : "⚠️ Droit de travail incertain — une vérification est nécessaire avant toute orientation."
     );
+  } else if (r.q_recognize_diploma) {
+    // ── PRIORITÉ 1bis : Reconnaissance de diplôme étranger ──
+    parcoursId = "RECONNAISSANCE";
+    actions.push("RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    alertes.push(
+      "🎖️ Reconnaissance de diplôme : démarche ENIC-NARIC à engager. En parallèle, des métiers en tension peuvent être accessibles via une formation courte."
+    );
+    if (r.q_continue_field === "no") {
+      alertes.push("🔄 Reconversion souhaitée — accompagnement orientation prioritaire.");
+    }
   } else {
     // ── PRIORITÉ 2 : Orientation par intention (Q1) ──
     switch (r.q1_interet) {

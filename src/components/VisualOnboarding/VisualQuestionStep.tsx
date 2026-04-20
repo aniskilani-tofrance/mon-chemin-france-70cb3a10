@@ -44,6 +44,8 @@ export function VisualQuestionStep({
   const title = t(question.titleKey);
   const subtitle = question.subtitleKey ? t(question.subtitleKey) : "";
   // Construit la lecture : titre + sous-titre + options numérotées « 1. … 2. … »
+  // Pour les écrans "info", les "options" sont des illustrations pédagogiques (pas cliquables) :
+  // on les énumère quand même à l'oral, mais sans logique de sélection.
   const optionsSpoken = question.options
     .map((opt, i) => `${i + 1}. ${t(opt.labelKey)}`)
     .join(". ");
@@ -153,9 +155,13 @@ export function VisualQuestionStep({
             label={t(option.labelKey)}
             customIcon={option.icon}
             customImage={option.illustration}
-            isSelected={selectedSet.has(option.id)}
+            isSelected={question.type === "info" ? false : selectedSet.has(option.id)}
             isMultiSelect={question.type === "multi"}
-            onClick={() => handleToggle(option.id)}
+            onClick={() => {
+              // Sur écran info, les cartes ne sont pas interactives
+              if (question.type === "info") return;
+              handleToggle(option.id);
+            }}
             index={index}
           />
         ))}
@@ -176,6 +182,13 @@ export function VisualQuestionStep({
         {question.type === "multi" && (
           <Button onClick={onNext} disabled={!canContinue} className="gap-2">
             {t("onboardingVisual.actions.next")}
+            <ArrowRight className="h-4 w-4" />
+          </Button>
+        )}
+
+        {question.type === "info" && (
+          <Button onClick={onNext} className="gap-2">
+            {question.infoCtaKey ? t(question.infoCtaKey) : t("onboardingVisual.actions.next")}
             <ArrowRight className="h-4 w-4" />
           </Button>
         )}

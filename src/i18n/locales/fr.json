@@ -15,7 +15,44 @@
         "learn_french": "Apprendre / améliorer mon français",
         "find_job": "Trouver un emploi rapidement",
         "job_training": "Faire une formation pour un métier",
+        "recognize_diploma": "Faire reconnaître mon diplôme étranger",
         "need_help": "Je ne sais pas / besoin d'aide"
+      }
+    },
+    "diploma_level": {
+      "question": "Quel est le niveau de votre diplôme ?",
+      "subtitle": "Diplôme obtenu dans votre pays d'origine",
+      "choices": {
+        "secondary": "Secondaire (collège / lycée)",
+        "bac": "Baccalauréat / fin du lycée",
+        "bachelor": "Licence (Bac+3)",
+        "master": "Master (Bac+5)",
+        "doctorate": "Doctorat (Bac+8)",
+        "no_diploma": "Pas de diplôme officiel"
+      }
+    },
+    "continue_field": {
+      "question": "Voulez-vous continuer dans votre domaine de compétence ?",
+      "subtitle": "Vous pouvez aussi vous reconvertir vers un autre métier",
+      "choices": {
+        "yes": "Oui, continuer dans mon domaine",
+        "no": "Non, me reconvertir",
+        "unsure": "Je ne sais pas encore"
+      }
+    },
+    "tension_jobs_info": {
+      "question": "Bonne nouvelle : la France recrute !",
+      "subtitle": "Certains métiers sont très demandés (« métiers en tension ») et accessibles avec une formation courte (2 à 6 mois). En parallèle, ENIC-NARIC peut faire reconnaître votre diplôme. Voici les principaux secteurs qui recrutent :",
+      "cta": "J'ai compris, continuer",
+      "sectors": {
+        "btp": "BTP / Bâtiment",
+        "aide_personne": "Aide à la personne",
+        "hotellerie": "Hôtellerie / Restauration",
+        "logistique": "Logistique",
+        "proprete": "Propreté",
+        "sante": "Santé / Médico-social",
+        "securite": "Sécurité",
+        "transport": "Transport / Livraison"
       }
     },
     "contact_48h": {

@@ -5,7 +5,7 @@
 import type { UserResponses, Secteur, NiveauFrancais } from "./orientationEngine";
 
 interface LegacyAnswers {
-  main_goal?: string;
+  main_goal?: string | string[];
   work_right?: string;
   french_level_cecrl?: string;
   target_sector?: string;
@@ -14,6 +14,8 @@ interface LegacyAnswers {
   fle_type?: string;
   training_duration?: string;
   tags?: string[];
+  diploma_level?: string;
+  continue_field?: string;
   [key: string]: unknown;
 }
 
@@ -113,6 +115,11 @@ export function mapAnswersToV2(answers: LegacyAnswers): UserResponses {
     .map((b) => BESOIN_MAP[b])
     .filter(Boolean) as NonNullable<UserResponses["q9_besoins"]>;
 
+  // Reconnaissance de diplôme : déclenché si "recognize_diploma" est dans main_goal
+  const recognizeDiploma = goals.includes("recognize_diploma");
+  const diplomaLevel = answers.diploma_level as UserResponses["q_diploma_level"] | undefined;
+  const continueField = answers.continue_field as UserResponses["q_continue_field"] | undefined;
+
   return {
     q1_interet: q1,
     q2_droit_travailler: q2,
@@ -123,5 +130,8 @@ export function mapAnswersToV2(answers: LegacyAnswers): UserResponses {
     q7_contraintes: q7,
     q8_competences: q8,
     q9_besoins: q9.length > 0 ? q9 : undefined,
+    q_recognize_diploma: recognizeDiploma || undefined,
+    q_diploma_level: diplomaLevel,
+    q_continue_field: continueField,
   };
 }
