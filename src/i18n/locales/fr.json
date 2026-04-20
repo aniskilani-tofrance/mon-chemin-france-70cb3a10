@@ -10,6 +10,7 @@
     },
     "main_goal": {
       "question": "Quel est votre objectif principal ?",
+      "subtitle": "Vous pouvez choisir plusieurs réponses",
       "choices": {
         "learn_french": "Apprendre / améliorer mon français",
         "find_job": "Trouver un emploi rapidement",
