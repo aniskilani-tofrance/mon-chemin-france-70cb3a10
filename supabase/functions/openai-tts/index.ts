@@ -5,27 +5,29 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Optimised voice per language for Marianne (female advisor)
-// All OpenAI TTS voices are multilingual but each has a distinct timbre / accent.
-// Voices are restricted to feminine ones (nova / shimmer / alloy) to stay coherent
-// with Marianne's character.
-//
-// - fr: nova    → warm, natural French, no English accent (validated)
-// - en: shimmer → soft female with neutral US accent, clearer than nova for EN
-// - es: nova    → excellent Spanish prosody, very natural
-// - pt: nova    → close to PT-BR, warm tone
-// - ar: shimmer → softer Arabic rendering than nova (less anglo accent)
-// - ru: shimmer → more neutral Russian than nova (which sounds heavily EN)
-//
-// Web Speech fallback (handled client-side) covers cases where OpenAI's accent
-// is too foreign — especially for AR.
-const VOICE_MAP: Record<string, string> = {
+// OpenAI fallback voices per language (used if ElevenLabs fails or key missing).
+const OPENAI_VOICE_MAP: Record<string, string> = {
   fr: "nova",
   en: "shimmer",
   es: "nova",
   pt: "nova",
   ar: "shimmer",
   ru: "shimmer",
+};
+
+// ElevenLabs voices per language (toutes féminines, multilingual v2).
+// Marianne = conseillère chaleureuse → voix douces et naturelles.
+// - fr: Charlotte (XB0fDUnXU5powFXDhCwa) → française naturelle
+// - en: Sarah (EXAVITQu4vr4xnSDxMaL) → US doux et clair
+// - es/pt/ru: Charlotte → multilingue v2
+// - ar: Sana (mZ8K1MPRiT5wDQaasg3i) → voix native arabe
+const ELEVENLABS_VOICE_MAP: Record<string, string> = {
+  fr: "XB0fDUnXU5powFXDhCwa",
+  en: "EXAVITQu4vr4xnSDxMaL",
+  es: "XB0fDUnXU5powFXDhCwa",
+  pt: "XB0fDUnXU5powFXDhCwa",
+  ar: "mZ8K1MPRiT5wDQaasg3i",
+  ru: "XB0fDUnXU5powFXDhCwa",
 };
 
 async function callOpenAITTS(
@@ -49,11 +51,6 @@ async function callOpenAITTS(
     }),
   });
 }
-
-// ElevenLabs – voix arabe native (Sana, féminine, multilingue v2)
-// Voice ID "Sana" : mZ8K1MPRiT5wDQaasg3i — voix arabe native chaleureuse.
-// Fallback : "Rachel" multilingue (21m00Tcm4TlvDq8ikWAM) si Sana indispo.
-const ELEVENLABS_AR_VOICE_ID = 'mZ8K1MPRiT5wDQaasg3i';
 
 async function callElevenLabsTTS(
   apiKey: string,
@@ -98,62 +95,54 @@ Deno.serve(async (req) => {
     }
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
+    const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
+
+    const lang = language || 'fr';
+    const truncatedText = text.slice(0, 4096);
+    const selectedSpeed = speed || 0.95;
+
+    console.log(`[tts] lang=${lang} chars=${text.length} elevenlabs=${!!elevenKey}`);
+
+    // 1) Tentative ElevenLabs (toutes langues) — voix natives premium
+    if (elevenKey) {
+      const elVoiceId = ELEVENLABS_VOICE_MAP[lang] || ELEVENLABS_VOICE_MAP.fr;
+      try {
+        const elResp = await callElevenLabsTTS(elevenKey, truncatedText, elVoiceId);
+        if (elResp.ok) {
+          const audioBuffer = await elResp.arrayBuffer();
+          const base64 = base64Encode(audioBuffer);
+          console.log(`[tts] ElevenLabs OK lang=${lang} voice=${elVoiceId}`);
+          return new Response(JSON.stringify({ audio_base64: base64, provider: 'elevenlabs' }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const errText = await elResp.text();
+        console.warn(`[tts] ElevenLabs failed (${elResp.status}) lang=${lang}: ${errText} — fallback OpenAI`);
+      } catch (err) {
+        console.warn(`[tts] ElevenLabs threw lang=${lang}, fallback OpenAI:`, err);
+      }
+    }
+
+    // 2) Fallback OpenAI TTS
     if (!apiKey) {
-      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+      return new Response(JSON.stringify({ error: 'No TTS provider available' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const lang = language || 'fr';
-    const selectedVoice = voice || VOICE_MAP[lang] || 'nova';
-    // No language hint prefix – OpenAI TTS infers language from the text itself.
-    // Adding text hints like "[Parle en français]" causes TTS to pronounce them literally.
-    const truncatedText = text.slice(0, 4096);
-    const selectedSpeed = speed || 0.95;
-
-    console.log(`[openai-tts] lang=${lang} voice=${selectedVoice} speed=${selectedSpeed} chars=${text.length}`);
-
-    // ──────────────────────────────────────────────────────────────
-    // Arabe : tenter ElevenLabs (voix native) en priorité, fallback OpenAI
-    // ──────────────────────────────────────────────────────────────
-    if (lang === 'ar') {
-      const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
-      if (elevenKey) {
-        try {
-          console.log('[openai-tts] Arabic → trying ElevenLabs native voice');
-          const elResp = await callElevenLabsTTS(elevenKey, truncatedText, ELEVENLABS_AR_VOICE_ID);
-          if (elResp.ok) {
-            const audioBuffer = await elResp.arrayBuffer();
-            const base64 = base64Encode(audioBuffer);
-            console.log('[openai-tts] ElevenLabs success for Arabic');
-            return new Response(JSON.stringify({ audio_base64: base64, provider: 'elevenlabs' }), {
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            });
-          }
-          const errText = await elResp.text();
-          console.warn(`[openai-tts] ElevenLabs failed (${elResp.status}): ${errText} — falling back to OpenAI`);
-        } catch (err) {
-          console.warn('[openai-tts] ElevenLabs threw, falling back to OpenAI:', err);
-        }
-      } else {
-        console.warn('[openai-tts] ELEVENLABS_API_KEY missing — using OpenAI for Arabic');
-      }
-    }
-
-    // First attempt
+    const selectedVoice = voice || OPENAI_VOICE_MAP[lang] || 'nova';
     let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
 
-    // Retry once on transient errors (5xx, network)
     if (!response.ok && response.status >= 500) {
-      console.warn(`[openai-tts] Retry after ${response.status}`);
+      console.warn(`[tts] OpenAI retry after ${response.status}`);
       await new Promise(r => setTimeout(r, 1000));
       response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
     }
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('[openai-tts] Error:', response.status, errorText);
+      console.error('[tts] OpenAI error:', response.status, errorText);
       return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -163,11 +152,8 @@ Deno.serve(async (req) => {
     const audioBuffer = await response.arrayBuffer();
     const base64 = base64Encode(audioBuffer);
 
-    return new Response(JSON.stringify({ audio_base64: base64 }), {
-      headers: {
-        ...corsHeaders,
-        'Content-Type': 'application/json',
-      },
+    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
     console.error('TTS function error:', error);
