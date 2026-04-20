@@ -43,7 +43,12 @@ export function VisualQuestionStep({
 
   const title = t(question.titleKey);
   const subtitle = question.subtitleKey ? t(question.subtitleKey) : "";
-  const ttsText = subtitle ? `${title}. ${subtitle}` : title;
+  // Construit la lecture : titre + sous-titre + options numérotées « 1. … 2. … »
+  const optionsSpoken = question.options
+    .map((opt, i) => `${i + 1}. ${t(opt.labelKey)}`)
+    .join(". ");
+  const intro = subtitle ? `${title}. ${subtitle}` : title;
+  const ttsText = `${intro}. ${optionsSpoken}.`;
 
   // ─── TTS auto à chaque nouvelle question ──────────────────
   useEffect(() => {
