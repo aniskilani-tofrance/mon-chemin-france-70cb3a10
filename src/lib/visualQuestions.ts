@@ -42,7 +42,7 @@ import secAide from "@/assets/onboarding/sector_aide_personne.jpg";
 import secHotel from "@/assets/onboarding/sector_hotellerie.jpg";
 import secCom from "@/assets/onboarding/sector_commerce.jpg";
 
-export type VisualQuestionType = "single" | "multi";
+export type VisualQuestionType = "single" | "multi" | "info";
 
 export interface VisualOption {
   id: string;
@@ -54,6 +54,9 @@ export interface VisualOption {
   illustration?: string;
 }
 
+/** Réponses déjà collectées (utilisé par showIf) */
+export type AnswersMap = Record<string, string | string[] | undefined>;
+
 export interface VisualQuestion {
   id: string;
   titleKey: string;
@@ -63,7 +66,19 @@ export interface VisualQuestion {
   options: VisualOption[];
   /** Si true, optionnel — bouton « Passer » disponible */
   optional?: boolean;
+  /** Affichage conditionnel basé sur les réponses précédentes */
+  showIf?: (answers: AnswersMap) => boolean;
+  /** Pour les écrans purement informatifs : texte du bouton de validation */
+  infoCtaKey?: string;
 }
+
+/** Helper : main_goal peut être string ou string[] (multi-choice) */
+const goalIncludes = (answers: AnswersMap, goal: string): boolean => {
+  const v = answers.main_goal;
+  if (Array.isArray(v)) return v.includes(goal);
+  if (typeof v === "string") return v.split(",").map((s) => s.trim()).includes(goal);
+  return false;
+};
 
 export const VISUAL_QUESTIONS: VisualQuestion[] = [
   // 1 — Genre + âge (NOUVEAU)
