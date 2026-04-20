@@ -54,6 +54,8 @@ const Onboarding = () => {
   const [postalCode, setPostalCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
+  const [isResending, setIsResending] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const resumeAttemptedRef = useRef(false);
