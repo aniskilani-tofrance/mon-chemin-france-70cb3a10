@@ -77,7 +77,7 @@ const Onboarding = () => {
       const cp = await loadCheckpoint();
       if (!cp) return;
       if (cp.completed) {
-        navigate("/dashboard");
+        navigate("/confirmation");
         return;
       }
       // Restaure langue
