@@ -17,13 +17,14 @@ export type Secteur =
   | "nsp";
 
 export type ParcoursId =
-  | "ADMIN"       // Blocage — droit de travail non établi
-  | "INSERTION"   // Travail rapide
-  | "FORMATION"   // TP/CQP
-  | "FRANCAIS"    // FLE/FOS pur
-  | "MIXTE"       // Français + métier combinés
-  | "ORIENTATION" // Indécis — besoin d'un conseiller
-  | "ECOUTE";     // Besoins spécifiques (hors emploi/formation)
+  | "ADMIN"          // Blocage — droit de travail non établi
+  | "INSERTION"      // Travail rapide
+  | "FORMATION"      // TP/CQP
+  | "FRANCAIS"       // FLE/FOS pur
+  | "MIXTE"          // Français + métier combinés
+  | "ORIENTATION"    // Indécis — besoin d'un conseiller
+  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation)
+  | "RECONNAISSANCE"; // Reconnaissance de diplôme étranger (ENIC-NARIC)
 
 export type ActionId =
   | "AIDE_FRANCE_TRAVAIL"
