@@ -114,11 +114,13 @@
       }
     },
     "mobility": {
-      "question": "Quelle est votre mobilité géographique ?",
+      "question": "Comment vous déplacez-vous ?",
+      "subtitle": "Plusieurs choix possibles",
       "choices": {
-        "local": "Locale (< 30 km)",
-        "regional": "Régionale (30-100 km)",
-        "national": "Nationale"
+        "walk": "À pied",
+        "bike": "À vélo",
+        "car": "En voiture",
+        "transit": "En transports en commun"
       }
     },
     "funding_status": {
@@ -164,6 +166,27 @@
     "contact_email": {
       "question": "Quel est votre email ?",
       "subtitle": "Pour recevoir votre orientation personnalisée"
+    },
+    "gender_age": {
+      "question": "Vous êtes…",
+      "subtitle": "Sélectionnez ce qui vous correspond",
+      "choices": {
+        "woman_under25": "Femme – moins de 25 ans",
+        "woman_25_45": "Femme – 25 à 45 ans",
+        "woman_over45": "Femme – plus de 45 ans",
+        "man_under25": "Homme – moins de 25 ans",
+        "man_25_45": "Homme – 25 à 45 ans",
+        "man_over45": "Homme – plus de 45 ans"
+      }
+    },
+    "current_situation": {
+      "question": "Quelle est votre situation actuelle ?",
+      "choices": {
+        "jobseeker": "Demandeur d'emploi",
+        "employee": "En emploi (salarié)",
+        "student": "Étudiant ou en formation",
+        "inactive": "Sans activité actuellement"
+      }
     }
   },
   "completion": {
@@ -288,7 +311,14 @@
       "label": "Adresse email",
       "consent_lead": "J'accepte d'être contacté par ToFrance et ses partenaires (organismes de formation, employeurs).",
       "consent_marketing": "Je souhaite recevoir des actualités et conseils par email (facultatif).",
-      "submit": "Terminer"
+      "submit": "Terminer",
+      "magic_link_note": "Vous pourrez reprendre votre parcours plus tard grâce à un lien envoyé par email."
+    },
+    "postal_code": {
+      "question": "Quel est votre code postal ?",
+      "subtitle": "Pour vous proposer des opportunités proches de chez vous",
+      "label": "Code postal",
+      "error": "Entrez un code postal valide à 5 chiffres"
     }
   }
 }
