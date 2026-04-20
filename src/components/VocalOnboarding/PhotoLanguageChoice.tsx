@@ -142,6 +142,19 @@ export function PhotoLanguageChoice({
         customImage ? "min-h-[160px] sm:min-h-[200px]" : "min-h-[100px] sm:min-h-[120px]"
       )}
     >
+      {/* Numéro d'option (synchronisé avec la lecture vocale "1. ... 2. ...") */}
+      <div
+        className={cn(
+          "absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-sm transition-all",
+          isSelected
+            ? "bg-primary text-primary-foreground"
+            : "bg-background/90 text-foreground border border-border"
+        )}
+        aria-hidden="true"
+      >
+        {index + 1}
+      </div>
+
       {/* Selection indicator for multi-select */}
       {isMultiSelect && (
         <div
