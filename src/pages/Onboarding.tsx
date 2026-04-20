@@ -9,6 +9,7 @@ import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
 import { PostalCodeStep } from "@/components/VisualOnboarding/PostalCodeStep";
 import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
+import { MagicLinkSentStep } from "@/components/VisualOnboarding/MagicLinkSentStep";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -21,7 +22,7 @@ import { computeOrientation } from "@/lib/orientationEngine";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "magic-link-sent" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
