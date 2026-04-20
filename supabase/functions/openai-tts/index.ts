@@ -5,27 +5,31 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Optimised voice per language for Marianne (female advisor)
-// All OpenAI TTS voices are multilingual but each has a distinct timbre / accent.
-// Voices are restricted to feminine ones (nova / shimmer / alloy) to stay coherent
-// with Marianne's character.
-//
-// - fr: nova    → warm, natural French, no English accent (validated)
-// - en: shimmer → soft female with neutral US accent, clearer than nova for EN
-// - es: nova    → excellent Spanish prosody, very natural
-// - pt: nova    → close to PT-BR, warm tone
-// - ar: shimmer → softer Arabic rendering than nova (less anglo accent)
-// - ru: shimmer → more neutral Russian than nova (which sounds heavily EN)
-//
-// Web Speech fallback (handled client-side) covers cases where OpenAI's accent
-// is too foreign — especially for AR.
-const VOICE_MAP: Record<string, string> = {
+// OpenAI fallback voices per language (used if ElevenLabs fails or key missing).
+const OPENAI_VOICE_MAP: Record<string, string> = {
   fr: "nova",
   en: "shimmer",
   es: "nova",
   pt: "nova",
   ar: "shimmer",
   ru: "shimmer",
+};
+
+// ElevenLabs voices per language (toutes féminines, multilingual v2).
+// Marianne = conseillère chaleureuse → voix douces et naturelles.
+// - fr: Charlotte (XB0fDUnXU5powFXDhCwa) → française naturelle
+// - en: Sarah (EXAVITQu4vr4xnSDxMaL) → US doux et clair
+// - es: Charlotte → excellent en espagnol via multilingual v2
+// - pt: Charlotte → bon rendu PT-BR
+// - ar: Sana (mZ8K1MPRiT5wDQaasg3i) → voix native arabe
+// - ru: Charlotte → russe correct via multilingual v2
+const ELEVENLABS_VOICE_MAP: Record<string, string> = {
+  fr: "XB0fDUnXU5powFXDhCwa", // Charlotte
+  en: "EXAVITQu4vr4xnSDxMaL", // Sarah
+  es: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
+  pt: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
+  ar: "mZ8K1MPRiT5wDQaasg3i", // Sana (native AR)
+  ru: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
 };
 
 async function callOpenAITTS(
