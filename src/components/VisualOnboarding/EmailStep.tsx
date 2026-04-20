@@ -112,6 +112,9 @@ export function EmailStep({
           )}
         </div>
         <p className="text-sm sm:text-base text-muted-foreground">{subtitle}</p>
+        <p className="text-xs text-muted-foreground/80 italic">
+          {t("onboardingVisual.email.magic_link_note")}
+        </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">

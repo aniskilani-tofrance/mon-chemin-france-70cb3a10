@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX } from "lucide-react";
 import { Header } from "@/components/Header";
@@ -7,18 +7,21 @@ import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
+import { PostalCodeStep } from "@/components/VisualOnboarding/PostalCodeStep";
 import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
+import { useOnboardingCheckpoint } from "@/hooks/useOnboardingCheckpoint";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
 import { computeOrientation } from "@/lib/orientationEngine";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
+import { toast } from "@/hooks/use-toast";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "email" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
@@ -33,28 +36,90 @@ const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string
   ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },
 };
 
-const TOTAL_STEPS = VISUAL_QUESTIONS.length + 1; // +1 pour l'email
+const TOTAL_STEPS = VISUAL_QUESTIONS.length + 2; // questions + postal + email
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { language, setLanguage } = useLanguage();
   const tts = useTTS({ language });
   const { track } = useAnalytics();
   const { user } = useAuth();
+  const { saveCheckpoint, loadCheckpoint, markCompleted } = useOnboardingCheckpoint();
 
   const [step, setStep] = useState<OnboardingStep>("language");
   const [questionIndex, setQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<VisualAnswers>({});
+  const [postalCode, setPostalCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [magicLinkSent, setMagicLinkSent] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
+  const resumeAttemptedRef = useRef(false);
 
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
 
+  // ─── Reprise via ?resume=1 ou utilisateur connecté ──────────
+  useEffect(() => {
+    if (resumeAttemptedRef.current) return;
+    resumeAttemptedRef.current = true;
+    const shouldResume = searchParams.get("resume") === "1" || !!user;
+    if (!shouldResume) return;
+    (async () => {
+      const cp = await loadCheckpoint();
+      if (!cp) return;
+      if (cp.completed) {
+        navigate("/dashboard");
+        return;
+      }
+      // Restaure réponses + langue + step
+      if (cp.language && cp.language !== language) {
+        setLanguage(cp.language as LanguageCode);
+      }
+      const partial = (cp.partial_answers || {}) as VisualAnswers & { postal_code?: string };
+      setAnswers(partial);
+      if (partial.postal_code && typeof partial.postal_code === "string") {
+        setPostalCode(partial.postal_code);
+      }
+      // Resolve current step
+      const cs = cp.current_step;
+      if (cs === "email") setStep("email");
+      else if (cs === "postal-code") setStep("postal-code");
+      else if (cs?.startsWith("q:")) {
+        const qid = cs.slice(2);
+        const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
+        if (idx >= 0) {
+          setStep("visual-quiz");
+          setQuestionIndex(idx);
+        } else {
+          setStep("visual-quiz");
+        }
+      } else {
+        setStep("visual-quiz");
+      }
+      toast({
+        title: "Reprise de votre questionnaire",
+        description: "Nous avons retrouvé vos réponses précédentes.",
+      });
+    })();
+  }, [searchParams, user, loadCheckpoint, language, setLanguage, navigate]);
+
   useEffect(() => {
     track("onboarding_step", { step }, "/onboarding", language);
   }, [step]);
+
+  const persistCheckpoint = useCallback(
+    (nextStep: string, nextAnswers: VisualAnswers, email?: string) => {
+      saveCheckpoint({
+        step: nextStep,
+        answers: nextAnswers,
+        email,
+        language,
+      });
+    },
+    [saveCheckpoint, language]
+  );
 
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
@@ -72,27 +137,31 @@ const Onboarding = () => {
 
   const handleAnswerChange = (value: string | string[]) => {
     if (!currentQuestion) return;
-    setAnswers((prev) => ({ ...prev, [currentQuestion.id]: value }));
+    const next = { ...answers, [currentQuestion.id]: value };
+    setAnswers(next);
+    persistCheckpoint(`q:${currentQuestion.id}`, next);
   };
 
   const handleNext = () => {
     if (!currentQuestion) return;
-    track(
-      "onboarding_question_answered",
-      { questionId: currentQuestion.id },
-      "/onboarding",
-      language
-    );
+    track("onboarding_question_answered", { questionId: currentQuestion.id }, "/onboarding", language);
 
     if (questionIndex < VISUAL_QUESTIONS.length - 1) {
-      setQuestionIndex((i) => i + 1);
+      const nextIdx = questionIndex + 1;
+      setQuestionIndex(nextIdx);
+      persistCheckpoint(`q:${VISUAL_QUESTIONS[nextIdx].id}`, answers);
     } else {
-      setStep("email");
+      setStep("postal-code");
+      persistCheckpoint("postal-code", answers);
     }
   };
 
   const handlePrevious = () => {
     if (step === "email") {
+      setStep("postal-code");
+      return;
+    }
+    if (step === "postal-code") {
       setStep("visual-quiz");
       setQuestionIndex(VISUAL_QUESTIONS.length - 1);
       return;
@@ -104,17 +173,20 @@ const Onboarding = () => {
     }
   };
 
+  const handlePostalSubmit = (code: string) => {
+    setPostalCode(code);
+    const next = { ...answers, postal_code: code };
+    setAnswers(next);
+    persistCheckpoint("email", next);
+    setStep("email");
+  };
+
   const handleEmailSubmit = useCallback(
     async (data: { email: string; consent_lead_sharing: boolean; consent_marketing: boolean }) => {
       setIsSubmitting(true);
 
-      // Normalisation : barriers en array, autres en string
-      const flat: Record<string, any> = {};
-      for (const [k, v] of Object.entries(answers)) {
-        flat[k] = v;
-      }
+      const flat: Record<string, any> = { ...answers, postal_code: postalCode };
 
-      // Calcul orientation via le moteur v2
       const v2Answers = mapAnswersToV2({
         main_goal: flat.main_goal,
         work_right: flat.work_right,
@@ -125,16 +197,9 @@ const Onboarding = () => {
       });
       const orientation = computeOrientation(v2Answers);
 
-      // Tracking complet
-      track(
-        "onboarding_completed",
-        { route: orientation.parcours, score: orientation.score },
-        "/onboarding",
-        language
-      );
+      track("onboarding_completed", { route: orientation.parcours, score: orientation.score }, "/onboarding", language);
 
       try {
-        // 1. Insertion onboarding_results
         await supabase.from("onboarding_results").insert([
           {
             email: data.email,
@@ -154,7 +219,6 @@ const Onboarding = () => {
         console.error("Error saving onboarding results:", error);
       }
 
-      // 2. Consents + match leads
       try {
         localStorage.setItem("user_email", data.email);
         const consentsToInsert = [
@@ -173,9 +237,7 @@ const Onboarding = () => {
             consent_text_version: "4.0",
           },
         ];
-        await supabase
-          .from("consents")
-          .upsert(consentsToInsert, { onConflict: "email,consent_type" });
+        await supabase.from("consents").upsert(consentsToInsert, { onConflict: "email,consent_type" });
 
         await supabase.functions.invoke("match-leads", {
           body: {
@@ -187,6 +249,30 @@ const Onboarding = () => {
         console.error("Error saving consents or matching:", error);
       }
 
+      // Magic link → crée le compte automatiquement et permet la reprise
+      if (!user) {
+        try {
+          const { error: otpError } = await supabase.auth.signInWithOtp({
+            email: data.email,
+            options: {
+              emailRedirectTo: `${window.location.origin}/onboarding?resume=1`,
+              shouldCreateUser: true,
+              data: { language, source: "onboarding_visual" },
+            },
+          });
+          if (otpError) {
+            console.error("Magic link error:", otpError);
+          } else {
+            setMagicLinkSent(true);
+          }
+        } catch (e) {
+          console.error("OTP exception:", e);
+        }
+      }
+
+      // Sauvegarde checkpoint avec email pour reprise
+      persistCheckpoint("email", flat, data.email);
+
       const finalAnswers = {
         ...flat,
         contact_email: data.email,
@@ -195,7 +281,6 @@ const Onboarding = () => {
       };
       localStorage.setItem("onboarding_answers", JSON.stringify(finalAnswers));
 
-      // Pour CompletionStep
       const display: Record<string, string> = {};
       for (const [key, value] of Object.entries(finalAnswers)) {
         if (value === undefined || value === null) continue;
@@ -204,17 +289,35 @@ const Onboarding = () => {
       }
       setCompletionAnswers(display);
 
+      await markCompleted();
+
       setIsSubmitting(false);
       setStep("complete");
     },
-    [answers, language, onboardingStartedAt, track]
+    [answers, postalCode, language, onboardingStartedAt, track, user, persistCheckpoint, markCompleted]
   );
 
   const handleComplete = useCallback(() => {
     navigate("/confirmation");
   }, [navigate]);
 
-  // ─── Rendu ───────────────────────────────────────────
+  // Numérotation pour la barre de progression
+  const stepNumber =
+    step === "visual-quiz"
+      ? questionIndex + 1
+      : step === "postal-code"
+      ? VISUAL_QUESTIONS.length + 1
+      : step === "email"
+      ? TOTAL_STEPS
+      : 1;
+
+  const progressPercent =
+    step === "visual-quiz"
+      ? getProgressPercent(questionIndex, VISUAL_QUESTIONS.length)
+      : step === "postal-code"
+      ? Math.round(((VISUAL_QUESTIONS.length + 1) / TOTAL_STEPS) * 100)
+      : 100;
+
   return (
     <div
       className="min-h-screen bg-gradient-to-b from-background to-secondary/20 flex flex-col"
@@ -245,15 +348,10 @@ const Onboarding = () => {
       <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-8 sm:pt-24 overflow-y-auto">
         <div className="w-full max-w-2xl">
           <AnimatePresence mode="wait">
-            {step === "language" && (
-              <LanguageStep key="language" onSelect={handleLanguageSelect} />
-            )}
+            {step === "language" && <LanguageStep key="language" onSelect={handleLanguageSelect} />}
 
             {step === "path-choice" && (
-              <OnboardingPathChoice
-                key="path-choice"
-                onSelectVisual={handleSelectVisualPath}
-              />
+              <OnboardingPathChoice key="path-choice" onSelectVisual={handleSelectVisualPath} />
             )}
 
             {step === "visual-quiz" && currentQuestion && (
@@ -266,8 +364,21 @@ const Onboarding = () => {
                 onPrevious={handlePrevious}
                 isFirst={questionIndex === 0}
                 isLast={questionIndex === VISUAL_QUESTIONS.length - 1}
-                progressPercent={getProgressPercent(questionIndex, VISUAL_QUESTIONS.length)}
-                questionNumber={questionIndex + 1}
+                progressPercent={progressPercent}
+                questionNumber={stepNumber}
+                totalQuestions={TOTAL_STEPS}
+                tts={tts}
+              />
+            )}
+
+            {step === "postal-code" && (
+              <PostalCodeStep
+                key="postal-code"
+                initialValue={postalCode}
+                onSubmit={handlePostalSubmit}
+                onPrevious={handlePrevious}
+                progressPercent={progressPercent}
+                questionNumber={stepNumber}
                 totalQuestions={TOTAL_STEPS}
                 tts={tts}
               />
@@ -295,6 +406,12 @@ const Onboarding = () => {
               />
             )}
           </AnimatePresence>
+
+          {magicLinkSent && step !== "complete" && (
+            <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground text-center">
+              📧 Un email vous a été envoyé pour finaliser la création de votre compte et vous permettre de reprendre votre questionnaire à tout moment.
+            </div>
+          )}
         </div>
       </div>
     </div>
