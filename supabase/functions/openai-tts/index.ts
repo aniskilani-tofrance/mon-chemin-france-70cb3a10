@@ -19,17 +19,15 @@ const OPENAI_VOICE_MAP: Record<string, string> = {
 // Marianne = conseillère chaleureuse → voix douces et naturelles.
 // - fr: Charlotte (XB0fDUnXU5powFXDhCwa) → française naturelle
 // - en: Sarah (EXAVITQu4vr4xnSDxMaL) → US doux et clair
-// - es: Charlotte → excellent en espagnol via multilingual v2
-// - pt: Charlotte → bon rendu PT-BR
+// - es/pt/ru: Charlotte → multilingue v2
 // - ar: Sana (mZ8K1MPRiT5wDQaasg3i) → voix native arabe
-// - ru: Charlotte → russe correct via multilingual v2
 const ELEVENLABS_VOICE_MAP: Record<string, string> = {
-  fr: "XB0fDUnXU5powFXDhCwa", // Charlotte
-  en: "EXAVITQu4vr4xnSDxMaL", // Sarah
-  es: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
-  pt: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
-  ar: "mZ8K1MPRiT5wDQaasg3i", // Sana (native AR)
-  ru: "XB0fDUnXU5powFXDhCwa", // Charlotte (multilingue)
+  fr: "XB0fDUnXU5powFXDhCwa",
+  en: "EXAVITQu4vr4xnSDxMaL",
+  es: "XB0fDUnXU5powFXDhCwa",
+  pt: "XB0fDUnXU5powFXDhCwa",
+  ar: "mZ8K1MPRiT5wDQaasg3i",
+  ru: "XB0fDUnXU5powFXDhCwa",
 };
 
 async function callOpenAITTS(
@@ -53,11 +51,6 @@ async function callOpenAITTS(
     }),
   });
 }
-
-// ElevenLabs – voix arabe native (Sana, féminine, multilingue v2)
-// Voice ID "Sana" : mZ8K1MPRiT5wDQaasg3i — voix arabe native chaleureuse.
-// Fallback : "Rachel" multilingue (21m00Tcm4TlvDq8ikWAM) si Sana indispo.
-const ELEVENLABS_AR_VOICE_ID = 'mZ8K1MPRiT5wDQaasg3i';
 
 async function callElevenLabsTTS(
   apiKey: string,
@@ -94,9 +87,6 @@ Deno.serve(async (req) => {
   try {
     const { text, language, voice, speed } = await req.json();
 
-  try {
-    const { text, language, voice, speed } = await req.json();
-
     if (!text || typeof text !== 'string') {
       return new Response(JSON.stringify({ error: 'text is required' }), {
         status: 400,
@@ -113,9 +103,7 @@ Deno.serve(async (req) => {
 
     console.log(`[tts] lang=${lang} chars=${text.length} elevenlabs=${!!elevenKey}`);
 
-    // ──────────────────────────────────────────────────────────────
     // 1) Tentative ElevenLabs (toutes langues) — voix natives premium
-    // ──────────────────────────────────────────────────────────────
     if (elevenKey) {
       const elVoiceId = ELEVENLABS_VOICE_MAP[lang] || ELEVENLABS_VOICE_MAP.fr;
       try {
@@ -135,9 +123,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    // ──────────────────────────────────────────────────────────────
     // 2) Fallback OpenAI TTS
-    // ──────────────────────────────────────────────────────────────
     if (!apiKey) {
       return new Response(JSON.stringify({ error: 'No TTS provider available' }), {
         status: 500,
@@ -169,14 +155,6 @@ Deno.serve(async (req) => {
     return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
-  } catch (error) {
-    console.error('TTS function error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
-});
   } catch (error) {
     console.error('TTS function error:', error);
     return new Response(JSON.stringify({ error: error.message }), {
