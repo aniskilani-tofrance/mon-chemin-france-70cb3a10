@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { MailCheck, ArrowRight, RefreshCw } from "lucide-react";
+import { MailCheck, ArrowRight, RefreshCw, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface MagicLinkSentStepProps {
@@ -10,6 +11,8 @@ interface MagicLinkSentStepProps {
   isResending?: boolean;
 }
 
+const COOLDOWN_SECONDS = 60;
+
 export function MagicLinkSentStep({
   email,
   onContinue,
@@ -17,6 +20,25 @@ export function MagicLinkSentStep({
   isResending = false,
 }: MagicLinkSentStepProps) {
   const { t } = useTranslation();
+  // Démarre déjà en cooldown puisqu'un email vient d'être envoyé en arrivant sur cette étape.
+  const [cooldown, setCooldown] = useState(COOLDOWN_SECONDS);
+
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const id = setInterval(() => {
+      setCooldown((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [cooldown]);
+
+  const handleResend = () => {
+    if (cooldown > 0 || isResending || !onResend) return;
+    onResend();
+    setCooldown(COOLDOWN_SECONDS);
+  };
+
+  const isDisabled = isResending || cooldown > 0;
+  const progressPct = ((COOLDOWN_SECONDS - cooldown) / COOLDOWN_SECONDS) * 100;
 
   return (
     <motion.div
@@ -74,16 +96,46 @@ export function MagicLinkSentStep({
 
       <div className="flex flex-col sm:flex-row items-center gap-3 w-full pt-2">
         {onResend && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onResend}
-            disabled={isResending}
-            className="gap-2 w-full sm:w-auto"
-          >
-            <RefreshCw className={`h-4 w-4 ${isResending ? "animate-spin" : ""}`} />
-            {t("onboardingVisual.magic_link_sent.resend")}
-          </Button>
+          <div className="w-full sm:w-auto flex flex-col gap-1.5">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResend}
+              disabled={isDisabled}
+              aria-live="polite"
+              className="gap-2 w-full sm:w-auto relative overflow-hidden"
+            >
+              {cooldown > 0 ? (
+                <>
+                  <Clock className="h-4 w-4" />
+                  <span>
+                    {t("onboardingVisual.magic_link_sent.resend_in", { seconds: cooldown })}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <RefreshCw className={`h-4 w-4 ${isResending ? "animate-spin" : ""}`} />
+                  <span>{t("onboardingVisual.magic_link_sent.resend")}</span>
+                </>
+              )}
+            </Button>
+            {cooldown > 0 && (
+              <div
+                className="h-1 w-full overflow-hidden rounded-full bg-muted"
+                role="progressbar"
+                aria-valuenow={Math.round(progressPct)}
+                aria-valuemin={0}
+                aria-valuemax={100}
+              >
+                <motion.div
+                  className="h-full bg-primary"
+                  initial={false}
+                  animate={{ width: `${progressPct}%` }}
+                  transition={{ duration: 1, ease: "linear" }}
+                />
+              </div>
+            )}
+          </div>
         )}
         <Button
           type="button"
