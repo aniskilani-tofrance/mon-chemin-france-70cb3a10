@@ -39,7 +39,7 @@ const SOUND_TEXT: Record<LanguageCode, { on: string; off: string; enable: string
   ru: { on: "Звук ON", off: "Звук OFF", enable: "Включить звук", disable: "Выключить звук" },
 };
 
-const TOTAL_STEPS = VISUAL_QUESTIONS.length + 2; // questions + postal + email
+// TOTAL_STEPS dynamique : calculé via activeQuestions (certaines questions sont conditionnelles)
 
 const Onboarding = () => {
   const navigate = useNavigate();
