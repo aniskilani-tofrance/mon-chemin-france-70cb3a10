@@ -5,7 +5,7 @@
 import type { UserResponses, Secteur, NiveauFrancais } from "./orientationEngine";
 
 interface LegacyAnswers {
-  main_goal?: string;
+  main_goal?: string | string[];
   work_right?: string;
   french_level_cecrl?: string;
   target_sector?: string;
@@ -14,6 +14,8 @@ interface LegacyAnswers {
   fle_type?: string;
   training_duration?: string;
   tags?: string[];
+  diploma_level?: string;
+  continue_field?: string;
   [key: string]: unknown;
 }
 
