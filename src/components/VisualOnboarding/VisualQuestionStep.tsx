@@ -147,6 +147,7 @@ export function VisualQuestionStep({
             choiceId={option.id}
             label={t(option.labelKey)}
             customIcon={option.icon}
+            customImage={option.illustration}
             isSelected={selectedSet.has(option.id)}
             isMultiSelect={question.type === "multi"}
             onClick={() => handleToggle(option.id)}

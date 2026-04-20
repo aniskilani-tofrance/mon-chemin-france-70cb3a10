@@ -93,6 +93,8 @@ interface PhotoLanguageChoiceProps {
   choiceId: string;
   label: string;
   customIcon?: string;
+  /** Image illustrative (remplace l'icône emoji si fournie) */
+  customImage?: string;
   isSelected: boolean;
   isMultiSelect?: boolean;
   onClick: () => void;
@@ -104,6 +106,7 @@ export function PhotoLanguageChoice({
   choiceId,
   label,
   customIcon,
+  customImage,
   isSelected,
   isMultiSelect = false,
   onClick,
@@ -131,19 +134,19 @@ export function PhotoLanguageChoice({
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 transition-all duration-300",
-        compact ? "p-3 sm:p-4" : "p-4 sm:p-6",
+        "group relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 transition-all duration-300 overflow-hidden",
+        compact ? "p-3 sm:p-4" : "p-3 sm:p-4",
         isSelected
           ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 ring-2 ring-primary/30"
           : "border-border bg-card hover:border-primary/50 hover:bg-secondary/30 hover:shadow-md",
-        "min-h-[100px] sm:min-h-[120px]"
+        customImage ? "min-h-[160px] sm:min-h-[200px]" : "min-h-[100px] sm:min-h-[120px]"
       )}
     >
       {/* Selection indicator for multi-select */}
       {isMultiSelect && (
         <div
           className={cn(
-            "absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all",
+            "absolute right-2 top-2 z-10 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all",
             isSelected
               ? "border-primary bg-primary text-primary-foreground"
               : "border-muted-foreground/30 bg-background"
@@ -153,22 +156,42 @@ export function PhotoLanguageChoice({
         </div>
       )}
 
-      {/* Icon with bounce animation on selection */}
-      <motion.div
-        animate={isSelected ? { scale: [1, 1.2, 1] } : {}}
-        transition={{ duration: 0.3 }}
-        className={cn(
-          "text-4xl sm:text-5xl transition-transform",
-          isSelected && "drop-shadow-lg"
-        )}
-      >
-        {icon}
-      </motion.div>
+      {/* Image illustrative ou icône emoji */}
+      {customImage ? (
+        <motion.div
+          animate={isSelected ? { scale: [1, 1.05, 1] } : {}}
+          transition={{ duration: 0.3 }}
+          className={cn(
+            "w-full aspect-square rounded-xl overflow-hidden bg-secondary/20 flex items-center justify-center",
+            isSelected && "ring-2 ring-primary/30"
+          )}
+        >
+          <img
+            src={customImage}
+            alt={label}
+            loading="lazy"
+            width={512}
+            height={512}
+            className="w-full h-full object-cover"
+          />
+        </motion.div>
+      ) : (
+        <motion.div
+          animate={isSelected ? { scale: [1, 1.2, 1] } : {}}
+          transition={{ duration: 0.3 }}
+          className={cn(
+            "text-4xl sm:text-5xl transition-transform",
+            isSelected && "drop-shadow-lg"
+          )}
+        >
+          {icon}
+        </motion.div>
+      )}
 
       {/* Label */}
       <span
         className={cn(
-          "text-center text-xs font-medium leading-tight transition-colors sm:text-sm",
+          "text-center text-xs font-medium leading-tight transition-colors sm:text-sm relative z-10",
           isSelected ? "text-primary" : "text-foreground"
         )}
       >
@@ -180,7 +203,7 @@ export function PhotoLanguageChoice({
         <motion.div
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
+          className="absolute -bottom-1 -right-1 z-10 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-md"
         >
           <Check className="h-3.5 w-3.5" />
         </motion.div>
@@ -189,7 +212,7 @@ export function PhotoLanguageChoice({
       {/* Glow effect on hover */}
       <div
         className={cn(
-          "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300",
+          "absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 pointer-events-none",
           "bg-gradient-to-br from-primary/5 to-primary/10",
           "group-hover:opacity-100",
           isSelected && "opacity-100"
