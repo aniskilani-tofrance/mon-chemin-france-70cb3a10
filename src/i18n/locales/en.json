@@ -319,6 +319,16 @@
       "subtitle": "To suggest opportunities near you",
       "label": "Postal code",
       "error": "Enter a valid 5-digit postal code"
+    },
+    "magic_link_sent": {
+      "title": "Check your inbox",
+      "subtitle": "We've just sent you a magic link to finalize your account and access your personalized guidance.",
+      "step1": "Open your inbox",
+      "step2": "Click the link in the email",
+      "step3": "You'll be automatically signed in",
+      "spam_hint": "Don't forget to check your spam folder if you can't find it.",
+      "resend": "Resend email",
+      "continue": "See my guidance"
     }
   }
 }

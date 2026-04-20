@@ -9,6 +9,7 @@ import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
 import { PostalCodeStep } from "@/components/VisualOnboarding/PostalCodeStep";
 import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
+import { MagicLinkSentStep } from "@/components/VisualOnboarding/MagicLinkSentStep";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
@@ -21,7 +22,7 @@ import { computeOrientation } from "@/lib/orientationEngine";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "magic-link-sent" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
@@ -53,6 +54,8 @@ const Onboarding = () => {
   const [postalCode, setPostalCode] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [magicLinkSent, setMagicLinkSent] = useState(false);
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
+  const [isResending, setIsResending] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const resumeAttemptedRef = useRef(false);
@@ -250,6 +253,7 @@ const Onboarding = () => {
       }
 
       // Magic link → crée le compte automatiquement et permet la reprise
+      let magicSent = false;
       if (!user) {
         try {
           const { error: otpError } = await supabase.auth.signInWithOtp({
@@ -263,7 +267,9 @@ const Onboarding = () => {
           if (otpError) {
             console.error("Magic link error:", otpError);
           } else {
+            magicSent = true;
             setMagicLinkSent(true);
+            setSubmittedEmail(data.email);
           }
         } catch (e) {
           console.error("OTP exception:", e);
@@ -292,10 +298,42 @@ const Onboarding = () => {
       await markCompleted();
 
       setIsSubmitting(false);
-      setStep("complete");
+      // Si magic link envoyé → écran de confirmation, sinon directement complete
+      setStep(magicSent ? "magic-link-sent" : "complete");
     },
     [answers, postalCode, language, onboardingStartedAt, track, user, persistCheckpoint, markCompleted]
   );
+
+  const handleResendMagicLink = useCallback(async () => {
+    if (!submittedEmail || isResending) return;
+    setIsResending(true);
+    try {
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+        email: submittedEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/onboarding?resume=1`,
+          shouldCreateUser: true,
+          data: { language, source: "onboarding_visual_resend" },
+        },
+      });
+      if (otpError) {
+        toast({
+          title: "Erreur",
+          description: otpError.message,
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Email renvoyé",
+          description: "Un nouveau lien magique vous a été envoyé.",
+        });
+      }
+    } catch (e) {
+      console.error("Resend OTP exception:", e);
+    } finally {
+      setIsResending(false);
+    }
+  }, [submittedEmail, isResending, language]);
 
   const handleComplete = useCallback(() => {
     navigate("/confirmation");
@@ -398,6 +436,16 @@ const Onboarding = () => {
               />
             )}
 
+            {step === "magic-link-sent" && (
+              <MagicLinkSentStep
+                key="magic-link-sent"
+                email={submittedEmail}
+                onContinue={() => setStep("complete")}
+                onResend={handleResendMagicLink}
+                isResending={isResending}
+              />
+            )}
+
             {step === "complete" && (
               <CompletionStep
                 key="complete"
@@ -406,12 +454,6 @@ const Onboarding = () => {
               />
             )}
           </AnimatePresence>
-
-          {magicLinkSent && step !== "complete" && (
-            <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground text-center">
-              📧 Un email vous a été envoyé pour finaliser la création de votre compte et vous permettre de reprendre votre questionnaire à tout moment.
-            </div>
-          )}
         </div>
       </div>
     </div>

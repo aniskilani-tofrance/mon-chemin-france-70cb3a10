@@ -319,6 +319,16 @@
       "subtitle": "Para propor oportunidades perto de você",
       "label": "Código postal",
       "error": "Digite um código postal válido de 5 dígitos"
+    },
+    "magic_link_sent": {
+      "title": "Verifique sua caixa de entrada",
+      "subtitle": "Acabamos de enviar um link mágico para finalizar a criação da sua conta e acessar sua orientação personalizada.",
+      "step1": "Abra sua caixa de entrada",
+      "step2": "Clique no link do email",
+      "step3": "Você será conectado automaticamente",
+      "spam_hint": "Não esqueça de verificar a pasta de spam se não encontrar.",
+      "resend": "Reenviar email",
+      "continue": "Ver minha orientação"
     }
   }
 }

@@ -319,6 +319,16 @@
       "subtitle": "Pour vous proposer des opportunités proches de chez vous",
       "label": "Code postal",
       "error": "Entrez un code postal valide à 5 chiffres"
+    },
+    "magic_link_sent": {
+      "title": "Vérifiez votre boîte mail",
+      "subtitle": "Nous venons de vous envoyer un lien magique pour finaliser la création de votre compte et accéder à votre orientation personnalisée.",
+      "step1": "Ouvrez votre boîte mail",
+      "step2": "Cliquez sur le lien dans l'email",
+      "step3": "Vous serez automatiquement connecté",
+      "spam_hint": "Pensez à vérifier vos courriers indésirables si vous ne le voyez pas.",
+      "resend": "Renvoyer l'email",
+      "continue": "Voir mon orientation"
     }
   }
 }

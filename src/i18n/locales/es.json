@@ -319,6 +319,16 @@
       "subtitle": "Para proponerte oportunidades cerca de ti",
       "label": "Código postal",
       "error": "Introduce un código postal válido de 5 dígitos"
+    },
+    "magic_link_sent": {
+      "title": "Revisa tu bandeja de entrada",
+      "subtitle": "Acabamos de enviarte un enlace mágico para finalizar la creación de tu cuenta y acceder a tu orientación personalizada.",
+      "step1": "Abre tu bandeja de entrada",
+      "step2": "Haz clic en el enlace del email",
+      "step3": "Iniciarás sesión automáticamente",
+      "spam_hint": "No olvides revisar tu carpeta de spam si no lo encuentras.",
+      "resend": "Reenviar el email",
+      "continue": "Ver mi orientación"
     }
   }
 }
