@@ -329,6 +329,7 @@
       "step3": "Iniciarás sesión automáticamente",
       "spam_hint": "No olvides revisar tu carpeta de spam si no lo encuentras.",
       "resend": "Reenviar el email",
+      "resend_in": "Reenviar en {{seconds}} s",
       "continue": "Ver mi orientación"
     },
     "resume": {
