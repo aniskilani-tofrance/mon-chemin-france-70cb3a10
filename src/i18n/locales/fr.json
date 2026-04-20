@@ -329,6 +329,11 @@
       "spam_hint": "Pensez à vérifier vos courriers indésirables si vous ne le voyez pas.",
       "resend": "Renvoyer l'email",
       "continue": "Voir mon orientation"
+    },
+    "resume": {
+      "toast_title": "Reprise de votre questionnaire",
+      "toast_description": "Vous reprenez à la question {{current}} sur {{total}}",
+      "banner": "Vous êtes de retour ! Vos réponses ont été sauvegardées."
     }
   }
 }

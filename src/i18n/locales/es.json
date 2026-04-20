@@ -329,6 +329,11 @@
       "spam_hint": "No olvides revisar tu carpeta de spam si no lo encuentras.",
       "resend": "Reenviar el email",
       "continue": "Ver mi orientación"
+    },
+    "resume": {
+      "toast_title": "Reanudando tu cuestionario",
+      "toast_description": "Continúas en la pregunta {{current}} de {{total}}",
+      "banner": "¡Bienvenido de nuevo! Tus respuestas han sido guardadas."
     }
   }
 }

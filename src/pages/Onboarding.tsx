@@ -1,7 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
@@ -43,6 +45,7 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { language, setLanguage } = useLanguage();
+  const { t } = useTranslation();
   const tts = useTTS({ language });
   const { track } = useAnalytics();
   const { user } = useAuth();
@@ -58,6 +61,7 @@ const Onboarding = () => {
   const [isResending, setIsResending] = useState(false);
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
+  const [resumed, setResumed] = useState(false);
   const resumeAttemptedRef = useRef(false);
 
   const isRTL = language === "ar";
@@ -76,7 +80,7 @@ const Onboarding = () => {
         navigate("/dashboard");
         return;
       }
-      // Restaure réponses + langue + step
+      // Restaure langue
       if (cp.language && cp.language !== language) {
         setLanguage(cp.language as LanguageCode);
       }
@@ -85,28 +89,62 @@ const Onboarding = () => {
       if (partial.postal_code && typeof partial.postal_code === "string") {
         setPostalCode(partial.postal_code);
       }
-      // Resolve current step
-      const cs = cp.current_step;
-      if (cs === "email") setStep("email");
-      else if (cs === "postal-code") setStep("postal-code");
-      else if (cs?.startsWith("q:")) {
-        const qid = cs.slice(2);
-        const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
-        if (idx >= 0) {
-          setStep("visual-quiz");
-          setQuestionIndex(idx);
-        } else {
-          setStep("visual-quiz");
-        }
-      } else {
-        setStep("visual-quiz");
-      }
-      toast({
-        title: "Reprise de votre questionnaire",
-        description: "Nous avons retrouvé vos réponses précédentes.",
+
+      // Détermine la dernière question répondue → on saute à la SUIVANTE non répondue
+      // (ou au postal-code / email si toutes les questions sont OK)
+      let lastAnsweredIdx = -1;
+      VISUAL_QUESTIONS.forEach((q, i) => {
+        const v = partial[q.id];
+        const has = Array.isArray(v) ? v.length > 0 : !!v;
+        if (has) lastAnsweredIdx = Math.max(lastAnsweredIdx, i);
       });
+
+      // Step actuel persisté
+      const cs = cp.current_step;
+      let resolvedStep: OnboardingStep = "visual-quiz";
+      let resolvedIdx = 0;
+
+      if (cs === "email" || (partial.postal_code && partial.contact_email)) {
+        resolvedStep = "email";
+      } else if (cs === "postal-code" || (lastAnsweredIdx === VISUAL_QUESTIONS.length - 1 && !partial.postal_code)) {
+        resolvedStep = "postal-code";
+      } else {
+        // Saut direct à la dernière question répondue (ou la suivante non répondue)
+        resolvedStep = "visual-quiz";
+        if (lastAnsweredIdx >= 0) {
+          // On reprend SUR la dernière question répondue pour permettre de la modifier
+          resolvedIdx = Math.min(lastAnsweredIdx, VISUAL_QUESTIONS.length - 1);
+        } else if (cs?.startsWith("q:")) {
+          const qid = cs.slice(2);
+          const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
+          if (idx >= 0) resolvedIdx = idx;
+        }
+      }
+
+      setStep(resolvedStep);
+      setQuestionIndex(resolvedIdx);
+      setResumed(true);
+
+      // Toast sonner avec position dans le parcours
+      const stepLabel =
+        resolvedStep === "email"
+          ? TOTAL_STEPS
+          : resolvedStep === "postal-code"
+          ? VISUAL_QUESTIONS.length + 1
+          : resolvedIdx + 1;
+      sonnerToast.success(t("onboardingVisual.resume.toast_title"), {
+        description: t("onboardingVisual.resume.toast_description", {
+          current: stepLabel,
+          total: TOTAL_STEPS,
+        }),
+        duration: 5000,
+        icon: "👋",
+      });
+
+      track("onboarding_resumed", { from_step: cs, resumed_to: resolvedStep, idx: resolvedIdx }, "/onboarding", language);
     })();
-  }, [searchParams, user, loadCheckpoint, language, setLanguage, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, user, loadCheckpoint, navigate]);
 
   useEffect(() => {
     track("onboarding_step", { step }, "/onboarding", language);
@@ -385,6 +423,41 @@ const Onboarding = () => {
 
       <div className="flex-1 flex items-start justify-center px-4 pt-20 pb-8 sm:pt-24 overflow-y-auto">
         <div className="w-full max-w-2xl">
+          <AnimatePresence>
+            {resumed && step !== "complete" && step !== "magic-link-sent" && step !== "language" && (
+              <motion.div
+                key="resume-banner"
+                initial={{ opacity: 0, y: -10, height: 0 }}
+                animate={{ opacity: 1, y: 0, height: "auto" }}
+                exit={{ opacity: 0, y: -10, height: 0 }}
+                transition={{ duration: 0.35 }}
+                className="mb-4 overflow-hidden"
+              >
+                <div className="flex items-start gap-3 rounded-xl border border-primary/30 bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-3 shadow-sm">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                    <RotateCcw className="h-4 w-4" />
+                  </div>
+                  <div className="flex-1 text-sm">
+                    <p className="font-semibold text-foreground">
+                      {t("onboardingVisual.resume.toast_title")}
+                    </p>
+                    <p className="text-muted-foreground text-xs mt-0.5">
+                      {t("onboardingVisual.resume.banner")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setResumed(false)}
+                    aria-label="Close"
+                    className="text-muted-foreground hover:text-foreground transition-colors text-lg leading-none"
+                  >
+                    ×
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <AnimatePresence mode="wait">
             {step === "language" && <LanguageStep key="language" onSelect={handleLanguageSelect} />}
 
