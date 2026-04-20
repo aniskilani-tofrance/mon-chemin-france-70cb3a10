@@ -4,25 +4,61 @@
  * Audio TTS lu automatiquement à l'affichage.
  */
 
+// Illustrations IA importées (questions principales)
+import gaWomanU25 from "@/assets/onboarding/gender_age_woman_under25.jpg";
+import gaWoman25 from "@/assets/onboarding/gender_age_woman_25_45.jpg";
+import gaWomanO45 from "@/assets/onboarding/gender_age_woman_over45.jpg";
+import gaManU25 from "@/assets/onboarding/gender_age_man_under25.jpg";
+import gaMan25 from "@/assets/onboarding/gender_age_man_25_45.jpg";
+import gaManO45 from "@/assets/onboarding/gender_age_man_over45.jpg";
+
+import sitJobseeker from "@/assets/onboarding/situation_jobseeker.jpg";
+import sitEmployee from "@/assets/onboarding/situation_employee.jpg";
+import sitStudent from "@/assets/onboarding/situation_student.jpg";
+import sitInactive from "@/assets/onboarding/situation_inactive.jpg";
+
+import goalLearn from "@/assets/onboarding/goal_learn_french.jpg";
+import goalJob from "@/assets/onboarding/goal_find_job.jpg";
+import goalTraining from "@/assets/onboarding/goal_job_training.jpg";
+import goalHelp from "@/assets/onboarding/goal_need_help.jpg";
+
+import lvlAlpha from "@/assets/onboarding/level_alpha.jpg";
+import lvlA1 from "@/assets/onboarding/level_a1.jpg";
+import lvlA2 from "@/assets/onboarding/level_a2.jpg";
+import lvlB1 from "@/assets/onboarding/level_b1.jpg";
+
+import litYes from "@/assets/onboarding/literacy_yes.jpg";
+import litPartial from "@/assets/onboarding/literacy_partial.jpg";
+import litNo from "@/assets/onboarding/literacy_no.jpg";
+
+import wrYes from "@/assets/onboarding/work_right_yes.jpg";
+import wrNo from "@/assets/onboarding/work_right_no.jpg";
+import wrUnknown from "@/assets/onboarding/work_right_unknown.jpg";
+
+import secBtp from "@/assets/onboarding/sector_btp.jpg";
+import secLog from "@/assets/onboarding/sector_logistique.jpg";
+import secProp from "@/assets/onboarding/sector_proprete.jpg";
+import secAide from "@/assets/onboarding/sector_aide_personne.jpg";
+import secHotel from "@/assets/onboarding/sector_hotellerie.jpg";
+import secCom from "@/assets/onboarding/sector_commerce.jpg";
+
 export type VisualQuestionType = "single" | "multi";
 
 export interface VisualOption {
   id: string;
-  /** Clé i18n du libellé (ex: "questionnaire.main_goal.choices.learn_french") */
+  /** Clé i18n du libellé */
   labelKey: string;
-  /** Émoji affiché (utilisé par PhotoLanguageChoice) */
+  /** Émoji affiché si pas d'illustration */
   icon: string;
+  /** Illustration importée (optionnelle) */
+  illustration?: string;
 }
 
 export interface VisualQuestion {
-  /** Identifiant interne — sert aussi de clé pour stocker la réponse */
   id: string;
-  /** Clé i18n du titre */
   titleKey: string;
-  /** Clé i18n du sous-titre (optionnel) */
   subtitleKey?: string;
   type: VisualQuestionType;
-  /** Nombre de colonnes dans la grille */
   columns: 2 | 3;
   options: VisualOption[];
   /** Si true, optionnel — bouton « Passer » disponible */
@@ -30,21 +66,52 @@ export interface VisualQuestion {
 }
 
 export const VISUAL_QUESTIONS: VisualQuestion[] = [
-  // 1 — Objectif principal
+  // 1 — Genre + âge (NOUVEAU)
+  {
+    id: "gender_age",
+    titleKey: "questionnaire.gender_age.question",
+    subtitleKey: "questionnaire.gender_age.subtitle",
+    type: "single",
+    columns: 3,
+    options: [
+      { id: "woman_under25", labelKey: "questionnaire.gender_age.choices.woman_under25", icon: "👩", illustration: gaWomanU25 },
+      { id: "woman_25_45", labelKey: "questionnaire.gender_age.choices.woman_25_45", icon: "👩‍💼", illustration: gaWoman25 },
+      { id: "woman_over45", labelKey: "questionnaire.gender_age.choices.woman_over45", icon: "👵", illustration: gaWomanO45 },
+      { id: "man_under25", labelKey: "questionnaire.gender_age.choices.man_under25", icon: "👨", illustration: gaManU25 },
+      { id: "man_25_45", labelKey: "questionnaire.gender_age.choices.man_25_45", icon: "👨‍💼", illustration: gaMan25 },
+      { id: "man_over45", labelKey: "questionnaire.gender_age.choices.man_over45", icon: "👴", illustration: gaManO45 },
+    ],
+  },
+
+  // 2 — Situation actuelle (NOUVEAU)
+  {
+    id: "current_situation",
+    titleKey: "questionnaire.current_situation.question",
+    type: "single",
+    columns: 2,
+    options: [
+      { id: "jobseeker", labelKey: "questionnaire.current_situation.choices.jobseeker", icon: "🔍", illustration: sitJobseeker },
+      { id: "employee", labelKey: "questionnaire.current_situation.choices.employee", icon: "👷", illustration: sitEmployee },
+      { id: "student", labelKey: "questionnaire.current_situation.choices.student", icon: "🎒", illustration: sitStudent },
+      { id: "inactive", labelKey: "questionnaire.current_situation.choices.inactive", icon: "🏠", illustration: sitInactive },
+    ],
+  },
+
+  // 3 — Objectif principal
   {
     id: "main_goal",
     titleKey: "questionnaire.main_goal.question",
     type: "single",
     columns: 2,
     options: [
-      { id: "learn_french", labelKey: "questionnaire.main_goal.choices.learn_french", icon: "📚" },
-      { id: "find_job", labelKey: "questionnaire.main_goal.choices.find_job", icon: "💼" },
-      { id: "job_training", labelKey: "questionnaire.main_goal.choices.job_training", icon: "🎓" },
-      { id: "need_help", labelKey: "questionnaire.main_goal.choices.need_help", icon: "🤝" },
+      { id: "learn_french", labelKey: "questionnaire.main_goal.choices.learn_french", icon: "📚", illustration: goalLearn },
+      { id: "find_job", labelKey: "questionnaire.main_goal.choices.find_job", icon: "💼", illustration: goalJob },
+      { id: "job_training", labelKey: "questionnaire.main_goal.choices.job_training", icon: "🎓", illustration: goalTraining },
+      { id: "need_help", labelKey: "questionnaire.main_goal.choices.need_help", icon: "🤝", illustration: goalHelp },
     ],
   },
 
-  // 2 — Niveau de français parlé (CECRL)
+  // 4 — Niveau de français parlé (CECRL)
   {
     id: "french_level_cecrl",
     titleKey: "questionnaire.french_level_cecrl.question",
@@ -52,27 +119,27 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 2,
     options: [
-      { id: "alpha", labelKey: "questionnaire.french_level_cecrl.choices.alpha", icon: "🌱" },
-      { id: "a1", labelKey: "questionnaire.french_level_cecrl.choices.a1", icon: "🌿" },
-      { id: "a2", labelKey: "questionnaire.french_level_cecrl.choices.a2", icon: "🌳" },
-      { id: "b1", labelKey: "questionnaire.french_level_cecrl.choices.b1", icon: "🌲" },
+      { id: "alpha", labelKey: "questionnaire.french_level_cecrl.choices.alpha", icon: "🌱", illustration: lvlAlpha },
+      { id: "a1", labelKey: "questionnaire.french_level_cecrl.choices.a1", icon: "🌿", illustration: lvlA1 },
+      { id: "a2", labelKey: "questionnaire.french_level_cecrl.choices.a2", icon: "🌳", illustration: lvlA2 },
+      { id: "b1", labelKey: "questionnaire.french_level_cecrl.choices.b1", icon: "🌲", illustration: lvlB1 },
     ],
   },
 
-  // 3 — Lettrisme
+  // 5 — Lettrisme
   {
     id: "literacy",
     titleKey: "questionnaire.literacy.question",
     type: "single",
     columns: 3,
     options: [
-      { id: "yes", labelKey: "questionnaire.literacy.choices.yes", icon: "✅" },
-      { id: "partial", labelKey: "questionnaire.literacy.choices.partial", icon: "✍️" },
-      { id: "no", labelKey: "questionnaire.literacy.choices.no", icon: "❌" },
+      { id: "yes", labelKey: "questionnaire.literacy.choices.yes", icon: "✅", illustration: litYes },
+      { id: "partial", labelKey: "questionnaire.literacy.choices.partial", icon: "✍️", illustration: litPartial },
+      { id: "no", labelKey: "questionnaire.literacy.choices.no", icon: "❌", illustration: litNo },
     ],
   },
 
-  // 4 — Droit de travailler
+  // 6 — Droit de travailler
   {
     id: "work_right",
     titleKey: "questionnaire.work_right.question",
@@ -80,13 +147,13 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 3,
     options: [
-      { id: "yes", labelKey: "questionnaire.work_right.choices.yes", icon: "✅" },
-      { id: "no", labelKey: "questionnaire.work_right.choices.no", icon: "❌" },
-      { id: "unknown", labelKey: "questionnaire.work_right.choices.unknown", icon: "🤔" },
+      { id: "yes", labelKey: "questionnaire.work_right.choices.yes", icon: "✅", illustration: wrYes },
+      { id: "no", labelKey: "questionnaire.work_right.choices.no", icon: "❌", illustration: wrNo },
+      { id: "unknown", labelKey: "questionnaire.work_right.choices.unknown", icon: "🤔", illustration: wrUnknown },
     ],
   },
 
-  // 5 — Secteur visé
+  // 7 — Secteur visé
   {
     id: "target_sector",
     titleKey: "onboardingVisual.target_sector.question",
@@ -94,17 +161,32 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 3,
     options: [
-      { id: "btp", labelKey: "onboardingVisual.target_sector.choices.btp", icon: "🏗️" },
-      { id: "logistique", labelKey: "onboardingVisual.target_sector.choices.logistique", icon: "📦" },
-      { id: "proprete", labelKey: "onboardingVisual.target_sector.choices.proprete", icon: "🧹" },
-      { id: "aide_personne", labelKey: "onboardingVisual.target_sector.choices.aide_personne", icon: "❤️" },
-      { id: "hotellerie", labelKey: "onboardingVisual.target_sector.choices.hotellerie", icon: "🍽️" },
-      { id: "commerce", labelKey: "onboardingVisual.target_sector.choices.commerce", icon: "🛍️" },
+      { id: "btp", labelKey: "onboardingVisual.target_sector.choices.btp", icon: "🏗️", illustration: secBtp },
+      { id: "logistique", labelKey: "onboardingVisual.target_sector.choices.logistique", icon: "📦", illustration: secLog },
+      { id: "proprete", labelKey: "onboardingVisual.target_sector.choices.proprete", icon: "🧹", illustration: secProp },
+      { id: "aide_personne", labelKey: "onboardingVisual.target_sector.choices.aide_personne", icon: "❤️", illustration: secAide },
+      { id: "hotellerie", labelKey: "onboardingVisual.target_sector.choices.hotellerie", icon: "🍽️", illustration: secHotel },
+      { id: "commerce", labelKey: "onboardingVisual.target_sector.choices.commerce", icon: "🛍️", illustration: secCom },
     ],
     optional: true,
   },
 
-  // 6 — Contraintes (multi)
+  // 8 — Mobilité (NOUVEAU, multi, émojis)
+  {
+    id: "mobility",
+    titleKey: "questionnaire.mobility.question",
+    subtitleKey: "questionnaire.mobility.subtitle",
+    type: "multi",
+    columns: 2,
+    options: [
+      { id: "walk", labelKey: "questionnaire.mobility.choices.walk", icon: "🚶" },
+      { id: "bike", labelKey: "questionnaire.mobility.choices.bike", icon: "🚲" },
+      { id: "car", labelKey: "questionnaire.mobility.choices.car", icon: "🚗" },
+      { id: "transit", labelKey: "questionnaire.mobility.choices.transit", icon: "🚌" },
+    ],
+  },
+
+  // 9 — Contraintes (multi, émojis)
   {
     id: "barriers",
     titleKey: "onboardingVisual.barriers.question",
@@ -121,7 +203,7 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     ],
   },
 
-  // 7 — Disponibilité de contact
+  // 10 — Disponibilité de contact (émojis)
   {
     id: "contact_48h",
     titleKey: "questionnaire.contact_48h.question",
@@ -136,10 +218,10 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
 ];
 
 /**
- * Calcule le pourcentage de progression (sur les questions + l'étape email).
+ * Calcule le pourcentage de progression (questions + code postal + email).
  */
 export function getProgressPercent(currentIndex: number, totalQuestions: number): number {
-  // +1 pour l'étape email finale
-  const total = totalQuestions + 1;
+  // +2 pour code postal et email
+  const total = totalQuestions + 2;
   return Math.round(((currentIndex + 1) / total) * 100);
 }
