@@ -15,7 +15,44 @@
         "learn_french": "Aprender / melhorar meu francês",
         "find_job": "Encontrar emprego rapidamente",
         "job_training": "Fazer uma formação profissional",
+        "recognize_diploma": "Reconhecer meu diploma estrangeiro",
         "need_help": "Não sei / preciso de ajuda"
+      }
+    },
+    "diploma_level": {
+      "question": "Qual é o nível do seu diploma?",
+      "subtitle": "Diploma obtido no seu país de origem",
+      "choices": {
+        "secondary": "Ensino secundário",
+        "bac": "Ensino médio completo",
+        "bachelor": "Licenciatura / Bacharelado",
+        "master": "Mestrado",
+        "doctorate": "Doutorado",
+        "no_diploma": "Sem diploma oficial"
+      }
+    },
+    "continue_field": {
+      "question": "Quer continuar na sua área de especialidade?",
+      "subtitle": "Também pode mudar para outra profissão",
+      "choices": {
+        "yes": "Sim, continuar na minha área",
+        "no": "Não, mudar de profissão",
+        "unsure": "Ainda não sei"
+      }
+    },
+    "tension_jobs_info": {
+      "question": "Boa notícia: a França está contratando!",
+      "subtitle": "Algumas profissões são muito procuradas (\"profissões em tensão\") e acessíveis com formação curta (2 a 6 meses). Em paralelo, ENIC-NARIC pode reconhecer oficialmente o seu diploma. Aqui estão os principais setores que contratam:",
+      "cta": "Entendi, continuar",
+      "sectors": {
+        "btp": "Construção civil",
+        "aide_personne": "Cuidados pessoais",
+        "hotellerie": "Hotelaria / Restauração",
+        "logistique": "Logística",
+        "proprete": "Limpeza",
+        "sante": "Saúde / Social",
+        "securite": "Segurança",
+        "transport": "Transporte / Entrega"
       }
     },
     "contact_48h": {

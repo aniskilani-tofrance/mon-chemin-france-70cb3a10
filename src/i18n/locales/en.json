@@ -15,7 +15,44 @@
         "learn_french": "Learn / improve my French",
         "find_job": "Find a job quickly",
         "job_training": "Get vocational training",
+        "recognize_diploma": "Get my foreign diploma recognized",
         "need_help": "I don't know / need help"
+      }
+    },
+    "diploma_level": {
+      "question": "What is your diploma level?",
+      "subtitle": "Diploma obtained in your home country",
+      "choices": {
+        "secondary": "Secondary school",
+        "bac": "High school diploma",
+        "bachelor": "Bachelor's degree",
+        "master": "Master's degree",
+        "doctorate": "Doctorate / PhD",
+        "no_diploma": "No official diploma"
+      }
+    },
+    "continue_field": {
+      "question": "Do you want to continue in your field of expertise?",
+      "subtitle": "You can also retrain for a different career",
+      "choices": {
+        "yes": "Yes, continue in my field",
+        "no": "No, change career",
+        "unsure": "I'm not sure yet"
+      }
+    },
+    "tension_jobs_info": {
+      "question": "Good news: France is hiring!",
+      "subtitle": "Some jobs are in high demand (\"shortage occupations\") and accessible with short training (2 to 6 months). Meanwhile, ENIC-NARIC can officially recognize your diploma. Here are the main sectors hiring:",
+      "cta": "Got it, continue",
+      "sectors": {
+        "btp": "Construction",
+        "aide_personne": "Personal care",
+        "hotellerie": "Hospitality / Restaurants",
+        "logistique": "Logistics",
+        "proprete": "Cleaning",
+        "sante": "Healthcare / Social care",
+        "securite": "Security",
+        "transport": "Transport / Delivery"
       }
     },
     "contact_48h": {

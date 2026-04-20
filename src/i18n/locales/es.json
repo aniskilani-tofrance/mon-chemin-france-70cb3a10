@@ -15,7 +15,44 @@
         "learn_french": "Aprender / mejorar mi francés",
         "find_job": "Encontrar trabajo rápidamente",
         "job_training": "Hacer una formación profesional",
+        "recognize_diploma": "Convalidar mi diploma extranjero",
         "need_help": "No sé / necesito ayuda"
+      }
+    },
+    "diploma_level": {
+      "question": "¿Cuál es el nivel de tu diploma?",
+      "subtitle": "Diploma obtenido en tu país de origen",
+      "choices": {
+        "secondary": "Secundaria",
+        "bac": "Bachillerato",
+        "bachelor": "Licenciatura / Grado",
+        "master": "Máster",
+        "doctorate": "Doctorado",
+        "no_diploma": "Sin diploma oficial"
+      }
+    },
+    "continue_field": {
+      "question": "¿Quieres continuar en tu campo de especialidad?",
+      "subtitle": "También puedes reconvertirte a otra profesión",
+      "choices": {
+        "yes": "Sí, continuar en mi campo",
+        "no": "No, cambiar de profesión",
+        "unsure": "Aún no lo sé"
+      }
+    },
+    "tension_jobs_info": {
+      "question": "Buenas noticias: ¡Francia está contratando!",
+      "subtitle": "Algunas profesiones son muy demandadas (\"profesiones en tensión\") y accesibles con una formación corta (de 2 a 6 meses). En paralelo, ENIC-NARIC puede convalidar oficialmente tu diploma. Estos son los principales sectores que contratan:",
+      "cta": "Entendido, continuar",
+      "sectors": {
+        "btp": "Construcción",
+        "aide_personne": "Ayuda a personas",
+        "hotellerie": "Hostelería / Restauración",
+        "logistique": "Logística",
+        "proprete": "Limpieza",
+        "sante": "Salud / Social",
+        "securite": "Seguridad",
+        "transport": "Transporte / Reparto"
       }
     },
     "contact_48h": {
