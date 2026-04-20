@@ -80,7 +80,7 @@ const Onboarding = () => {
         navigate("/dashboard");
         return;
       }
-      // Restaure réponses + langue + step
+      // Restaure langue
       if (cp.language && cp.language !== language) {
         setLanguage(cp.language as LanguageCode);
       }
@@ -89,28 +89,62 @@ const Onboarding = () => {
       if (partial.postal_code && typeof partial.postal_code === "string") {
         setPostalCode(partial.postal_code);
       }
-      // Resolve current step
-      const cs = cp.current_step;
-      if (cs === "email") setStep("email");
-      else if (cs === "postal-code") setStep("postal-code");
-      else if (cs?.startsWith("q:")) {
-        const qid = cs.slice(2);
-        const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
-        if (idx >= 0) {
-          setStep("visual-quiz");
-          setQuestionIndex(idx);
-        } else {
-          setStep("visual-quiz");
-        }
-      } else {
-        setStep("visual-quiz");
-      }
-      toast({
-        title: "Reprise de votre questionnaire",
-        description: "Nous avons retrouvé vos réponses précédentes.",
+
+      // Détermine la dernière question répondue → on saute à la SUIVANTE non répondue
+      // (ou au postal-code / email si toutes les questions sont OK)
+      let lastAnsweredIdx = -1;
+      VISUAL_QUESTIONS.forEach((q, i) => {
+        const v = partial[q.id];
+        const has = Array.isArray(v) ? v.length > 0 : !!v;
+        if (has) lastAnsweredIdx = Math.max(lastAnsweredIdx, i);
       });
+
+      // Step actuel persisté
+      const cs = cp.current_step;
+      let resolvedStep: OnboardingStep = "visual-quiz";
+      let resolvedIdx = 0;
+
+      if (cs === "email" || (partial.postal_code && partial.contact_email)) {
+        resolvedStep = "email";
+      } else if (cs === "postal-code" || (lastAnsweredIdx === VISUAL_QUESTIONS.length - 1 && !partial.postal_code)) {
+        resolvedStep = "postal-code";
+      } else {
+        // Saut direct à la dernière question répondue (ou la suivante non répondue)
+        resolvedStep = "visual-quiz";
+        if (lastAnsweredIdx >= 0) {
+          // On reprend SUR la dernière question répondue pour permettre de la modifier
+          resolvedIdx = Math.min(lastAnsweredIdx, VISUAL_QUESTIONS.length - 1);
+        } else if (cs?.startsWith("q:")) {
+          const qid = cs.slice(2);
+          const idx = VISUAL_QUESTIONS.findIndex((q) => q.id === qid);
+          if (idx >= 0) resolvedIdx = idx;
+        }
+      }
+
+      setStep(resolvedStep);
+      setQuestionIndex(resolvedIdx);
+      setResumed(true);
+
+      // Toast sonner avec position dans le parcours
+      const stepLabel =
+        resolvedStep === "email"
+          ? TOTAL_STEPS
+          : resolvedStep === "postal-code"
+          ? VISUAL_QUESTIONS.length + 1
+          : resolvedIdx + 1;
+      sonnerToast.success(t("onboardingVisual.resume.toast_title"), {
+        description: t("onboardingVisual.resume.toast_description", {
+          current: stepLabel,
+          total: TOTAL_STEPS,
+        }),
+        duration: 5000,
+        icon: "👋",
+      });
+
+      track("onboarding_resumed", { from_step: cs, resumed_to: resolvedStep, idx: resolvedIdx }, "/onboarding", language);
     })();
-  }, [searchParams, user, loadCheckpoint, language, setLanguage, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams, user, loadCheckpoint, navigate]);
 
   useEffect(() => {
     track("onboarding_step", { step }, "/onboarding", language);
