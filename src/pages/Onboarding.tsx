@@ -436,6 +436,16 @@ const Onboarding = () => {
               />
             )}
 
+            {step === "magic-link-sent" && (
+              <MagicLinkSentStep
+                key="magic-link-sent"
+                email={submittedEmail}
+                onContinue={() => setStep("complete")}
+                onResend={handleResendMagicLink}
+                isResending={isResending}
+              />
+            )}
+
             {step === "complete" && (
               <CompletionStep
                 key="complete"
@@ -444,12 +454,6 @@ const Onboarding = () => {
               />
             )}
           </AnimatePresence>
-
-          {magicLinkSent && step !== "complete" && (
-            <div className="mt-4 rounded-lg border border-primary/30 bg-primary/5 p-3 text-sm text-foreground text-center">
-              📧 Un email vous a été envoyé pour finaliser la création de votre compte et vous permettre de reprendre votre questionnaire à tout moment.
-            </div>
-          )}
         </div>
       </div>
     </div>
