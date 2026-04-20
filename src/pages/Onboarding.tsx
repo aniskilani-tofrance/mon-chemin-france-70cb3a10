@@ -242,6 +242,8 @@ const Onboarding = () => {
         target_sector: flat.target_sector,
         barriers: flat.barriers,
         contact_48h: flat.contact_48h,
+        diploma_level: flat.diploma_level,
+        continue_field: flat.continue_field,
       });
       const orientation = computeOrientation(v2Answers);
 
