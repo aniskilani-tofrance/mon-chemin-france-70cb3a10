@@ -1,103 +1,294 @@
 {
   "questionnaire": {
-    "location": { "question": "Onde você mora?", "subtitle": "Código postal ou cidade" },
-    "origin_country": { "question": "De que país você vem?", "subtitle": "Para melhor adaptar nossos serviços" },
+    "location": {
+      "question": "Onde você mora?",
+      "subtitle": "Código postal ou cidade"
+    },
+    "origin_country": {
+      "question": "De que país você vem?",
+      "subtitle": "Para melhor adaptar nossos serviços"
+    },
     "main_goal": {
       "question": "Qual é o seu objetivo principal?",
-      "choices": { "learn_french": "Aprender / melhorar meu francês", "find_job": "Encontrar emprego rapidamente", "job_training": "Fazer uma formação profissional", "need_help": "Não sei / preciso de ajuda" }
+      "choices": {
+        "learn_french": "Aprender / melhorar meu francês",
+        "find_job": "Encontrar emprego rapidamente",
+        "job_training": "Fazer uma formação profissional",
+        "need_help": "Não sei / preciso de ajuda"
+      }
     },
     "contact_48h": {
-      "question": "Você está disponível para ser contatado em 48 horas?", "subtitle": "Um conselheiro ligará para ajudá-lo",
-      "choices": { "yes": "Sim, estou disponível", "no": "Não, agora não" }
+      "question": "Você está disponível para ser contatado em 48 horas?",
+      "subtitle": "Um conselheiro ligará para ajudá-lo",
+      "choices": {
+        "yes": "Sim, estou disponível",
+        "no": "Não, agora não"
+      }
     },
     "literacy": {
       "question": "Você sabe ler e escrever na sua língua?",
-      "choices": { "yes": "Sim, fluentemente", "partial": "Um pouco", "no": "Não" }
+      "choices": {
+        "yes": "Sim, fluentemente",
+        "partial": "Um pouco",
+        "no": "Não"
+      }
     },
     "french_level_cecrl": {
-      "question": "Em francês, você é:", "subtitle": "Seja honesto, isso nos ajuda a orientá-lo melhor",
-      "choices": { "alpha": "Iniciante total / Não falo francês", "a1": "A1 - Conheço algumas palavras e frases", "a2": "A2 - Me viro para coisas simples", "b1": "B1+ - Me sinto confortável em francês" }
+      "question": "Em francês, você é:",
+      "subtitle": "Seja honesto, isso nos ajuda a orientá-lo melhor",
+      "choices": {
+        "alpha": "Iniciante total / Não falo francês",
+        "a1": "A1 - Conheço algumas palavras e frases",
+        "a2": "A2 - Me viro para coisas simples",
+        "b1": "B1+ - Me sinto confortável em francês"
+      }
     },
     "work_right": {
-      "question": "Você tem direito de trabalhar na França?", "subtitle": "Permissão de residência com autorização de trabalho",
-      "choices": { "yes": "Sim", "no": "Não", "unknown": "Não sei" }
+      "question": "Você tem direito de trabalhar na França?",
+      "subtitle": "Permissão de residência com autorização de trabalho",
+      "choices": {
+        "yes": "Sim",
+        "no": "Não",
+        "unknown": "Não sei"
+      }
     },
     "barriers": {
-      "question": "Você tem dificuldades a superar?", "subtitle": "Selecione tudo que se aplica",
-      "choices": { "childcare": "Cuidado de crianças", "transport": "Transporte / mobilidade", "health": "Saúde", "housing": "Moradia", "admin": "Administrativo (documentos)", "schedule": "Restrições de horário", "none": "Sem barreiras" }
+      "question": "Você tem dificuldades a superar?",
+      "subtitle": "Selecione tudo que se aplica",
+      "choices": {
+        "childcare": "Cuidado de crianças",
+        "transport": "Transporte / mobilidade",
+        "health": "Saúde",
+        "housing": "Moradia",
+        "admin": "Administrativo (documentos)",
+        "schedule": "Restrições de horário",
+        "none": "Sem barreiras"
+      }
     },
     "sector_satisfaction": {
-      "question": "Quer continuar na sua área ou mudar de carreira?", "subtitle": "Se quiser mudar de profissão, vamos orientá-lo para uma formação",
-      "choices": { "continue": "Continuar na minha área", "reconvert": "Mudar para outra área" }
+      "question": "Quer continuar na sua área ou mudar de carreira?",
+      "subtitle": "Se quiser mudar de profissão, vamos orientá-lo para uma formação",
+      "choices": {
+        "continue": "Continuar na minha área",
+        "reconvert": "Mudar para outra área"
+      }
     },
     "fle_type": {
       "question": "Que tipo de curso de francês te interessa?",
-      "choices": { "general": "Francês geral (vida diária)", "professional": "Francês profissional (para trabalho)" }
+      "choices": {
+        "general": "Francês geral (vida diária)",
+        "professional": "Francês profissional (para trabalho)"
+      }
     },
     "fle_format": {
       "question": "Quando você prefere fazer as aulas?",
-      "choices": { "daytime": "Durante o dia", "evening": "À noite", "flexible": "Sou flexível" }
+      "choices": {
+        "daytime": "Durante o dia",
+        "evening": "À noite",
+        "flexible": "Sou flexível"
+      }
     },
     "target_sector": {
-      "question": "Que setor te interessa?", "subtitle": "Setores em demanda com vagas disponíveis",
-      "choices": { "logistique": "Logística / Armazém", "transport": "Transporte / Entrega", "btp": "Construção / Obras públicas", "proprete": "Limpeza / Higiene", "hotellerie": "Hotelaria / Gastronomia", "sante": "Saúde / Assistência social", "commerce": "Comércio / Vendas", "admin_accueil": "Administração / Receção", "industrie": "Indústria / Produção / Manutenção", "securite": "Segurança / Proteção", "transversal": "Transversal (todos os setores)" }
+      "question": "Que setor te interessa?",
+      "subtitle": "Setores em demanda com vagas disponíveis",
+      "choices": {
+        "logistique": "Logística / Armazém",
+        "transport": "Transporte / Entrega",
+        "btp": "Construção / Obras públicas",
+        "proprete": "Limpeza / Higiene",
+        "hotellerie": "Hotelaria / Gastronomia",
+        "sante": "Saúde / Assistência social",
+        "commerce": "Comércio / Vendas",
+        "admin_accueil": "Administração / Receção",
+        "industrie": "Indústria / Produção / Manutenção",
+        "securite": "Segurança / Proteção",
+        "transversal": "Transversal (todos os setores)"
+      }
     },
     "training_duration": {
       "question": "Quanto tempo de formação você pode fazer?",
-      "choices": { "short": "Curta (1-2 meses)", "medium": "Média (3-6 meses)", "long": "Longa (6+ meses)" }
+      "choices": {
+        "short": "Curta (1-2 meses)",
+        "medium": "Média (3-6 meses)",
+        "long": "Longa (6+ meses)"
+      }
     },
     "mobility": {
       "question": "Qual é a sua mobilidade geográfica?",
-      "choices": { "local": "Local (< 30 km)", "regional": "Regional (30-100 km)", "national": "Nacional" }
+      "choices": {
+        "local": "Local (< 30 km)",
+        "regional": "Regional (30-100 km)",
+        "national": "Nacional"
+      }
     },
     "funding_status": {
-      "question": "Você tem financiamento para formação?", "subtitle": "France Travail, OPCO, Região, CPF...",
-      "choices": { "yes": "Sim, tenho financiamento", "pending": "Está em andamento", "no": "Não, ainda não", "unknown": "Não sei" }
+      "question": "Você tem financiamento para formação?",
+      "subtitle": "France Travail, OPCO, Região, CPF...",
+      "choices": {
+        "yes": "Sim, tenho financiamento",
+        "pending": "Está em andamento",
+        "no": "Não, ainda não",
+        "unknown": "Não sei"
+      }
     },
     "work_schedule": {
       "question": "Qual horário de trabalho você aceita?",
-      "choices": { "standard": "Dia padrão", "flexible": "Horários flexíveis (noite/fim de semana)", "any": "Qualquer horário" }
+      "choices": {
+        "standard": "Dia padrão",
+        "flexible": "Horários flexíveis (noite/fim de semana)",
+        "any": "Qualquer horário"
+      }
     },
     "mobility_km": {
       "question": "Qual raio de deslocamento você aceita?",
-      "choices": { "close": "< 10 km", "medium": "10-30 km", "far": "> 30 km" }
+      "choices": {
+        "close": "< 10 km",
+        "medium": "10-30 km",
+        "far": "> 30 km"
+      }
     },
     "immediate_availability": {
       "question": "Você está disponível imediatamente?",
-      "choices": { "yes": "Sim, imediatamente", "soon": "Em 1-2 semanas", "later": "Mais tarde" }
+      "choices": {
+        "yes": "Sim, imediatamente",
+        "soon": "Em 1-2 semanas",
+        "later": "Mais tarde"
+      }
     },
-    "contact_firstname": { "question": "Qual é o seu primeiro nome?" },
-    "contact_lastname": { "question": "Qual é o seu sobrenome?" },
-    "contact_email": { "question": "Qual é o seu email?", "subtitle": "Para receber sua orientação personalizada" }
+    "contact_firstname": {
+      "question": "Qual é o seu primeiro nome?"
+    },
+    "contact_lastname": {
+      "question": "Qual é o seu sobrenome?"
+    },
+    "contact_email": {
+      "question": "Qual é o seu email?",
+      "subtitle": "Para receber sua orientação personalizada"
+    }
   },
   "completion": {
     "profileCreated": "Perfil criado com sucesso!",
     "profileSubtitle": "Seu perfil foi criado com sucesso",
-    "summary": "Resumo", "score": "Pontuação de qualificação",
-    "scoreQualified": "Lead qualificado", "scoreToComplete": "Lead a completar", "scoreToQualify": "Lead a qualificar",
-    "completeness": "Completude", "fit": "Adequação", "reactivity": "Reatividade",
-    "yourProfile": "Seu perfil", "availability": "Disponibilidade",
-    "immediate": "Imediata", "oneToTwoWeeks": "1-2 semanas", "later": "Mais tarde",
-    "finalizing": "Finalizando...", "discoverPath": "Descobrir meu caminho"
+    "summary": "Resumo",
+    "score": "Pontuação de qualificação",
+    "scoreQualified": "Lead qualificado",
+    "scoreToComplete": "Lead a completar",
+    "scoreToQualify": "Lead a qualificar",
+    "completeness": "Completude",
+    "fit": "Adequação",
+    "reactivity": "Reatividade",
+    "yourProfile": "Seu perfil",
+    "availability": "Disponibilidade",
+    "immediate": "Imediata",
+    "oneToTwoWeeks": "1-2 semanas",
+    "later": "Mais tarde",
+    "finalizing": "Finalizando...",
+    "discoverPath": "Descobrir meu caminho"
   },
   "tags": {
-    "route_a": "Caminho FLE", "route_b": "Caminho Formação", "route_c": "Caminho Emprego",
-    "alpha": "Nível Alpha", "a1": "Nível A1", "a2": "Nível A2", "b1": "Nível B1+",
-    "work_permit": "Direito ao trabalho", "no_work_permit": "Sem direito ao trabalho",
-    "reactive": "Disponível rapidamente", "contact_ok": "Contactável 48h", "available_now": "Disponível imediatamente",
-    "sector_btp": "Construção", "sector_logistics": "Logística", "sector_cleaning": "Limpeza",
-    "sector_care": "Cuidado pessoal", "sector_hospitality": "Hotelaria", "sector_security": "Segurança", "sector_transport": "Transporte",
-    "barrier_childcare": "Cuidado de crianças", "barrier_transport": "Mobilidade", "barrier_health": "Saúde",
-    "barrier_housing": "Moradia", "barrier_admin": "Administrativo", "no_barriers": "Sem barreiras",
-    "fle_general": "Francês geral", "fle_pro": "Francês profissional",
-    "daytime_classes": "Aulas diurnas", "evening_classes": "Aulas noturnas",
-    "schedule_day": "Horário diurno", "schedule_flexible": "Horário flexível", "night_ok": "Noite possível", "weekend_ok": "Fim de semana possível"
+    "route_a": "Caminho FLE",
+    "route_b": "Caminho Formação",
+    "route_c": "Caminho Emprego",
+    "alpha": "Nível Alpha",
+    "a1": "Nível A1",
+    "a2": "Nível A2",
+    "b1": "Nível B1+",
+    "work_permit": "Direito ao trabalho",
+    "no_work_permit": "Sem direito ao trabalho",
+    "reactive": "Disponível rapidamente",
+    "contact_ok": "Contactável 48h",
+    "available_now": "Disponível imediatamente",
+    "sector_btp": "Construção",
+    "sector_logistics": "Logística",
+    "sector_cleaning": "Limpeza",
+    "sector_care": "Cuidado pessoal",
+    "sector_hospitality": "Hotelaria",
+    "sector_security": "Segurança",
+    "sector_transport": "Transporte",
+    "barrier_childcare": "Cuidado de crianças",
+    "barrier_transport": "Mobilidade",
+    "barrier_health": "Saúde",
+    "barrier_housing": "Moradia",
+    "barrier_admin": "Administrativo",
+    "no_barriers": "Sem barreiras",
+    "fle_general": "Francês geral",
+    "fle_pro": "Francês profissional",
+    "daytime_classes": "Aulas diurnas",
+    "evening_classes": "Aulas noturnas",
+    "schedule_day": "Horário diurno",
+    "schedule_flexible": "Horário flexível",
+    "night_ok": "Noite possível",
+    "weekend_ok": "Fim de semana possível"
   },
   "routes": {
-    "route_a": { "label": "Caminho FLE", "description": "Formação em francês como língua estrangeira", "icon": "📖" },
-    "route_b": { "label": "Caminho Formação", "description": "Formação profissional qualificada", "icon": "🎓" },
-    "route_c": { "label": "Caminho Emprego", "description": "Pronto para trabalhar — conexão direta com empregadores", "icon": "💼" },
-    "sas": { "label": "Caminho Acompanhamento", "description": "Orientação e apoio personalizado", "icon": "🤝" }
+    "route_a": {
+      "label": "Caminho FLE",
+      "description": "Formação em francês como língua estrangeira",
+      "icon": "📖"
+    },
+    "route_b": {
+      "label": "Caminho Formação",
+      "description": "Formação profissional qualificada",
+      "icon": "🎓"
+    },
+    "route_c": {
+      "label": "Caminho Emprego",
+      "description": "Pronto para trabalhar — conexão direta com empregadores",
+      "icon": "💼"
+    },
+    "sas": {
+      "label": "Caminho Acompanhamento",
+      "description": "Orientação e apoio personalizado",
+      "icon": "🤝"
+    }
   },
-  "ui": { "next": "Próximo", "skip": "Pular", "finish": "Finalizar", "copyWhatsapp": "Copiar mensagem WhatsApp" }
+  "ui": {
+    "next": "Próximo",
+    "skip": "Pular",
+    "finish": "Finalizar",
+    "copyWhatsapp": "Copiar mensagem WhatsApp"
+  },
+  "onboardingVisual": {
+    "progress": {
+      "step": "Pergunta {{current}} de {{total}}"
+    },
+    "actions": {
+      "previous": "Anterior",
+      "next": "Continuar",
+      "skip": "Pular",
+      "replay": "Repetir pergunta"
+    },
+    "target_sector": {
+      "question": "Qual setor te interessa?",
+      "subtitle": "Escolha o que mais te atrai (ou pule)",
+      "choices": {
+        "btp": "Construção",
+        "logistique": "Logística",
+        "proprete": "Limpeza",
+        "aide_personne": "Cuidados pessoais",
+        "hotellerie": "Hotelaria / Restauração",
+        "commerce": "Comércio"
+      }
+    },
+    "barriers": {
+      "question": "Você tem alguma dificuldade?",
+      "subtitle": "Várias opções possíveis — selecione tudo o que se aplica",
+      "choices": {
+        "transport": "Transporte",
+        "childcare": "Cuidado infantil",
+        "schedule": "Horários",
+        "housing": "Moradia",
+        "health": "Saúde",
+        "none": "Nenhuma"
+      }
+    },
+    "email": {
+      "question": "Seu email para entrarmos em contato",
+      "subtitle": "Um conselheiro te acompanhará pessoalmente",
+      "label": "Endereço de email",
+      "consent_lead": "Aceito ser contatado pela ToFrance e seus parceiros (centros de formação, empregadores).",
+      "consent_marketing": "Quero receber notícias e dicas por email (opcional).",
+      "submit": "Concluir"
+    }
+  }
 }

@@ -247,5 +247,48 @@
     "skip": "تخطي",
     "finish": "إنهاء",
     "copyWhatsapp": "نسخ رسالة واتساب"
+  },
+  "onboardingVisual": {
+    "progress": {
+      "step": "السؤال {{current}} من {{total}}"
+    },
+    "actions": {
+      "previous": "السابق",
+      "next": "متابعة",
+      "skip": "تخطي",
+      "replay": "إعادة تشغيل السؤال"
+    },
+    "target_sector": {
+      "question": "ما القطاع الذي يهمك؟",
+      "subtitle": "اختر القطاع الذي يجذبك أكثر (أو تخطّ)",
+      "choices": {
+        "btp": "البناء",
+        "logistique": "اللوجستيات",
+        "proprete": "النظافة",
+        "aide_personne": "مساعدة الأشخاص",
+        "hotellerie": "الفندقة والمطاعم",
+        "commerce": "التجارة"
+      }
+    },
+    "barriers": {
+      "question": "هل لديك صعوبات؟",
+      "subtitle": "يمكنك اختيار عدة خيارات",
+      "choices": {
+        "transport": "النقل",
+        "childcare": "رعاية الأطفال",
+        "schedule": "الجدول الزمني",
+        "housing": "السكن",
+        "health": "الصحة",
+        "none": "لا توجد صعوبات"
+      }
+    },
+    "email": {
+      "question": "بريدك الإلكتروني لنتواصل معك",
+      "subtitle": "سيرافقك مستشار شخصياً",
+      "label": "البريد الإلكتروني",
+      "consent_lead": "أوافق على أن يتصل بي توفرانس وشركاؤه (مراكز التدريب، أصحاب العمل).",
+      "consent_marketing": "أرغب في تلقي الأخبار والنصائح عبر البريد الإلكتروني (اختياري).",
+      "submit": "إنهاء"
+    }
   }
 }
