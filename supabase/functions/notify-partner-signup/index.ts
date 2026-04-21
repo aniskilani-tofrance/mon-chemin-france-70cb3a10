@@ -32,57 +32,128 @@ function escapeHtml(s: string): string {
     .replace(/'/g, "&#039;");
 }
 
+function formatDateFr(d: Date): string {
+  const days = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+  const months = [
+    "janvier", "février", "mars", "avril", "mai", "juin",
+    "juillet", "août", "septembre", "octobre", "novembre", "décembre",
+  ];
+  const hh = String(d.getUTCHours()).padStart(2, "0");
+  const mm = String(d.getUTCMinutes()).padStart(2, "0");
+  return `${days[d.getUTCDay()]} ${d.getUTCDate()} ${months[d.getUTCMonth()]} ${d.getUTCFullYear()} à ${hh}h${mm} (UTC)`;
+}
+
+function buildPersonalizedSubject(p: PartnerLeadPayload): string {
+  const structure = STRUCTURE_LABELS[p.structureType] ?? p.structureType;
+  // Objet personnalisé : nom de la structure + type, dans la limite raisonnable
+  const orgPart = p.organization.length > 50 ? p.organization.slice(0, 47) + "…" : p.organization;
+  return `✅ ${orgPart} — votre demande de partenariat ToFrance (${structure})`;
+}
+
 function buildConfirmationEmail(p: PartnerLeadPayload): { subject: string; html: string } {
   const structure = STRUCTURE_LABELS[p.structureType] ?? p.structureType;
   const safeName = escapeHtml(p.name);
+  const safeFirstName = escapeHtml(p.name.split(" ")[0] || p.name);
+  const safeEmail = escapeHtml(p.email);
   const safeOrg = escapeHtml(p.organization);
   const safeStructure = escapeHtml(structure);
+  const safeMessage = p.message
+    ? escapeHtml(p.message).replace(/\n/g, "<br/>")
+    : '<em style="color:#94a3b8">Aucun message complémentaire</em>';
+  const submittedAt = formatDateFr(new Date());
   const logoUrl = "https://tofrance.app/assets/logo-tofrance.png";
 
   const html = `<!DOCTYPE html>
-<html><head><meta charset="utf-8"></head>
-<body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f1f5f9">
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Demande de partenariat reçue</title></head>
+<body style="margin:0;padding:0;font-family:'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:#f1f5f9;color:#1e293b">
   <div style="padding:40px 16px">
-    <div style="max-width:580px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
+    <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08)">
+
+      <!-- HEADER -->
       <div style="background:linear-gradient(135deg,#1e3a5f 0%,#2d5a8e 100%);padding:32px 40px 28px;text-align:center">
-        <div style="background:#ffffff;display:inline-block;padding:14px 28px;border-radius:12px;margin-bottom:14px"><img src="${logoUrl}" alt="ToFrance" height="80" style="height:80px" /></div>
-        <p style="color:#94b8db;margin:0;font-size:13px;letter-spacing:0.04em;text-transform:uppercase">Demande de partenariat reçue</p>
+        <div style="background:#ffffff;display:inline-block;padding:14px 28px;border-radius:12px;margin-bottom:14px">
+          <img src="${logoUrl}" alt="ToFrance" height="80" style="height:80px;display:block" />
+        </div>
+        <p style="color:#94b8db;margin:0;font-size:13px;letter-spacing:0.04em;text-transform:uppercase;font-weight:600">Demande de partenariat reçue</p>
       </div>
-      <div style="padding:36px 40px">
-        <p style="font-size:18px;color:#1e293b;margin:0 0 8px;font-weight:600">Bonjour ${safeName} 👋</p>
-        <p style="font-size:15px;color:#475569;line-height:1.65;margin:0 0 20px">
-          Merci d'avoir manifesté votre intérêt pour rejoindre le réseau <strong>ToFrance</strong>.
-          Nous avons bien reçu votre demande et un membre de notre équipe va l'étudier avec attention.
+
+      <!-- BODY -->
+      <div style="padding:36px 40px 28px">
+        <p style="font-size:18px;color:#1e293b;margin:0 0 8px;font-weight:600">Bonjour ${safeFirstName} 👋</p>
+        <p style="font-size:15px;color:#475569;line-height:1.65;margin:0 0 22px">
+          Merci d'avoir manifesté l'intérêt de <strong>${safeOrg}</strong> pour rejoindre le réseau
+          <strong>ToFrance</strong>. Votre demande a bien été enregistrée et un membre de notre équipe
+          va l'étudier avec attention.
         </p>
 
-        <div style="background:#f8fafc;border-radius:12px;padding:20px 22px;margin:0 0 24px;border:1px solid #e2e8f0">
-          <p style="margin:0 0 10px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Récapitulatif</p>
-          <p style="margin:4px 0;font-size:14px;color:#334155"><strong>Structure :</strong> ${safeOrg}</p>
-          <p style="margin:4px 0;font-size:14px;color:#334155"><strong>Type :</strong> ${safeStructure}</p>
+        <!-- RÉCAPITULATIF -->
+        <div style="background:#f8fafc;border-radius:12px;padding:22px 24px;margin:0 0 24px;border:1px solid #e2e8f0">
+          <p style="margin:0 0 14px;font-size:11px;color:#64748b;text-transform:uppercase;letter-spacing:0.08em;font-weight:700">📋 Récapitulatif de votre demande</p>
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="width:100%;border-collapse:collapse;font-size:14px;color:#334155">
+            <tr>
+              <td style="padding:6px 0;color:#64748b;width:130px;vertical-align:top">Contact</td>
+              <td style="padding:6px 0;font-weight:600;color:#1e293b">${safeName}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#64748b;vertical-align:top">Email</td>
+              <td style="padding:6px 0;color:#1e293b">${safeEmail}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#64748b;vertical-align:top">Structure</td>
+              <td style="padding:6px 0;font-weight:600;color:#1e293b">${safeOrg}</td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#64748b;vertical-align:top">Type</td>
+              <td style="padding:6px 0;color:#1e293b">
+                <span style="display:inline-block;background:#dbeafe;color:#1e40af;padding:3px 10px;border-radius:999px;font-size:12px;font-weight:600">${safeStructure}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;color:#64748b;vertical-align:top">Soumis le</td>
+              <td style="padding:6px 0;color:#475569;font-size:13px">${submittedAt}</td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0 4px;color:#64748b;vertical-align:top" colspan="2">
+                <p style="margin:0 0 6px;font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Votre besoin</p>
+                <div style="background:#ffffff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 14px;font-size:14px;color:#334155;line-height:1.55">${safeMessage}</div>
+              </td>
+            </tr>
+          </table>
         </div>
 
-        <p style="font-size:15px;color:#475569;line-height:1.65;margin:0 0 12px">
-          <strong style="color:#1e293b">Prochaine étape :</strong> un membre de l'équipe vous contactera sous
-          <strong>24h ouvrées</strong> pour échanger sur vos besoins et vous présenter la plateforme.
+        <!-- PROCHAINE ÉTAPE -->
+        <div style="background:linear-gradient(135deg,#eff6ff 0%,#dbeafe 100%);border-radius:12px;padding:18px 22px;margin:0 0 24px;border-left:4px solid #1e3a5f">
+          <p style="margin:0 0 6px;font-size:13px;color:#1e3a5f;font-weight:700;text-transform:uppercase;letter-spacing:0.05em">⏱ Prochaine étape</p>
+          <p style="margin:0;font-size:14px;color:#1e293b;line-height:1.6">
+            Un membre de l'équipe ToFrance vous contactera sous <strong>24h ouvrées</strong> à l'adresse
+            <strong>${safeEmail}</strong> pour échanger sur vos besoins et vous présenter la plateforme.
+          </p>
+        </div>
+
+        <p style="font-size:14px;color:#64748b;line-height:1.6;margin:0 0 14px">
+          En attendant, vous pouvez découvrir notre plateforme :
         </p>
 
-        <p style="font-size:14px;color:#64748b;line-height:1.6;margin:18px 0 0">
-          En attendant, vous pouvez découvrir la plateforme :
-        </p>
-
-        <div style="text-align:center;margin:18px 0 8px">
+        <div style="text-align:center;margin:0 0 8px">
           <a href="https://tofrance.app/landing" style="background:#1e3a5f;color:#ffffff;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px;display:inline-block">Découvrir ToFrance →</a>
         </div>
       </div>
-      <div style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0">
-        <p style="font-size:12px;color:#94a3b8;margin:0;line-height:1.6">ToFrance — IA pour l'insertion des publics éloignés de l'emploi<br/>Vous recevez cet email car vous avez soumis une demande sur tofrance.app</p>
+
+      <!-- FOOTER -->
+      <div style="background:#f8fafc;padding:22px 40px;text-align:center;border-top:1px solid #e2e8f0">
+        <p style="font-size:12px;color:#94a3b8;margin:0 0 4px;line-height:1.6">
+          <strong style="color:#64748b">ToFrance</strong> — IA pour l'insertion des publics éloignés de l'emploi
+        </p>
+        <p style="font-size:11px;color:#cbd5e1;margin:0;line-height:1.5">
+          Vous recevez cet email car ${safeOrg} a soumis une demande de partenariat sur tofrance.app
+        </p>
       </div>
     </div>
   </div>
 </body></html>`;
 
   return {
-    subject: "✅ Votre demande de partenariat ToFrance a bien été reçue",
+    subject: buildPersonalizedSubject(p),
     html,
   };
 }
