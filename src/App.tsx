@@ -30,6 +30,7 @@ const PartnerSignup = lazy(() => import("./pages/PartnerSignup"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminEmailPreview = lazy(() => import("./pages/AdminEmailPreview"));
+const AdminEmailLogs = lazy(() => import("./pages/AdminEmailLogs"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminFLEProgress = lazy(() => import("./pages/AdminFLEProgress"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
