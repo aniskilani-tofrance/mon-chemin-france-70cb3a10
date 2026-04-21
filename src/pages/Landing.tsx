@@ -20,86 +20,99 @@ import {
   GraduationCap,
   Briefcase,
   Quote,
+  Target,
+  Brain,
+  Route,
+  TrendingUp,
+  Award,
+  Building2,
+  BadgeCheck,
 } from "lucide-react";
 import heroImage from "@/assets/hero-welcome.jpg";
 import marianneAvatar from "@/assets/marianne-avatar.png";
 
-const PILLARS = [
+const IMPACT_STATS = [
+  { value: "6", label: "langues disponibles", context: "Français, Anglais, Arabe, Espagnol, Portugais, Russe" },
+  { value: "30+", label: "modules de formation", context: "Du niveau Alpha au B1 professionnel" },
+  { value: "100%", label: "personnalisé", context: "IA adaptative au profil de chaque utilisateur" },
+];
+
+const PARCOURS_ETAPES = [
   {
-    icon: Mic,
-    title: "Onboarding vocal multilingue",
-    description:
-      "Une conversation naturelle avec Marianne, votre conseillère IA, dans 6 langues avec des voix natives premium.",
+    step: "01",
+    icon: Brain,
+    title: "Diagnostic IA",
+    description: "Notre IA propriétaire évalue le niveau linguistique, les compétences et les besoins spécifiques de chaque personne.",
+    highlight: "Conçu pour les publics éloignés de l'emploi",
   },
   {
+    step: "02",
     icon: BookOpen,
-    title: "Apprentissage du français FLE",
-    description:
-      "Du niveau Alpha au B1 : modules oraux, exercices interactifs et suivi personnalisé pour chaque apprenant.",
+    title: "Français sur mesure",
+    description: "Parcours FLE adaptatif (Alpha → B1) avec focus sur l'oral et les situations professionnelles concrètes.",
+    highlight: "Progression au rythme de chacun",
   },
   {
-    icon: MapPin,
-    title: "Orientation territoriale",
-    description:
-      "Mise en relation avec les centres de formation, employeurs et associations près de chez vous.",
+    step: "03",
+    icon: Award,
+    title: "Certification & formation",
+    description: "Préparation DELF, DFP ou accès à des formations professionnelles certifiantes dans les métiers en tension.",
+    highlight: "Accès aux financements possibles",
   },
   {
-    icon: ShieldCheck,
-    title: "Sécurisé & RGPD",
-    description:
-      "Hébergement en France, données protégées, conformité RGPD garantie pour les utilisateurs et partenaires.",
+    step: "04",
+    icon: Briefcase,
+    title: "Accès à l'emploi",
+    description: "Mise en relation avec des employeurs et des centres de formation sur le territoire.",
+    highlight: "Métiers en tension priorisés",
   },
 ];
 
-const STATS = [
-  { value: "6", label: "langues natives" },
-  { value: "30+", label: "modules FLE" },
-  { value: "4", label: "niveaux CECRL" },
-  { value: "100%", label: "RGPD France" },
-];
-
-const AUDIENCES = [
+const PUBLICS_CIBLES = [
   {
     icon: Users,
     title: "Primo-arrivants",
-    description: "Un parcours personnalisé pour comprendre vos droits, apprendre le français et trouver une formation.",
-    cta: "Commencer mon parcours",
-    to: "/onboarding",
+    description: "Personnes nouvellement arrivées en France, quelle que soit leur situation administrative initiale.",
+  },
+  {
+    icon: ShieldCheck,
+    title: "Publics fragilisés",
+    description: "Personnes éloignées de l'emploi rencontrant des freins linguistiques, sociaux ou administratifs.",
   },
   {
     icon: GraduationCap,
-    title: "Centres de formation",
-    description: "Recevez des candidats qualifiés et déployez ToFrance dans votre structure.",
-    cta: "Devenir partenaire",
-    to: "/devenir-partenaire",
-  },
-  {
-    icon: Briefcase,
-    title: "Employeurs & associations",
-    description: "Identifiez des profils motivés et accompagnez l'intégration sur votre territoire.",
-    cta: "Héberger ToFrance",
-    to: "/heberger",
+    title: "Demandeurs de reconversion",
+    description: "Salariés ou travailleurs indépendants souhaitant se reconvertir vers les métiers en tension.",
   },
 ];
 
-const TESTIMONIALS = [
+const METIERS_TENSION = [
+  "BTP & Construction",
+  "Restauration & Hôtellerie", 
+  "Santé & Aide à domicile",
+  "Logistique & Transport",
+  "Industrie",
+  "Services à la personne",
+];
+
+const TEMOIGNAGES = [
   {
-    quote:
-      "L'onboarding vocal en arabe a tout changé : je me suis sentie écoutée dès la première minute.",
+    quote: "Je ne parlais pas un mot de français. En 3 mois avec ToFrance, j'ai pu passer mon entretien d'embauche en français et décrocher un CDI.",
+    author: "Karim",
+    role: "Opérateur de production, région lyonnaise",
+    result: "CDI signé après 4 mois",
+  },
+  {
+    quote: "L'onboarding vocal en arabe m'a permis de comprendre mes droits et mes options. Sans ça, j'aurais abandonné dès le début.",
     author: "Amina",
-    role: "Apprenante FLE",
+    role: "Aide-soignante en formation",
+    result: "En formation DFGSM",
   },
   {
-    quote:
-      "Nous recevons des candidats déjà orientés et motivés. C'est un vrai gain de temps pour nos équipes.",
-    author: "Centre de formation partenaire",
-    role: "Île-de-France",
-  },
-  {
-    quote:
-      "ToFrance complète parfaitement notre accompagnement social. L'outil multilingue est précieux.",
-    author: "Association d'accueil",
-    role: "Région Sud",
+    quote: "Nous avons recruté 12 personnes formées via ToFrance. Elles étaient motivées, bien préparées et prêtes à intégrer nos équipes.",
+    author: "Directeur RH",
+    role: "Entreprise du bâtiment, Île-de-France",
+    result: "12 recrutements réussis",
   },
 ];
 
@@ -107,158 +120,182 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="ToFrance — Plateforme d'accueil et d'orientation multilingue"
-        description="Découvrez ToFrance : onboarding vocal en 6 langues, apprentissage du français (FLE) et orientation vers formations, employeurs et associations en France."
+        title="ToFrance — IA d'insertion pour primo-arrivants et publics éloignés de l'emploi"
+        description="ToFrance développe une IA propriétaire spécialisée dans l'insertion. Multilingue et orientée parcours, elle guide chaque personne vers l'apprentissage du français, la formation et l'emploi."
         path="/landing"
       />
       <Header />
 
       <main>
-        {/* Hero */}
-        <section className="relative overflow-hidden pt-32 pb-24">
+        {/* Hero - Mission forte */}
+        <section className="relative overflow-hidden pt-28 pb-20 lg:pt-36 lg:pb-28">
           <div className="absolute inset-0 z-0">
             <img
               src={heroImage}
-              alt="Bienvenue en France"
-              className="h-full w-full object-cover object-top opacity-20"
+              alt="ToFrance - Accompagnement vers l'insertion"
+              className="h-full w-full object-cover object-top opacity-15"
               loading="eager"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/85 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background via-background/95 to-background" />
           </div>
 
           <div className="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <AnimatedContainer className="text-center">
-              <Badge variant="outline" className="mb-6 inline-flex items-center gap-2">
-                <Sparkles className="h-3 w-3 text-accent" />
-                Plateforme nouvelle génération
+              <Badge variant="outline" className="mb-6 inline-flex items-center gap-2 px-4 py-2 text-sm">
+                <Target className="h-3.5 w-3.5 text-primary" />
+                IA spécialisée insertion — 6 langues natives
               </Badge>
-              <h1 className="mx-auto mb-6 max-w-4xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl">
-                Accueillir, accompagner et orienter{" "}
-                <span className="text-primary">en 6 langues</span>
+              
+              <h1 className="mx-auto mb-8 max-w-5xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl lg:text-6xl xl:text-7xl">
+                L'IA qui accompagne les publics éloignés vers{" "}
+                <span className="bg-gradient-to-r from-primary via-primary to-accent bg-clip-text text-transparent">
+                  l'emploi durable
+                </span>
               </h1>
-              <p className="mx-auto mb-10 max-w-2xl text-lg text-muted-foreground sm:text-xl">
-                ToFrance combine intelligence artificielle vocale, apprentissage du français et
-                réseau de partenaires pour réussir l'intégration des nouveaux arrivants.
+              
+              <p className="mx-auto mb-10 max-w-3xl text-lg text-muted-foreground sm:text-xl leading-relaxed">
+                ToFrance développe une IA propriétaire conçue pour les primo-arrivants et les personnes 
+                éloignées de l'emploi. Multilingue et orientée parcours, elle identifie les besoins 
+                linguistiques et professionnels pour guider chacun vers les solutions adaptées :
+                français, formation, certification et emploi dans les métiers en tension.
               </p>
+              
               <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
                 <Button variant="hero" size="xl" asChild>
                   <Link to="/onboarding" className="gap-3">
                     <Mic className="h-5 w-5" />
-                    Démarrer le parcours
+                    Démarrer mon parcours
                     <ArrowRight className="h-5 w-5" />
                   </Link>
                 </Button>
                 <Button variant="outline" size="xl" asChild>
-                  <Link to="/devenir-partenaire" className="gap-3">
-                    <HeartHandshake className="h-5 w-5" />
-                    Devenir partenaire
+                  <Link to="/partners" className="gap-3">
+                    <Building2 className="h-5 w-5" />
+                    Espace partenaires
                   </Link>
                 </Button>
               </div>
+            </AnimatedContainer>
 
-              {/* Marianne intro */}
-              <div className="mt-14 inline-flex items-center gap-3 rounded-2xl border border-border bg-card px-5 py-3 shadow-sm">
-                <img
-                  src={marianneAvatar}
-                  alt="Marianne, conseillère IA"
-                  className="h-12 w-12 rounded-full object-cover object-top"
-                  width={48}
-                  height={48}
-                  loading="lazy"
-                />
-                <div className="text-left">
-                  <p className="text-sm font-medium text-foreground">
-                    Marianne, votre conseillère IA
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Voix natives ElevenLabs · 6 langues
-                  </p>
-                </div>
+            {/* Stats impact */}
+            <AnimatedContainer delay={0.3} className="mt-16">
+              <div className="grid gap-8 border-y border-border bg-secondary/20 px-6 py-10 sm:grid-cols-3">
+                {IMPACT_STATS.map((stat) => (
+                  <div key={stat.label} className="text-center">
+                    <div className="text-4xl font-bold text-primary sm:text-5xl">{stat.value}</div>
+                    <div className="mt-2 font-medium text-foreground">{stat.label}</div>
+                    <div className="mt-1 text-sm text-muted-foreground">{stat.context}</div>
+                  </div>
+                ))}
               </div>
             </AnimatedContainer>
           </div>
         </section>
 
-        {/* Stats */}
-        <section className="border-y border-border bg-secondary/30 py-12">
+        {/* Section "Notre approche" */}
+        <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <StaggerContainer
-              className="grid grid-cols-2 gap-8 sm:grid-cols-4"
-              staggerDelay={0.08}
-            >
-              {STATS.map((s) => (
-                <StaggerItem key={s.label}>
-                  <div className="text-center">
-                    <div className="text-3xl font-bold text-primary sm:text-4xl">{s.value}</div>
-                    <div className="mt-1 text-sm text-muted-foreground">{s.label}</div>
-                  </div>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
-          </div>
-        </section>
-
-        {/* Pillars */}
-        <section className="py-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <AnimatedContainer className="mb-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-                Une plateforme complète, du premier mot au premier emploi
+            <AnimatedContainer className="mb-16 text-center">
+              <Badge variant="outline" className="mb-4">
+                <Brain className="mr-1 h-3 w-3" />
+                IA propriétaire
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+                Une IA conçue pour l'insertion réelle
               </h2>
-              <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-                Quatre piliers pour transformer l'expérience d'arrivée et d'intégration en France.
+              <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
+                Contrairement aux solutions généralistes, ToFrance intègre les spécificités des parcours 
+                d'insertion : illettrisme potentiel, barrières linguistiques, freins administratifs, 
+                et méconnaissance des dispositifs français.
               </p>
             </AnimatedContainer>
 
-            <StaggerContainer className="grid gap-6 sm:grid-cols-2" staggerDelay={0.1}>
-              {PILLARS.map((p) => (
-                <StaggerItem key={p.title}>
-                  <Card variant="elevated" className="h-full">
-                    <CardContent className="flex gap-4 p-6">
-                      <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                        <p.icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="mb-2 text-lg font-semibold text-foreground">{p.title}</h3>
-                        <p className="text-sm text-muted-foreground">{p.description}</p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </StaggerItem>
-              ))}
+            <StaggerContainer className="grid gap-6 lg:grid-cols-3" staggerDelay={0.1}>
+              <StaggerItem>
+                <Card className="h-full border-primary/10">
+                  <CardContent className="flex flex-col p-8">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                      <Languages className="h-7 w-7 text-primary" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-semibold text-foreground">Multilingue natif</h3>
+                    <p className="text-muted-foreground">
+                      Conversation en 6 langues avec des voix natives premium. L'utilisateur peut 
+                      s'exprimer dans sa langue avant de progresser en français.
+                    </p>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+
+              <StaggerItem>
+                <Card className="h-full border-primary/10">
+                  <CardContent className="flex flex-col p-8">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                      <Route className="h-7 w-7 text-primary" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-semibold text-foreground">Parcours orienté</h3>
+                    <p className="text-muted-foreground">
+                      Pas de parcours linéaire figé. L'IA adapte le chemin en fonction du profil : 
+                      niveau de français souhaité, secteur visé, situation administrative.
+                    </p>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
+
+              <StaggerItem>
+                <Card className="h-full border-primary/10">
+                  <CardContent className="flex flex-col p-8">
+                    <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10">
+                      <MapPin className="h-7 w-7 text-primary" />
+                    </div>
+                    <h3 className="mb-3 text-xl font-semibold text-foreground">Territoire connecté</h3>
+                    <p className="text-muted-foreground">
+                      Mise en relation avec les acteurs locaux : centres de formation, employeurs, 
+                      associations d'accompagnement proches du domicile.
+                    </p>
+                  </CardContent>
+                </Card>
+              </StaggerItem>
             </StaggerContainer>
           </div>
         </section>
 
-        {/* Audiences */}
-        <section className="bg-secondary/30 py-20">
+        {/* Section Parcours */}
+        <section className="relative bg-secondary/40 py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <AnimatedContainer className="mb-12 text-center">
+            <AnimatedContainer className="mb-16 text-center">
               <Badge variant="outline" className="mb-4">
-                <Languages className="mr-1 h-3 w-3" />
-                Pour qui ?
+                <TrendingUp className="mr-1 h-3 w-3" />
+                Parcours complet
               </Badge>
-              <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-                Une plateforme pensée pour tous les acteurs
+              <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+                Du premier contact à l'emploi durable
               </h2>
+              <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
+                Un accompagnement étape par étape, adapté au rythme et aux capacités de chaque personne.
+              </p>
             </AnimatedContainer>
 
-            <StaggerContainer className="grid gap-6 lg:grid-cols-3" staggerDelay={0.1}>
-              {AUDIENCES.map((a) => (
-                <StaggerItem key={a.title}>
-                  <Card className="flex h-full flex-col border-primary/10">
-                    <CardContent className="flex flex-1 flex-col p-6">
-                      <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                        <a.icon className="h-6 w-6 text-primary" />
+            <StaggerContainer className="grid gap-6 md:grid-cols-2" staggerDelay={0.1}>
+              {PARCOURS_ETAPES.map((etape) => (
+                <StaggerItem key={etape.step}>
+                  <Card className="h-full overflow-hidden">
+                    <CardContent className="p-0">
+                      <div className="flex">
+                        <div className="flex w-20 shrink-0 flex-col items-center justify-center bg-primary text-primary-foreground">
+                          <span className="text-2xl font-bold">{etape.step}</span>
+                        </div>
+                        <div className="flex-1 p-6">
+                          <div className="mb-3 flex items-center gap-3">
+                            <etape.icon className="h-5 w-5 text-primary" />
+                            <h3 className="text-lg font-semibold text-foreground">{etape.title}</h3>
+                          </div>
+                          <p className="mb-3 text-sm text-muted-foreground">{etape.description}</p>
+                          <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                            <BadgeCheck className="h-3 w-3" />
+                            {etape.highlight}
+                          </div>
+                        </div>
                       </div>
-                      <h3 className="mb-2 text-lg font-semibold text-foreground">{a.title}</h3>
-                      <p className="mb-6 flex-1 text-sm text-muted-foreground">{a.description}</p>
-                      <Button variant="outline" size="sm" asChild className="w-full">
-                        <Link to={a.to} className="gap-2">
-                          {a.cta}
-                          <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </Button>
                     </CardContent>
                   </Card>
                 </StaggerItem>
@@ -267,72 +304,98 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="py-20">
+        {/* Section Publics cibles */}
+        <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <AnimatedContainer className="mb-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-                Comment ça marche ?
+            <AnimatedContainer className="mb-16 text-center">
+              <Badge variant="outline" className="mb-4">
+                <Users className="mr-1 h-3 w-3" />
+                Publics accompagnés
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+                Pour qui ?
               </h2>
+              <p className="mx-auto max-w-3xl text-lg text-muted-foreground">
+                ToFrance s'adresse aux personnes éloignées de l'emploi, quelle que soit leur origine 
+                ou leur situation administrative.
+              </p>
             </AnimatedContainer>
 
-            <StaggerContainer className="grid gap-6 sm:grid-cols-3" staggerDelay={0.1}>
-              {[
-                {
-                  step: "01",
-                  icon: Mic,
-                  title: "Conversation vocale",
-                  description: "Marianne vous accueille dans votre langue et comprend votre situation.",
-                },
-                {
-                  step: "02",
-                  icon: Zap,
-                  title: "Parcours personnalisé",
-                  description: "L'IA construit en quelques minutes un plan adapté à votre profil et votre territoire.",
-                },
-                {
-                  step: "03",
-                  icon: HeartHandshake,
-                  title: "Mise en relation",
-                  description: "Vous êtes orienté(e) vers les bons partenaires : formation, emploi, accompagnement.",
-                },
-              ].map((s) => (
-                <StaggerItem key={s.step}>
-                  <Card className="h-full">
-                    <CardContent className="p-6">
-                      <div className="mb-3 flex items-center justify-between">
-                        <span className="text-3xl font-bold text-primary/30">{s.step}</span>
-                        <s.icon className="h-6 w-6 text-primary" />
-                      </div>
-                      <h3 className="mb-2 font-semibold text-foreground">{s.title}</h3>
-                      <p className="text-sm text-muted-foreground">{s.description}</p>
-                    </CardContent>
-                  </Card>
-                </StaggerItem>
-              ))}
-            </StaggerContainer>
+            <div className="grid gap-8 lg:grid-cols-2">
+              <StaggerContainer className="grid gap-6" staggerDelay={0.1}>
+                {PUBLICS_CIBLES.map((public_cible) => (
+                  <StaggerItem key={public_cible.title}>
+                    <Card className="h-full">
+                      <CardContent className="flex gap-5 p-6">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                          <public_cible.icon className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="mb-2 font-semibold text-foreground">{public_cible.title}</h3>
+                          <p className="text-sm text-muted-foreground">{public_cible.description}</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </StaggerItem>
+                ))}
+              </StaggerContainer>
+
+              <AnimatedContainer delay={0.3}>
+                <Card className="h-full bg-gradient-to-br from-primary/5 via-background to-accent/5">
+                  <CardContent className="flex h-full flex-col justify-center p-8">
+                    <h3 className="mb-6 text-2xl font-bold text-foreground">
+                      Métiers en tension couverts
+                    </h3>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {METIERS_TENSION.map((metier) => (
+                        <div
+                          key={metier}
+                          className="flex items-center gap-2 rounded-lg border border-border bg-background/80 px-4 py-3"
+                        >
+                          <Zap className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-medium text-foreground">{metier}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="mt-6 text-sm text-muted-foreground">
+                      Notre IA identifie les correspondances entre le profil de la personne 
+                      et les opportunités réelles du territoire.
+                    </p>
+                  </CardContent>
+                </Card>
+              </AnimatedContainer>
+            </div>
           </div>
         </section>
 
-        {/* Testimonials */}
-        <section className="bg-secondary/30 py-20">
+        {/* Section Témoignages */}
+        <section className="bg-secondary/40 py-20 lg:py-28">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <AnimatedContainer className="mb-12 text-center">
-              <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-                Ils utilisent ToFrance
+            <AnimatedContainer className="mb-16 text-center">
+              <Badge variant="outline" className="mb-4">
+                <Quote className="mr-1 h-3 w-3" />
+                Résultats concrets
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+                Ils ont transformé leur parcours
               </h2>
             </AnimatedContainer>
 
             <StaggerContainer className="grid gap-6 lg:grid-cols-3" staggerDelay={0.1}>
-              {TESTIMONIALS.map((t, i) => (
+              {TEMOIGNAGES.map((temoignage, i) => (
                 <StaggerItem key={i}>
-                  <Card variant="elevated" className="h-full">
-                    <CardContent className="p-6">
-                      <Quote className="mb-4 h-8 w-8 text-primary/40" />
-                      <p className="mb-6 text-sm italic text-foreground">{t.quote}</p>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">{t.author}</p>
-                        <p className="text-xs text-muted-foreground">{t.role}</p>
+                  <Card className="h-full">
+                    <CardContent className="flex h-full flex-col p-6">
+                      <Quote className="mb-4 h-8 w-8 text-primary/30" />
+                      <p className="mb-6 flex-1 text-sm italic leading-relaxed text-foreground">
+                        "{temoignage.quote}"
+                      </p>
+                      <div className="border-t border-border pt-4">
+                        <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                          {temoignage.result}
+                        </div>
+                        <p className="font-medium text-foreground">{temoignage.author}</p>
+                        <p className="text-xs text-muted-foreground">{temoignage.role}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -342,32 +405,33 @@ export default function Landing() {
           </div>
         </section>
 
-        {/* Final CTA */}
-        <section className="py-20">
+        {/* CTA Final */}
+        <section className="py-20 lg:py-28">
           <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
             <AnimatedContainer>
-              <Card className="overflow-hidden border-primary/20 bg-gradient-to-br from-primary/10 via-background to-accent/10">
-                <CardContent className="p-10 text-center sm:p-14">
-                  <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
-                    Prêt à découvrir ToFrance ?
-                  </h2>
-                  <p className="mx-auto mb-8 max-w-xl text-lg text-muted-foreground">
-                    Quelques minutes suffisent pour démarrer un parcours adapté à votre situation.
-                  </p>
-                  <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-                    <Button variant="hero" size="xl" asChild>
-                      <Link to="/onboarding" className="gap-3">
-                        <Mic className="h-5 w-5" />
-                        Lancer mon onboarding
-                        <ArrowRight className="h-5 w-5" />
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="xl" asChild>
-                      <Link to="/fle" className="gap-2">
-                        <BookOpen className="h-5 w-5" />
-                        Découvrir le module FLE
-                      </Link>
-                    </Button>
+              <Card className="overflow-hidden border-primary/20">
+                <CardContent className="relative p-10 text-center sm:p-14">
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-background to-accent/5" />
+                  <div className="relative">
+                    <h2 className="mb-4 text-3xl font-bold text-foreground sm:text-4xl">
+                      Prêt à transformer votre parcours ?
+                    </h2>
+                    <p className="mx-auto mb-8 max-w-xl text-lg text-muted-foreground">
+                      Quelques minutes suffisent pour démarrer. Notre IA vous accompagne 
+                      dans votre langue, à votre rythme.
+                    </p>
+                    <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+                      <Button variant="hero" size="xl" asChild>
+                        <Link to="/onboarding" className="gap-3">
+                          <Mic className="h-5 w-5" />
+                          Commencer gratuitement
+                          <ArrowRight className="h-5 w-5" />
+                        </Link>
+                      </Button>
+                    </div>
+                    <p className="mt-6 text-xs text-muted-foreground">
+                      Gratuit pour les utilisateurs • Aucune donnée partagée sans consentement
+                    </p>
                   </div>
                 </CardContent>
               </Card>
