@@ -1,7 +1,14 @@
 // Shared Outlook mail sender with retry + exponential backoff.
 // Handles transient errors (429, 5xx, network timeouts) automatically.
+// Persists every send attempt outcome into the email_logs table.
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
+
+export interface MailLogContext {
+  template: string; // e.g. "partner-confirmation", "lead-notification"
+  sourceFunction?: string; // e.g. "notify-partner-signup"
+  metadata?: Record<string, unknown>;
+}
 
 export interface SendMailOptions {
   to: string;
@@ -10,6 +17,7 @@ export interface SendMailOptions {
   cc?: string[];
   bcc?: string[];
   saveToSentItems?: boolean;
+  log?: MailLogContext;
 }
 
 export interface SendMailResult {
