@@ -211,6 +211,12 @@ export default function AdminDashboard() {
                 Prévisualiser les emails
               </Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link to="/admin/email-logs">
+                <Mail className="mr-2 h-4 w-4" />
+                Suivi des envois
+              </Link>
+            </Button>
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
