@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 // Photo Language icons mapping - expressive visuals for each choice type
 export const PHOTO_LANGUAGE_ICONS: Record<string, string> = {
