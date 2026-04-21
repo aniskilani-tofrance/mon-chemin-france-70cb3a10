@@ -116,7 +116,7 @@ export function VisualRecapStep({
             illustration: opt.illustration,
           };
         })
-        .filter((s): s is RecapItem["selections"][number] => s !== null);
+        .filter((s): s is NonNullable<typeof s> => s !== null);
       if (selections.length === 0) return;
       items.push({
         questionId: q.id,
