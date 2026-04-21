@@ -169,7 +169,7 @@ export default function Landing() {
                   </Link>
                 </Button>
                 <Button variant="outline" size="xl" asChild>
-                  <Link to="/partners" className="gap-3">
+                  <Link to="/devenir-partenaire" className="gap-3">
                     <Building2 className="h-5 w-5" />
                     Espace partenaires
                   </Link>
