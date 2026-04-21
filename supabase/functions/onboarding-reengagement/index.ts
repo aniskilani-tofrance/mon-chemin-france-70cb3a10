@@ -91,8 +91,17 @@ function getEmailBody(lang: string, tier: string, resumeUrl: string): string {
   return bodies[tier]?.[lang] || bodies[tier]?.fr || bodies["1h"].fr;
 }
 
-async function sendEmail(to: string, subject: string, html: string) {
-  const result = await sendOutlookMail({ to, subject, html });
+async function sendEmail(to: string, subject: string, html: string, tier?: string, lang?: string) {
+  const result = await sendOutlookMail({
+    to,
+    subject,
+    html,
+    log: {
+      template: `onboarding-reengagement-${tier ?? "unknown"}`,
+      sourceFunction: "onboarding-reengagement",
+      metadata: { tier, lang },
+    },
+  });
   if (result.ok) {
     console.log(`✉️  Outlook OK to ${to} in ${result.attempts} attempt(s) (${result.durationMs}ms)`);
   } else {
