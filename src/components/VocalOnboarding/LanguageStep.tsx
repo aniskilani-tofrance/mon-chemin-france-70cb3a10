@@ -1,4 +1,5 @@
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { LANGUAGES, LanguageCode } from "@/lib/translations";
 import { useLanguage } from "@/hooks/useLanguage";
 
