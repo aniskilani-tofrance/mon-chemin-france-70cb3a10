@@ -42,6 +42,40 @@ import secAide from "@/assets/onboarding/sector_aide_personne.jpg";
 import secHotel from "@/assets/onboarding/sector_hotellerie.jpg";
 import secCom from "@/assets/onboarding/sector_commerce.jpg";
 
+// Reconnaissance de diplôme
+import goalRecognize from "@/assets/onboarding/goal_recognize_diploma.jpg";
+
+// Niveau de diplôme
+import dipSecondary from "@/assets/onboarding/diploma_secondary.jpg";
+import dipBac from "@/assets/onboarding/diploma_bac.jpg";
+import dipBachelor from "@/assets/onboarding/diploma_bachelor.jpg";
+import dipMaster from "@/assets/onboarding/diploma_master.jpg";
+import dipDoctorate from "@/assets/onboarding/diploma_doctorate.jpg";
+import dipNone from "@/assets/onboarding/diploma_no_diploma.jpg";
+
+// Continuer dans le domaine
+import contYes from "@/assets/onboarding/continue_yes.jpg";
+import contNo from "@/assets/onboarding/continue_no.jpg";
+import contUnsure from "@/assets/onboarding/continue_unsure.jpg";
+
+// Mobilité
+import mobWalk from "@/assets/onboarding/mobility_walk.jpg";
+import mobBike from "@/assets/onboarding/mobility_bike.jpg";
+import mobCar from "@/assets/onboarding/mobility_car.jpg";
+import mobTransit from "@/assets/onboarding/mobility_transit.jpg";
+
+// Contraintes
+import barTransport from "@/assets/onboarding/barrier_transport.jpg";
+import barChildcare from "@/assets/onboarding/barrier_childcare.jpg";
+import barSchedule from "@/assets/onboarding/barrier_schedule.jpg";
+import barHousing from "@/assets/onboarding/barrier_housing.jpg";
+import barHealth from "@/assets/onboarding/barrier_health.jpg";
+import barNone from "@/assets/onboarding/barrier_none.jpg";
+
+// Disponibilité contact
+import contactYes from "@/assets/onboarding/contact_yes.jpg";
+import contactNo from "@/assets/onboarding/contact_no.jpg";
+
 export type VisualQuestionType = "single" | "multi" | "info";
 
 export interface VisualOption {
@@ -123,7 +157,7 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
       { id: "learn_french", labelKey: "questionnaire.main_goal.choices.learn_french", icon: "📚", illustration: goalLearn },
       { id: "find_job", labelKey: "questionnaire.main_goal.choices.find_job", icon: "💼", illustration: goalJob },
       { id: "job_training", labelKey: "questionnaire.main_goal.choices.job_training", icon: "🎓", illustration: goalTraining },
-      { id: "recognize_diploma", labelKey: "questionnaire.main_goal.choices.recognize_diploma", icon: "🎖️" },
+      { id: "recognize_diploma", labelKey: "questionnaire.main_goal.choices.recognize_diploma", icon: "🎖️", illustration: goalRecognize },
       { id: "need_help", labelKey: "questionnaire.main_goal.choices.need_help", icon: "🤝", illustration: goalHelp },
     ],
   },
@@ -136,12 +170,12 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 2,
     options: [
-      { id: "secondary", labelKey: "questionnaire.diploma_level.choices.secondary", icon: "🏫" },
-      { id: "bac", labelKey: "questionnaire.diploma_level.choices.bac", icon: "📜" },
-      { id: "bachelor", labelKey: "questionnaire.diploma_level.choices.bachelor", icon: "🎓" },
-      { id: "master", labelKey: "questionnaire.diploma_level.choices.master", icon: "📚" },
-      { id: "doctorate", labelKey: "questionnaire.diploma_level.choices.doctorate", icon: "🧑‍🔬" },
-      { id: "no_diploma", labelKey: "questionnaire.diploma_level.choices.no_diploma", icon: "❓" },
+      { id: "secondary", labelKey: "questionnaire.diploma_level.choices.secondary", icon: "🏫", illustration: dipSecondary },
+      { id: "bac", labelKey: "questionnaire.diploma_level.choices.bac", icon: "📜", illustration: dipBac },
+      { id: "bachelor", labelKey: "questionnaire.diploma_level.choices.bachelor", icon: "🎓", illustration: dipBachelor },
+      { id: "master", labelKey: "questionnaire.diploma_level.choices.master", icon: "📚", illustration: dipMaster },
+      { id: "doctorate", labelKey: "questionnaire.diploma_level.choices.doctorate", icon: "🧑‍🔬", illustration: dipDoctorate },
+      { id: "no_diploma", labelKey: "questionnaire.diploma_level.choices.no_diploma", icon: "❓", illustration: dipNone },
     ],
     showIf: (a) => goalIncludes(a, "recognize_diploma"),
   },
@@ -154,9 +188,9 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 3,
     options: [
-      { id: "yes", labelKey: "questionnaire.continue_field.choices.yes", icon: "✅" },
-      { id: "no", labelKey: "questionnaire.continue_field.choices.no", icon: "🔄" },
-      { id: "unsure", labelKey: "questionnaire.continue_field.choices.unsure", icon: "🤔" },
+      { id: "yes", labelKey: "questionnaire.continue_field.choices.yes", icon: "✅", illustration: contYes },
+      { id: "no", labelKey: "questionnaire.continue_field.choices.no", icon: "🔄", illustration: contNo },
+      { id: "unsure", labelKey: "questionnaire.continue_field.choices.unsure", icon: "🤔", illustration: contUnsure },
     ],
     showIf: (a) => goalIncludes(a, "recognize_diploma"),
   },
@@ -250,10 +284,10 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "multi",
     columns: 2,
     options: [
-      { id: "walk", labelKey: "questionnaire.mobility.choices.walk", icon: "🚶" },
-      { id: "bike", labelKey: "questionnaire.mobility.choices.bike", icon: "🚲" },
-      { id: "car", labelKey: "questionnaire.mobility.choices.car", icon: "🚗" },
-      { id: "transit", labelKey: "questionnaire.mobility.choices.transit", icon: "🚌" },
+      { id: "walk", labelKey: "questionnaire.mobility.choices.walk", icon: "🚶", illustration: mobWalk },
+      { id: "bike", labelKey: "questionnaire.mobility.choices.bike", icon: "🚲", illustration: mobBike },
+      { id: "car", labelKey: "questionnaire.mobility.choices.car", icon: "🚗", illustration: mobCar },
+      { id: "transit", labelKey: "questionnaire.mobility.choices.transit", icon: "🚌", illustration: mobTransit },
     ],
   },
 
@@ -265,12 +299,12 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "multi",
     columns: 3,
     options: [
-      { id: "transport", labelKey: "onboardingVisual.barriers.choices.transport", icon: "🚌" },
-      { id: "childcare", labelKey: "onboardingVisual.barriers.choices.childcare", icon: "👶" },
-      { id: "schedule", labelKey: "onboardingVisual.barriers.choices.schedule", icon: "⏰" },
-      { id: "housing", labelKey: "onboardingVisual.barriers.choices.housing", icon: "🏠" },
-      { id: "health", labelKey: "onboardingVisual.barriers.choices.health", icon: "💊" },
-      { id: "none", labelKey: "onboardingVisual.barriers.choices.none", icon: "✨" },
+      { id: "transport", labelKey: "onboardingVisual.barriers.choices.transport", icon: "🚌", illustration: barTransport },
+      { id: "childcare", labelKey: "onboardingVisual.barriers.choices.childcare", icon: "👶", illustration: barChildcare },
+      { id: "schedule", labelKey: "onboardingVisual.barriers.choices.schedule", icon: "⏰", illustration: barSchedule },
+      { id: "housing", labelKey: "onboardingVisual.barriers.choices.housing", icon: "🏠", illustration: barHousing },
+      { id: "health", labelKey: "onboardingVisual.barriers.choices.health", icon: "💊", illustration: barHealth },
+      { id: "none", labelKey: "onboardingVisual.barriers.choices.none", icon: "✨", illustration: barNone },
     ],
   },
 
@@ -282,8 +316,8 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "single",
     columns: 2,
     options: [
-      { id: "yes", labelKey: "questionnaire.contact_48h.choices.yes", icon: "✅" },
-      { id: "no", labelKey: "questionnaire.contact_48h.choices.no", icon: "⏰" },
+      { id: "yes", labelKey: "questionnaire.contact_48h.choices.yes", icon: "✅", illustration: contactYes },
+      { id: "no", labelKey: "questionnaire.contact_48h.choices.no", icon: "⏰", illustration: contactNo },
     ],
   },
 ];
