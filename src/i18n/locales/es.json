@@ -373,6 +373,14 @@
       "toast_title": "Reanudando tu cuestionario",
       "toast_description": "Continúas en la pregunta {{current}} de {{total}}",
       "banner": "¡Bienvenido de nuevo! Tus respuestas han sido guardadas."
+    },
+    "recap": {
+      "title": "Tu recorrido de un vistazo",
+      "subtitle": "Revisa tus respuestas antes de continuar. Puedes editar cada elección.",
+      "edit": "Modificar",
+      "confirm": "Todo bien, continuar",
+      "empty": "Aún no hay respuestas registradas.",
+      "tts_intro": "Aquí está tu resumen. {{count}} respuestas guardadas."
     }
   }
 }

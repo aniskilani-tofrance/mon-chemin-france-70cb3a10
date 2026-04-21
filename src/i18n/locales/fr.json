@@ -373,6 +373,14 @@
       "toast_title": "Reprise de votre questionnaire",
       "toast_description": "Vous reprenez à la question {{current}} sur {{total}}",
       "banner": "Vous êtes de retour ! Vos réponses ont été sauvegardées."
+    },
+    "recap": {
+      "title": "Votre parcours en un coup d'œil",
+      "subtitle": "Vérifiez vos réponses avant de continuer. Vous pouvez modifier chaque choix.",
+      "edit": "Modifier",
+      "confirm": "Tout est bon, continuer",
+      "empty": "Aucune réponse enregistrée pour le moment.",
+      "tts_intro": "Voici votre récapitulatif. {{count}} réponses enregistrées."
     }
   }
 }

@@ -373,6 +373,14 @@
       "toast_title": "Resuming your questionnaire",
       "toast_description": "You're resuming at question {{current}} of {{total}}",
       "banner": "Welcome back! Your answers have been saved."
+    },
+    "recap": {
+      "title": "Your journey at a glance",
+      "subtitle": "Review your answers before continuing. You can edit each choice.",
+      "edit": "Edit",
+      "confirm": "Looks good, continue",
+      "empty": "No answers recorded yet.",
+      "tts_intro": "Here is your recap. {{count}} answers saved."
     }
   }
 }
