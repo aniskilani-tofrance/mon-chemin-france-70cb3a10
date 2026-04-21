@@ -42,6 +42,7 @@ const FLEReview = lazy(() => import("./pages/FLEReview"));
 const FormateurDashboard = lazy(() => import("./pages/FormateurDashboard"));
 const DirecteurDashboard = lazy(() => import("./pages/DirecteurDashboard"));
 
+const Landing = lazy(() => import("./pages/Landing"));
 const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
 const PlacementTest = lazy(() => import("./pages/PlacementTest"));
 const PlacementTestResults = lazy(() => import("./pages/PlacementTestResults"));
@@ -73,6 +74,7 @@ const App = () => (
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
               <Route path="/" element={<Index />} />
+              <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
               <Route path="/signup" element={<Signup />} />
