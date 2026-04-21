@@ -9,6 +9,7 @@ import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
+import { VisualRecapStep } from "@/components/VisualOnboarding/VisualRecapStep";
 import { PostalCodeStep } from "@/components/VisualOnboarding/PostalCodeStep";
 import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
 import { MagicLinkSentStep } from "@/components/VisualOnboarding/MagicLinkSentStep";
@@ -24,7 +25,7 @@ import { computeOrientation } from "@/lib/orientationEngine";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "postal-code" | "email" | "magic-link-sent" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "email" | "magic-link-sent" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
@@ -199,9 +200,22 @@ const Onboarding = () => {
       setQuestionIndex(nextIdx);
       persistCheckpoint(`q:${activeQuestions[nextIdx].id}`, answers);
     } else {
-      setStep("postal-code");
-      persistCheckpoint("postal-code", answers);
+      // Dernière question → écran récapitulatif
+      setStep("recap");
+      persistCheckpoint("recap", answers);
     }
+  };
+
+  const handleRecapConfirm = () => {
+    track("onboarding_recap_confirmed", {}, "/onboarding", language);
+    setStep("postal-code");
+    persistCheckpoint("postal-code", answers);
+  };
+
+  const handleEditFromRecap = (idx: number) => {
+    track("onboarding_recap_edit", { questionIndex: idx }, "/onboarding", language);
+    setQuestionIndex(idx);
+    setStep("visual-quiz");
   };
 
   const handlePrevious = () => {
@@ -210,6 +224,10 @@ const Onboarding = () => {
       return;
     }
     if (step === "postal-code") {
+      setStep("recap");
+      return;
+    }
+    if (step === "recap") {
       setStep("visual-quiz");
       setQuestionIndex(activeQuestions.length - 1);
       return;
