@@ -84,13 +84,28 @@ export function PartnerLeadForm() {
       request_type: "partner",
     });
 
-    setLoading(false);
-
     if (error) {
+      setLoading(false);
       toast.error("Erreur lors de l'envoi. Veuillez réessayer.");
       return;
     }
 
+    // Send confirmation email via Outlook (best-effort, do not block UX)
+    try {
+      await supabase.functions.invoke("notify-partner-signup", {
+        body: {
+          name: result.data.name,
+          email: result.data.email,
+          organization: result.data.organization,
+          structureType: result.data.structureType,
+          message: result.data.message ?? "",
+        },
+      });
+    } catch (emailErr) {
+      console.warn("Partner confirmation email failed:", emailErr);
+    }
+
+    setLoading(false);
     setSubmittedEmail(result.data.email);
     setSent(true);
     toast.success("Demande enregistrée !");
