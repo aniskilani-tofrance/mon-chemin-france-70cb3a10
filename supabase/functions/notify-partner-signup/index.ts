@@ -148,16 +148,26 @@ serve(async (req) => {
     }
 
     if (!sendToPartner.ok) {
-      console.error("Partner confirmation failed:", sendToPartner.error);
+      console.error(
+        `Partner confirmation FAILED to ${body.email} after ${sendToPartner.attempts} attempt(s) — permanent=${sendToPartner.permanent === true}: ${sendToPartner.error}`
+      );
       return new Response(
-        JSON.stringify({ confirmationSent: false, error: sendToPartner.error, internalSent }),
+        JSON.stringify({
+          confirmationSent: false,
+          error: sendToPartner.error,
+          attempts: sendToPartner.attempts,
+          permanent: sendToPartner.permanent === true,
+          internalSent,
+        }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`📧 Partner confirmation sent via Outlook to ${body.email}`);
+    console.log(
+      `📧 Partner confirmation sent to ${body.email} in ${sendToPartner.attempts} attempt(s) (${sendToPartner.durationMs}ms)`
+    );
     return new Response(
-      JSON.stringify({ confirmationSent: true, internalSent }),
+      JSON.stringify({ confirmationSent: true, attempts: sendToPartner.attempts, internalSent }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
