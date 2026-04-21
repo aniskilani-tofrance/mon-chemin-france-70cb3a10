@@ -164,7 +164,9 @@ export async function sendOutlookMail(
       clearTimeout(timer);
 
       if (res.ok) {
-        return { ok: true, status: res.status, attempts: attempt, durationMs: Date.now() - startedAt };
+        const r: SendMailResult = { ok: true, status: res.status, attempts: attempt, durationMs: Date.now() - startedAt };
+        await persistLog(opts, r);
+        return r;
       }
 
       lastStatus = res.status;
@@ -174,7 +176,7 @@ export async function sendOutlookMail(
       // Permanent failure → stop immediately
       if (!isTransientStatus(res.status)) {
         console.error(`[outlook-mail] permanent failure to ${opts.to}: ${lastError}`);
-        return {
+        const r: SendMailResult = {
           ok: false,
           status: res.status,
           error: lastError,
@@ -182,6 +184,8 @@ export async function sendOutlookMail(
           durationMs: Date.now() - startedAt,
           permanent: true,
         };
+        await persistLog(opts, r);
+        return r;
       }
 
       // Transient → backoff (respect Retry-After if provided)
@@ -207,7 +211,7 @@ export async function sendOutlookMail(
   console.error(
     `[outlook-mail] giving up after ${cfg.maxAttempts} attempts to ${opts.to}: ${lastError}`
   );
-  return {
+  const r: SendMailResult = {
     ok: false,
     status: lastStatus,
     error: lastError,
@@ -215,4 +219,6 @@ export async function sendOutlookMail(
     durationMs: Date.now() - startedAt,
     permanent: false,
   };
+  await persistLog(opts, r);
+  return r;
 }
