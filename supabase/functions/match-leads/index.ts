@@ -444,6 +444,11 @@ async function sendCandidateConfirmation(
     to: email,
     subject: `${routeInfo.emoji} Confirmation — Votre parcours ${routeInfo.label}`,
     html,
+    log: {
+      template: "candidate-orientation-confirmation",
+      sourceFunction: "match-leads",
+      metadata: { route: routeInfo.label },
+    },
   });
 
   if (!result.ok) {
