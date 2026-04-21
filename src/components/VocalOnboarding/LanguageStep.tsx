@@ -7,6 +7,31 @@ interface LanguageStepProps {
 }
 
 function PlanetLogo() {
+  const [svgError, setSvgError] = useState(false);
+
+  // Version statique de secours (emoji + styles)
+  if (svgError) {
+    return (
+      <motion.div
+        className="relative h-20 w-20 sm:h-24 sm:w-24 cursor-pointer flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent shadow-2xl"
+        whileHover={{ scale: 1.08 }}
+        whileTap={{ scale: 0.95 }}
+        initial={{ scale: 0.85, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+        tabIndex={0}
+        aria-label="Logo planète - sélecteur de langues"
+      >
+        <span className="text-4xl sm:text-5xl select-none">🌍</span>
+        <motion.div
+          className="absolute inset-[-4px] rounded-full border-2 border-primary/40"
+          animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.2, 0.5] }}
+          transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
+        />
+      </motion.div>
+    );
+  }
+
   return (
     <motion.div
       className="relative h-20 w-20 sm:h-24 sm:w-24 cursor-pointer"
@@ -17,6 +42,7 @@ function PlanetLogo() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       tabIndex={0}
       aria-label="Logo planète - sélecteur de langues"
+      onError={() => setSvgError(true)}
     >
       {/* Glow effect on hover/focus */}
       <motion.div
