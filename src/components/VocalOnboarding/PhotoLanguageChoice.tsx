@@ -177,7 +177,7 @@ export function PhotoLanguageChoice({
       )}
 
       {/* Image illustrative ou icône emoji */}
-      {customImage ? (
+      {showImage ? (
         <motion.div
           animate={isSelected ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3 }}
@@ -193,6 +193,7 @@ export function PhotoLanguageChoice({
             width={512}
             height={512}
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
         </motion.div>
       ) : (
