@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
       if (tier && updateField) {
         const subject = SUBJECTS[tier]?.[lang] || SUBJECTS[tier]?.fr || "Reprenez votre parcours ToFrance";
         const html = getEmailBody(lang, tier, resumeUrl);
-        const result = await sendEmail(cp.email, subject, html);
+        const result = await sendEmail(cp.email, subject, html, tier, lang);
 
         // Mark as sent on success OR on permanent failure (avoid infinite retry loops
         // on bad addresses, auth errors, etc.). Transient failures are left unmarked
