@@ -405,9 +405,12 @@ const Onboarding = () => {
   }, [navigate]);
 
   // Numérotation pour la barre de progression
+  // L'écran "recap" partage la position de la dernière question (pas une étape supplémentaire dans le compte)
   const stepNumber =
     step === "visual-quiz"
       ? questionIndex + 1
+      : step === "recap"
+      ? activeQuestions.length
       : step === "postal-code"
       ? activeQuestions.length + 1
       : step === "email"
@@ -417,6 +420,8 @@ const Onboarding = () => {
   const progressPercent =
     step === "visual-quiz"
       ? getProgressPercent(questionIndex, activeQuestions.length)
+      : step === "recap"
+      ? Math.round((activeQuestions.length / totalSteps) * 100)
       : step === "postal-code"
       ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
       : 100;
