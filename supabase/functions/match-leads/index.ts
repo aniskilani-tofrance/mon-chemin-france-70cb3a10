@@ -395,9 +395,10 @@ async function sendCandidateConfirmation(
   route: string,
   matchCount: number
 ) {
-  const resendApiKey = Deno.env.get("RESEND_API_KEY");
-  if (!resendApiKey) {
-    console.log("RESEND_API_KEY not set, skipping candidate email");
+  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+  const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
+  if (!LOVABLE_API_KEY || !OUTLOOK_KEY) {
+    console.log("Outlook connector not configured, skipping candidate email");
     return;
   }
 
@@ -445,24 +446,27 @@ async function sendCandidateConfirmation(
   </div>
 </body></html>`;
 
-  const res = await fetch("https://api.resend.com/emails", {
+  const res = await fetch("https://connector-gateway.lovable.dev/microsoft_outlook/me/sendMail", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${resendApiKey}`,
+      Authorization: `Bearer ${LOVABLE_API_KEY}`,
+      "X-Connection-Api-Key": OUTLOOK_KEY,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: "ToFrance <notifications@tofrance.app>",
-      to: [email],
-      subject: `${routeInfo.emoji} Confirmation — Votre parcours ${routeInfo.label}`,
-      html,
+      message: {
+        subject: `${routeInfo.emoji} Confirmation — Votre parcours ${routeInfo.label}`,
+        body: { contentType: "HTML", content: html },
+        toRecipients: [{ emailAddress: { address: email } }],
+      },
+      saveToSentItems: true,
     }),
   });
 
   if (!res.ok) {
     const body = await res.text();
-    console.error("Candidate email error:", res.status, body);
+    console.error("Candidate email error (Outlook):", res.status, body);
   } else {
-    console.log(`📧 Confirmation email sent to ${email}`);
+    console.log(`📧 Confirmation email sent to ${email} via Outlook`);
   }
 }

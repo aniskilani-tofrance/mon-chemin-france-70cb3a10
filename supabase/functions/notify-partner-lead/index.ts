@@ -35,10 +35,11 @@ serve(async (req) => {
       });
     }
 
-    const resendApiKey = Deno.env.get("RESEND_API_KEY");
-    if (!resendApiKey) {
-      console.log("RESEND_API_KEY not set, skipping email");
-      return new Response(JSON.stringify({ skipped: true, reason: "no_api_key" }), {
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
+    if (!LOVABLE_API_KEY || !OUTLOOK_KEY) {
+      console.log("Outlook connector not configured, skipping email");
+      return new Response(JSON.stringify({ skipped: true, reason: "no_outlook_key" }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -61,7 +62,7 @@ serve(async (req) => {
       </div>
       <div style="padding:36px 40px">
         <p style="font-size:18px;color:#1e293b;margin:0 0 8px;font-weight:600">Bonjour ${provider.name} 👋</p>
-        <p style="font-size:15px;color:#475569;line-height:1.6;margin:0 0 24px">Un nouveau candidat correspond à vos critères de formation. Consultez les détails ci-dessous.</p>
+        <p style="font-size:15px;color:#475569;line-height:1.6;margin:0 0 24px">Un nouveau candidat correspond à vos critères de formation.</p>
         <div style="background:#f8fafc;border-radius:12px;padding:24px;margin:0 0 24px;border:1px solid #e2e8f0">
           <div style="margin-bottom:16px">
             <span style="font-size:13px;color:#64748b;text-transform:uppercase;letter-spacing:0.06em;font-weight:700">Qualité du lead</span>
@@ -87,32 +88,35 @@ serve(async (req) => {
     </div>
   </div>
 </body></html>`;
-    // Send via Resend
-    const resendRes = await fetch("https://api.resend.com/emails", {
+
+    // Send via Outlook gateway
+    const outlookRes = await fetch("https://connector-gateway.lovable.dev/microsoft_outlook/me/sendMail", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${resendApiKey}`,
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "X-Connection-Api-Key": OUTLOOK_KEY,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "ToFrance <notifications@tofrance.app>",
-        to: [provider.email],
-        subject: `${tierEmoji} Nouveau lead ${tier} — Score ${matchScore ?? "—"}%`,
-        html: htmlBody,
+        message: {
+          subject: `${tierEmoji} Nouveau lead ${tier} — Score ${matchScore ?? "—"}%`,
+          body: { contentType: "HTML", content: htmlBody },
+          toRecipients: [{ emailAddress: { address: provider.email } }],
+        },
+        saveToSentItems: true,
       }),
     });
 
-    const resendBody = await resendRes.text();
-
-    if (!resendRes.ok) {
-      console.error("Resend error:", resendRes.status, resendBody);
-      return new Response(JSON.stringify({ sent: false, error: resendBody }), {
+    if (!outlookRes.ok) {
+      const errBody = await outlookRes.text();
+      console.error("Outlook error:", outlookRes.status, errBody);
+      return new Response(JSON.stringify({ sent: false, error: errBody }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 502,
       });
     }
 
-    console.log(`📧 Email sent to ${provider.email} for lead ${leadId} (${tier})`);
+    console.log(`📧 Outlook email sent to ${provider.email} for lead ${leadId} (${tier})`);
 
     return new Response(
       JSON.stringify({ sent: true, provider: provider.name, leadId, matchScore, tier }),
