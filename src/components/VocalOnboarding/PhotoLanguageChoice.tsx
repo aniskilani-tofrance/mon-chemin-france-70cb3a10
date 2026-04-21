@@ -117,6 +117,12 @@ export function PhotoLanguageChoice({
   // Get the best icon - custom first, then from mapping, then fallback
   const icon = customIcon || PHOTO_LANGUAGE_ICONS[choiceId] || "📌";
   
+  // State to track image load errors
+  const [imageError, setImageError] = useState(false);
+  
+  // Determine if we should show image or emoji fallback
+  const showImage = customImage && !imageError;
+  
   return (
     <motion.button
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
