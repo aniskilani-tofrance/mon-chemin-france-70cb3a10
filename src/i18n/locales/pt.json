@@ -373,6 +373,14 @@
       "toast_title": "Retomando seu questionário",
       "toast_description": "Você está retomando na pergunta {{current}} de {{total}}",
       "banner": "Bem-vindo de volta! Suas respostas foram salvas."
+    },
+    "recap": {
+      "title": "Seu percurso em um olhar",
+      "subtitle": "Revise suas respostas antes de continuar. Você pode editar cada escolha.",
+      "edit": "Editar",
+      "confirm": "Tudo certo, continuar",
+      "empty": "Nenhuma resposta registrada ainda.",
+      "tts_intro": "Aqui está seu resumo. {{count}} respostas salvas."
     }
   }
 }
