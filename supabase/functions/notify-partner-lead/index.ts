@@ -90,37 +90,34 @@ serve(async (req) => {
   </div>
 </body></html>`;
 
-    // Send via Outlook gateway
-    const outlookRes = await fetch("https://connector-gateway.lovable.dev/microsoft_outlook/me/sendMail", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": OUTLOOK_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: {
-          subject: `${tierEmoji} Nouveau lead ${tier} — Score ${matchScore ?? "—"}%`,
-          body: { contentType: "HTML", content: htmlBody },
-          toRecipients: [{ emailAddress: { address: provider.email } }],
-        },
-        saveToSentItems: true,
-      }),
+    // Send via Outlook gateway with retry/backoff on transient errors (429, 5xx, network)
+    const result = await sendOutlookMail({
+      to: provider.email,
+      subject: `${tierEmoji} Nouveau lead ${tier} — Score ${matchScore ?? "—"}%`,
+      html: htmlBody,
     });
 
-    if (!outlookRes.ok) {
-      const errBody = await outlookRes.text();
-      console.error("Outlook error:", outlookRes.status, errBody);
-      return new Response(JSON.stringify({ sent: false, error: errBody }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 502,
-      });
+    if (!result.ok) {
+      console.error(
+        `Outlook FAIL to ${provider.email} after ${result.attempts} attempt(s) — permanent=${result.permanent === true}: ${result.error}`
+      );
+      return new Response(
+        JSON.stringify({
+          sent: false,
+          error: result.error,
+          attempts: result.attempts,
+          permanent: result.permanent === true,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 }
+      );
     }
 
-    console.log(`📧 Outlook email sent to ${provider.email} for lead ${leadId} (${tier})`);
+    console.log(
+      `📧 Outlook OK to ${provider.email} for lead ${leadId} (${tier}) in ${result.attempts} attempt(s) (${result.durationMs}ms)`
+    );
 
     return new Response(
-      JSON.stringify({ sent: true, provider: provider.name, leadId, matchScore, tier }),
+      JSON.stringify({ sent: true, attempts: result.attempts, provider: provider.name, leadId, matchScore, tier }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
