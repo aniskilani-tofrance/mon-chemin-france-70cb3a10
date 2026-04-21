@@ -95,28 +95,34 @@ function getEmailBody(lang: string, tier: string, resumeUrl: string): string {
 }
 
 async function sendEmail(to: string, subject: string, html: string) {
-  if (!RESEND_API_KEY || !LOVABLE_API_KEY) {
-    console.error("Missing RESEND_API_KEY or LOVABLE_API_KEY");
+  if (!OUTLOOK_KEY || !LOVABLE_API_KEY) {
+    console.error("Missing MICROSOFT_OUTLOOK_API_KEY or LOVABLE_API_KEY");
     return false;
   }
   try {
-    const response = await fetch(`${GATEWAY_URL}/emails`, {
+    const response = await fetch(`${GATEWAY_URL}/me/sendMail`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": RESEND_API_KEY,
+        "X-Connection-Api-Key": OUTLOOK_KEY,
       },
       body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [to],
-        subject,
-        html,
+        message: {
+          subject,
+          body: { contentType: "HTML", content: html },
+          toRecipients: [{ emailAddress: { address: to } }],
+        },
+        saveToSentItems: true,
       }),
     });
-    const result = await response.json();
-    console.log(`Email sent to ${to}:`, result);
-    return response.ok;
+    if (!response.ok) {
+      const errTxt = await response.text();
+      console.error(`Outlook send failed for ${to}: ${response.status} ${errTxt}`);
+      return false;
+    }
+    console.log(`Email sent to ${to} via Outlook`);
+    return true;
   } catch (err) {
     console.error(`Failed to send email to ${to}:`, err);
     return false;
