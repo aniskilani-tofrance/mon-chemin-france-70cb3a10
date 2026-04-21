@@ -171,7 +171,7 @@ export default function Landing() {
                 <Button variant="outline" size="xl" asChild>
                   <Link to="/devenir-partenaire" className="gap-3">
                     <Building2 className="h-5 w-5" />
-                    Espace partenaires
+                    Devenir partenaire
                   </Link>
                 </Button>
               </div>
