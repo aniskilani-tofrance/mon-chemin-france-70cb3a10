@@ -514,6 +514,20 @@ const Onboarding = () => {
               />
             )}
 
+            {step === "recap" && (
+              <VisualRecapStep
+                key="recap"
+                answers={answers}
+                onEditQuestion={handleEditFromRecap}
+                onNext={handleRecapConfirm}
+                onPrevious={handlePrevious}
+                progressPercent={progressPercent}
+                questionNumber={stepNumber}
+                totalQuestions={totalSteps}
+                tts={tts}
+              />
+            )}
+
             {step === "postal-code" && (
               <PostalCodeStep
                 key="postal-code"
