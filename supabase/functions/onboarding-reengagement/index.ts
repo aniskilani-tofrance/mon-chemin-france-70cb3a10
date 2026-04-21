@@ -7,11 +7,9 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.91.1";
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
 const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/resend";
-
-const FROM_EMAIL = "ToFrance <noreply@resend.dev>";
+const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
 interface Checkpoint {
   id: string;
