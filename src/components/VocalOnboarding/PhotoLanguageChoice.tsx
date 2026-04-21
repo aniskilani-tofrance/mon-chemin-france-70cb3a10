@@ -1,6 +1,7 @@
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
 // Photo Language icons mapping - expressive visuals for each choice type
 export const PHOTO_LANGUAGE_ICONS: Record<string, string> = {
@@ -116,6 +117,12 @@ export function PhotoLanguageChoice({
   // Get the best icon - custom first, then from mapping, then fallback
   const icon = customIcon || PHOTO_LANGUAGE_ICONS[choiceId] || "📌";
   
+  // State to track image load errors
+  const [imageError, setImageError] = useState(false);
+  
+  // Determine if we should show image or emoji fallback
+  const showImage = customImage && !imageError;
+  
   return (
     <motion.button
       initial={{ opacity: 0, scale: 0.9, y: 10 }}
@@ -170,7 +177,7 @@ export function PhotoLanguageChoice({
       )}
 
       {/* Image illustrative ou icône emoji */}
-      {customImage ? (
+      {showImage ? (
         <motion.div
           animate={isSelected ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3 }}
@@ -186,6 +193,7 @@ export function PhotoLanguageChoice({
             width={512}
             height={512}
             className="w-full h-full object-cover"
+            onError={() => setImageError(true)}
           />
         </motion.div>
       ) : (
