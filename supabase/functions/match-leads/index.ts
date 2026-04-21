@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendOutlookMail } from "../_shared/outlook-mail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -395,13 +396,6 @@ async function sendCandidateConfirmation(
   route: string,
   matchCount: number
 ) {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
-  if (!LOVABLE_API_KEY || !OUTLOOK_KEY) {
-    console.log("Outlook connector not configured, skipping candidate email");
-    return;
-  }
-
   const email = answers.contact_email as string;
   if (!email) return;
 
@@ -446,27 +440,19 @@ async function sendCandidateConfirmation(
   </div>
 </body></html>`;
 
-  const res = await fetch("https://connector-gateway.lovable.dev/microsoft_outlook/me/sendMail", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${LOVABLE_API_KEY}`,
-      "X-Connection-Api-Key": OUTLOOK_KEY,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      message: {
-        subject: `${routeInfo.emoji} Confirmation — Votre parcours ${routeInfo.label}`,
-        body: { contentType: "HTML", content: html },
-        toRecipients: [{ emailAddress: { address: email } }],
-      },
-      saveToSentItems: true,
-    }),
+  const result = await sendOutlookMail({
+    to: email,
+    subject: `${routeInfo.emoji} Confirmation — Votre parcours ${routeInfo.label}`,
+    html,
   });
 
-  if (!res.ok) {
-    const body = await res.text();
-    console.error("Candidate email error (Outlook):", res.status, body);
+  if (!result.ok) {
+    console.error(
+      `Candidate email FAIL to ${email} after ${result.attempts} attempt(s) — permanent=${result.permanent === true}: ${result.error}`
+    );
   } else {
-    console.log(`📧 Confirmation email sent to ${email} via Outlook`);
+    console.log(
+      `📧 Candidate confirmation OK to ${email} in ${result.attempts} attempt(s) (${result.durationMs}ms)`
+    );
   }
 }

@@ -1,12 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { sendOutlookMail } from "../_shared/outlook-mail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
-
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
 const STRUCTURE_LABELS: Record<string, string> = {
   of: "Organisme de formation",
@@ -111,44 +110,8 @@ function buildInternalNotification(p: PartnerLeadPayload): { subject: string; ht
   return { subject: `🆕 Lead partenaire — ${p.organization}`, html };
 }
 
-async function sendOutlookMail(opts: {
-  to: string;
-  subject: string;
-  html: string;
-}): Promise<{ ok: boolean; error?: string }> {
-  const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-  if (!LOVABLE_API_KEY) return { ok: false, error: "LOVABLE_API_KEY not configured" };
+// (Outlook send logic moved to ../_shared/outlook-mail.ts with retry/backoff.)
 
-  const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
-  if (!OUTLOOK_KEY) return { ok: false, error: "MICROSOFT_OUTLOOK_API_KEY not configured" };
-
-  try {
-    const res = await fetch(`${GATEWAY_URL}/me/sendMail`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": OUTLOOK_KEY,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        message: {
-          subject: opts.subject,
-          body: { contentType: "HTML", content: opts.html },
-          toRecipients: [{ emailAddress: { address: opts.to } }],
-        },
-        saveToSentItems: true,
-      }),
-    });
-
-    if (!res.ok) {
-      const txt = await res.text();
-      return { ok: false, error: `Outlook ${res.status}: ${txt}` };
-    }
-    return { ok: true };
-  } catch (e) {
-    return { ok: false, error: (e as Error).message };
-  }
-}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -185,16 +148,26 @@ serve(async (req) => {
     }
 
     if (!sendToPartner.ok) {
-      console.error("Partner confirmation failed:", sendToPartner.error);
+      console.error(
+        `Partner confirmation FAILED to ${body.email} after ${sendToPartner.attempts} attempt(s) — permanent=${sendToPartner.permanent === true}: ${sendToPartner.error}`
+      );
       return new Response(
-        JSON.stringify({ confirmationSent: false, error: sendToPartner.error, internalSent }),
+        JSON.stringify({
+          confirmationSent: false,
+          error: sendToPartner.error,
+          attempts: sendToPartner.attempts,
+          permanent: sendToPartner.permanent === true,
+          internalSent,
+        }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    console.log(`📧 Partner confirmation sent via Outlook to ${body.email}`);
+    console.log(
+      `📧 Partner confirmation sent to ${body.email} in ${sendToPartner.attempts} attempt(s) (${sendToPartner.durationMs}ms)`
+    );
     return new Response(
-      JSON.stringify({ confirmationSent: true, internalSent }),
+      JSON.stringify({ confirmationSent: true, attempts: sendToPartner.attempts, internalSent }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

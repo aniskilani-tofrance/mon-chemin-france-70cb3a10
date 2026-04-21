@@ -3,13 +3,10 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.91.1";
+import { sendOutlookMail } from "../_shared/outlook-mail.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-
-const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
-const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
 
 interface Checkpoint {
   id: string;
@@ -95,38 +92,15 @@ function getEmailBody(lang: string, tier: string, resumeUrl: string): string {
 }
 
 async function sendEmail(to: string, subject: string, html: string) {
-  if (!OUTLOOK_KEY || !LOVABLE_API_KEY) {
-    console.error("Missing MICROSOFT_OUTLOOK_API_KEY or LOVABLE_API_KEY");
-    return false;
+  const result = await sendOutlookMail({ to, subject, html });
+  if (result.ok) {
+    console.log(`✉️  Outlook OK to ${to} in ${result.attempts} attempt(s) (${result.durationMs}ms)`);
+  } else {
+    console.error(
+      `✉️  Outlook FAIL to ${to} after ${result.attempts} attempt(s): ${result.error} (permanent=${result.permanent === true})`
+    );
   }
-  try {
-    const response = await fetch(`${GATEWAY_URL}/me/sendMail`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "X-Connection-Api-Key": OUTLOOK_KEY,
-      },
-      body: JSON.stringify({
-        message: {
-          subject,
-          body: { contentType: "HTML", content: html },
-          toRecipients: [{ emailAddress: { address: to } }],
-        },
-        saveToSentItems: true,
-      }),
-    });
-    if (!response.ok) {
-      const errTxt = await response.text();
-      console.error(`Outlook send failed for ${to}: ${response.status} ${errTxt}`);
-      return false;
-    }
-    console.log(`Email sent to ${to} via Outlook`);
-    return true;
-  } catch (err) {
-    console.error(`Failed to send email to ${to}:`, err);
-    return false;
-  }
+  return result;
 }
 
 Deno.serve(async (req) => {
@@ -179,14 +153,19 @@ Deno.serve(async (req) => {
       if (tier && updateField) {
         const subject = SUBJECTS[tier]?.[lang] || SUBJECTS[tier]?.fr || "Reprenez votre parcours ToFrance";
         const html = getEmailBody(lang, tier, resumeUrl);
-        const sent = await sendEmail(cp.email, subject, html);
+        const result = await sendEmail(cp.email, subject, html);
 
-        if (sent) {
+        // Mark as sent on success OR on permanent failure (avoid infinite retry loops
+        // on bad addresses, auth errors, etc.). Transient failures are left unmarked
+        // so the next cron run retries automatically.
+        if (result.ok || result.permanent) {
           await supabase
             .from("onboarding_checkpoints")
             .update({ [updateField]: true })
             .eq("id", cp.id);
-          processed++;
+          if (result.ok) processed++;
+        } else {
+          console.warn(`[reengagement] transient failure for cp=${cp.id}, will retry next cycle`);
         }
       }
     }
