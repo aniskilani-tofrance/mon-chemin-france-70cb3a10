@@ -205,6 +205,14 @@ serve(async (req) => {
       to: body.email,
       subject: confirmation.subject,
       html: confirmation.html,
+      log: {
+        template: "partner-confirmation",
+        sourceFunction: "notify-partner-signup",
+        metadata: {
+          organization: body.organization,
+          structureType: body.structureType,
+        },
+      },
     });
 
     // 2) Internal notification (best-effort) — defaults to the connected mailbox itself ("me")
@@ -215,6 +223,14 @@ serve(async (req) => {
         to: body.internalRecipient,
         subject: internal.subject,
         html: internal.html,
+        log: {
+          template: "partner-internal-notification",
+          sourceFunction: "notify-partner-signup",
+          metadata: {
+            organization: body.organization,
+            structureType: body.structureType,
+          },
+        },
       });
     }
 

@@ -1,7 +1,14 @@
 // Shared Outlook mail sender with retry + exponential backoff.
 // Handles transient errors (429, 5xx, network timeouts) automatically.
+// Persists every send attempt outcome into the email_logs table.
 
 const GATEWAY_URL = "https://connector-gateway.lovable.dev/microsoft_outlook";
+
+export interface MailLogContext {
+  template: string; // e.g. "partner-confirmation", "lead-notification"
+  sourceFunction?: string; // e.g. "notify-partner-signup"
+  metadata?: Record<string, unknown>;
+}
 
 export interface SendMailOptions {
   to: string;
@@ -10,6 +17,7 @@ export interface SendMailOptions {
   cc?: string[];
   bcc?: string[];
   saveToSentItems?: boolean;
+  log?: MailLogContext;
 }
 
 export interface SendMailResult {
@@ -58,6 +66,48 @@ function parseRetryAfter(value: string | null): number | null {
   return null;
 }
 
+async function persistLog(
+  opts: SendMailOptions,
+  result: SendMailResult
+): Promise<void> {
+  if (!opts.log) return; // logging is opt-in
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!SUPABASE_URL || !SERVICE_KEY) return;
+
+  const status = result.ok
+    ? "sent"
+    : result.permanent
+      ? "permanent_failed"
+      : "failed";
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/email_logs`, {
+      method: "POST",
+      headers: {
+        apikey: SERVICE_KEY,
+        Authorization: `Bearer ${SERVICE_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({
+        template: opts.log.template,
+        source_function: opts.log.sourceFunction ?? null,
+        recipient: opts.to,
+        subject: opts.subject,
+        status,
+        http_status: result.status ?? null,
+        attempts: result.attempts,
+        duration_ms: result.durationMs,
+        error_message: result.error ?? null,
+        metadata: opts.log.metadata ?? {},
+      }),
+    });
+  } catch (e) {
+    console.warn(`[outlook-mail] failed to persist log: ${(e as Error).message}`);
+  }
+}
+
 export async function sendOutlookMail(
   opts: SendMailOptions,
   retry: RetryOptions = {}
@@ -67,11 +117,15 @@ export async function sendOutlookMail(
 
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) {
-    return { ok: false, error: "LOVABLE_API_KEY not configured", attempts: 0, durationMs: 0, permanent: true };
+    const r: SendMailResult = { ok: false, error: "LOVABLE_API_KEY not configured", attempts: 0, durationMs: 0, permanent: true };
+    await persistLog(opts, r);
+    return r;
   }
   const OUTLOOK_KEY = Deno.env.get("MICROSOFT_OUTLOOK_API_KEY");
   if (!OUTLOOK_KEY) {
-    return { ok: false, error: "MICROSOFT_OUTLOOK_API_KEY not configured", attempts: 0, durationMs: 0, permanent: true };
+    const r: SendMailResult = { ok: false, error: "MICROSOFT_OUTLOOK_API_KEY not configured", attempts: 0, durationMs: 0, permanent: true };
+    await persistLog(opts, r);
+    return r;
   }
 
   const payload = {
@@ -110,7 +164,9 @@ export async function sendOutlookMail(
       clearTimeout(timer);
 
       if (res.ok) {
-        return { ok: true, status: res.status, attempts: attempt, durationMs: Date.now() - startedAt };
+        const r: SendMailResult = { ok: true, status: res.status, attempts: attempt, durationMs: Date.now() - startedAt };
+        await persistLog(opts, r);
+        return r;
       }
 
       lastStatus = res.status;
@@ -120,7 +176,7 @@ export async function sendOutlookMail(
       // Permanent failure → stop immediately
       if (!isTransientStatus(res.status)) {
         console.error(`[outlook-mail] permanent failure to ${opts.to}: ${lastError}`);
-        return {
+        const r: SendMailResult = {
           ok: false,
           status: res.status,
           error: lastError,
@@ -128,6 +184,8 @@ export async function sendOutlookMail(
           durationMs: Date.now() - startedAt,
           permanent: true,
         };
+        await persistLog(opts, r);
+        return r;
       }
 
       // Transient → backoff (respect Retry-After if provided)
@@ -153,7 +211,7 @@ export async function sendOutlookMail(
   console.error(
     `[outlook-mail] giving up after ${cfg.maxAttempts} attempts to ${opts.to}: ${lastError}`
   );
-  return {
+  const r: SendMailResult = {
     ok: false,
     status: lastStatus,
     error: lastError,
@@ -161,4 +219,6 @@ export async function sendOutlookMail(
     durationMs: Date.now() - startedAt,
     permanent: false,
   };
+  await persistLog(opts, r);
+  return r;
 }

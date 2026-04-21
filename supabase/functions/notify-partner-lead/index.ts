@@ -95,6 +95,11 @@ serve(async (req) => {
       to: provider.email,
       subject: `${tierEmoji} Nouveau lead ${tier} — Score ${matchScore ?? "—"}%`,
       html: htmlBody,
+      log: {
+        template: "lead-notification",
+        sourceFunction: "notify-partner-lead",
+        metadata: { tier, matchScore, providerId: provider.id ?? null },
+      },
     });
 
     if (!result.ok) {

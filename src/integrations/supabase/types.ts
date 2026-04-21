@@ -250,6 +250,51 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          attempts: number
+          created_at: string
+          duration_ms: number | null
+          error_message: string | null
+          http_status: number | null
+          id: string
+          metadata: Json
+          recipient: string
+          source_function: string | null
+          status: string
+          subject: string | null
+          template: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          metadata?: Json
+          recipient: string
+          source_function?: string | null
+          status: string
+          subject?: string | null
+          template: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          duration_ms?: number | null
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          metadata?: Json
+          recipient?: string
+          source_function?: string | null
+          status?: string
+          subject?: string | null
+          template?: string
+        }
+        Relationships: []
+      }
       fle_badges: {
         Row: {
           category: string
