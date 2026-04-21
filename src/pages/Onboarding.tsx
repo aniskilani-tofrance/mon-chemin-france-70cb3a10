@@ -270,6 +270,7 @@ const Onboarding = () => {
       try {
         await supabase.from("onboarding_results").insert([
           {
+            user_id: user?.id ?? null,
             email: data.email,
             language,
             answers: JSON.parse(JSON.stringify({ ...flat, contact_email: data.email })),
