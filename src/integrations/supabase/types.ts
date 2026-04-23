@@ -961,6 +961,48 @@ export type Database = {
         }
         Relationships: []
       }
+      placement_test_sessions: {
+        Row: {
+          access_code: string
+          candidate_email: string | null
+          candidate_name: string | null
+          completed_at: string | null
+          created_at: string
+          formateur_id: string
+          id: string
+          learner_id: string | null
+          status: string
+          test_result_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_code: string
+          candidate_email?: string | null
+          candidate_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          formateur_id: string
+          id?: string
+          learner_id?: string | null
+          status?: string
+          test_result_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_code?: string
+          candidate_email?: string | null
+          candidate_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          formateur_id?: string
+          id?: string
+          learner_id?: string | null
+          status?: string
+          test_result_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           admin_status: string | null
@@ -1127,33 +1169,36 @@ export type Database = {
       }
       shared_diagnostics: {
         Row: {
+          access_code: string | null
           completed_at: string | null
           created_at: string
           formateur_id: string
           id: string
-          learner_id: string
+          learner_id: string | null
           learner_language: string
           notes: string | null
           status: string
           updated_at: string
         }
         Insert: {
+          access_code?: string | null
           completed_at?: string | null
           created_at?: string
           formateur_id: string
           id?: string
-          learner_id: string
+          learner_id?: string | null
           learner_language?: string
           notes?: string | null
           status?: string
           updated_at?: string
         }
         Update: {
+          access_code?: string | null
           completed_at?: string | null
           created_at?: string
           formateur_id?: string
           id?: string
-          learner_id?: string
+          learner_id?: string | null
           learner_language?: string
           notes?: string | null
           status?: string
@@ -1461,6 +1506,7 @@ export type Database = {
       }
     }
     Functions: {
+      generate_access_code: { Args: never; Returns: string }
       get_lead_price: {
         Args: { cert_type: Database["public"]["Enums"]["certification_type"] }
         Returns: number
