@@ -23,6 +23,7 @@ import {
   type DiagnosticQuestion,
 } from "@/lib/diagnosticQuestions";
 import type { LanguageCode } from "@/lib/translations";
+import { CreateLearnerDialog } from "@/components/Formateur/CreateLearnerDialog";
 
 interface AnswerRow {
   id?: string;
