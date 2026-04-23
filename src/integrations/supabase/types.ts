@@ -1078,6 +1078,89 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_diagnostic_answers: {
+        Row: {
+          answer_fr: string | null
+          answer_native: string | null
+          created_at: string
+          diagnostic_id: string
+          id: string
+          question_key: string
+          updated_at: string
+          validated_at: string | null
+          validated_by_formateur: boolean
+          validated_by_learner: boolean
+        }
+        Insert: {
+          answer_fr?: string | null
+          answer_native?: string | null
+          created_at?: string
+          diagnostic_id: string
+          id?: string
+          question_key: string
+          updated_at?: string
+          validated_at?: string | null
+          validated_by_formateur?: boolean
+          validated_by_learner?: boolean
+        }
+        Update: {
+          answer_fr?: string | null
+          answer_native?: string | null
+          created_at?: string
+          diagnostic_id?: string
+          id?: string
+          question_key?: string
+          updated_at?: string
+          validated_at?: string | null
+          validated_by_formateur?: boolean
+          validated_by_learner?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_diagnostic_answers_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "shared_diagnostics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_diagnostics: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          formateur_id: string
+          id: string
+          learner_id: string
+          learner_language: string
+          notes: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          formateur_id: string
+          id?: string
+          learner_id: string
+          learner_language?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          formateur_id?: string
+          id?: string
+          learner_id?: string
+          learner_language?: string
+          notes?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       test_results: {
         Row: {
           answers: Json
