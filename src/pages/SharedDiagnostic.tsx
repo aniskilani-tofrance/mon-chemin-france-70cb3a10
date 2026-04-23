@@ -42,12 +42,31 @@ const SharedDiagnostic = () => {
 
   const [diagnosticId, setDiagnosticId] = useState<string | null>(diagnosticIdParam);
   const [learnerLanguage, setLearnerLanguage] = useState<LanguageCode>("fr");
+  const [languageConfirmed, setLanguageConfirmed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
   const [loading, setLoading] = useState(!!diagnosticIdParam || !!codeParam);
   const [translating, setTranslating] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [updatingLanguage, setUpdatingLanguage] = useState(false);
+
+  const confirmLanguage = async () => {
+    if (!diagnosticId) return;
+    setUpdatingLanguage(true);
+    try {
+      const { error } = await supabase
+        .from("shared_diagnostics")
+        .update({ learner_language: learnerLanguage })
+        .eq("id", diagnosticId);
+      if (error) throw error;
+      setLanguageConfirmed(true);
+    } catch (e: any) {
+      toast.error("Erreur : " + (e.message || "inconnue"));
+    } finally {
+      setUpdatingLanguage(false);
+    }
+  };
 
   const learnerTTS = useTTS({ language: learnerLanguage });
   const formateurTTS = useTTS({ language: "fr" });
