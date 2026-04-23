@@ -48,18 +48,34 @@ export function HeroSection() {
         </AnimatedContainer>
 
         <AnimatedContainer delay={0.4}>
-          <div className="flex flex-col gap-4 sm:flex-row">
+          <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button variant="hero" size="xl" asChild>
               <Link to="/onboarding" className="gap-3">
                 <Mic className="h-5 w-5" />
-                {t.startJourney}
+                Discuter avec Marianne
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
-            <Button variant="glass" size="xl" className="border-white/30 bg-white/20 text-white hover:bg-white/30" asChild>
-              <Link to="/fle" className="gap-3">
-                <BookOpen className="h-5 w-5" />
-                {t.learnFrench}
+            <Button
+              variant="glass"
+              size="xl"
+              className="border-white/30 bg-white/20 text-white hover:bg-white/30"
+              asChild
+            >
+              <Link to="/diagnostic-partage" className="gap-3">
+                <ClipboardList className="h-5 w-5" />
+                Diagnostic partagé
+              </Link>
+            </Button>
+            <Button
+              variant="glass"
+              size="xl"
+              className="border-white/30 bg-white/20 text-white hover:bg-white/30"
+              asChild
+            >
+              <Link to="/placement-test" className="gap-3">
+                <GraduationCap className="h-5 w-5" />
+                Test de positionnement
               </Link>
             </Button>
           </div>
