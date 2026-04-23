@@ -368,6 +368,18 @@ const SharedDiagnostic = () => {
     );
   }
 
+  // Language confirmation screen — shown at the start of each session
+  if (!languageConfirmed) {
+    return (
+      <LanguageConfirmScreen
+        learnerLanguage={learnerLanguage}
+        setLearnerLanguage={setLearnerLanguage}
+        onConfirm={confirmLanguage}
+        updating={updatingLanguage}
+      />
+    );
+  }
+
   if (!question) return null;
 
   const langMeta = SUPPORTED_LANGUAGES.find((l) => l.code === learnerLanguage);
