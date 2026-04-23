@@ -739,12 +739,15 @@ function SetupScreen({
         <div className="rounded-2xl border bg-card p-6 space-y-5">
           {/* Apprenant */}
           <div>
-            <label className="text-sm font-medium mb-2 block">1. Apprenant</label>
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <label className="text-sm font-medium">1. Apprenant</label>
+              <CreateLearnerDialog onCreated={loadLearners} />
+            </div>
             {loading ? (
               <div className="text-sm text-muted-foreground">Chargement…</div>
             ) : learners.length === 0 ? (
-              <p className="text-sm text-destructive">
-                Aucun apprenant rattaché. Ajoutez-en un depuis l'onglet Apprenants.
+              <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-3">
+                Aucun apprenant rattaché. Cliquez sur « Créer un apprenant » ci-dessus pour en ajouter un.
               </p>
             ) : (
               <select
