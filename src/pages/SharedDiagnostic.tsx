@@ -663,36 +663,39 @@ function SetupScreen({
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
+  const loadLearners = useCallback(async () => {
     if (!user) return;
-    (async () => {
-      try {
-        const { data: links } = await supabase
-          .from("formateur_learners")
-          .select("learner_id")
-          .eq("formateur_id", user.id);
-        const ids = (links || []).map((l: any) => l.learner_id);
-        if (!ids.length) {
-          setLoading(false);
-          return;
-        }
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("user_id, first_name, last_name, email")
-          .in("user_id", ids);
-        setLearners(
-          (profs || []).map((p: any) => ({
-            id: p.user_id,
-            first_name: p.first_name,
-            last_name: p.last_name,
-            email: p.email,
-          }))
-        );
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const { data: links } = await supabase
+        .from("formateur_learners")
+        .select("learner_id")
+        .eq("formateur_id", user.id);
+      const ids = (links || []).map((l: any) => l.learner_id);
+      if (!ids.length) {
+        setLearners([]);
+        return;
       }
-    })();
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, first_name, last_name, email")
+        .in("user_id", ids);
+      setLearners(
+        (profs || []).map((p: any) => ({
+          id: p.user_id,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          email: p.email,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadLearners();
+  }, [loadLearners]);
 
   const create = async () => {
     if (!user || !selectedLearner) {
