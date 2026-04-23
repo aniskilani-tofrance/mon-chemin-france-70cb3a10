@@ -42,12 +42,31 @@ const SharedDiagnostic = () => {
 
   const [diagnosticId, setDiagnosticId] = useState<string | null>(diagnosticIdParam);
   const [learnerLanguage, setLearnerLanguage] = useState<LanguageCode>("fr");
+  const [languageConfirmed, setLanguageConfirmed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
   const [loading, setLoading] = useState(!!diagnosticIdParam || !!codeParam);
   const [translating, setTranslating] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [completing, setCompleting] = useState(false);
+  const [updatingLanguage, setUpdatingLanguage] = useState(false);
+
+  const confirmLanguage = async () => {
+    if (!diagnosticId) return;
+    setUpdatingLanguage(true);
+    try {
+      const { error } = await supabase
+        .from("shared_diagnostics")
+        .update({ learner_language: learnerLanguage })
+        .eq("id", diagnosticId);
+      if (error) throw error;
+      setLanguageConfirmed(true);
+    } catch (e: any) {
+      toast.error("Erreur : " + (e.message || "inconnue"));
+    } finally {
+      setUpdatingLanguage(false);
+    }
+  };
 
   const learnerTTS = useTTS({ language: learnerLanguage });
   const formateurTTS = useTTS({ language: "fr" });
@@ -346,6 +365,18 @@ const SharedDiagnostic = () => {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
+    );
+  }
+
+  // Language confirmation screen — shown at the start of each session
+  if (!languageConfirmed) {
+    return (
+      <LanguageConfirmScreen
+        learnerLanguage={learnerLanguage}
+        setLearnerLanguage={setLearnerLanguage}
+        onConfirm={confirmLanguage}
+        updating={updatingLanguage}
+      />
     );
   }
 
@@ -758,6 +789,77 @@ function SetupScreen({
           >
             {creating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             Démarrer le diagnostic
+          </Button>
+        </div>
+      </main>
+    </div>
+  );
+}
+
+// ─── Language confirmation screen (shown at start of each session) ────
+function LanguageConfirmScreen({
+  learnerLanguage,
+  setLearnerLanguage,
+  onConfirm,
+  updating,
+}: {
+  learnerLanguage: LanguageCode;
+  setLearnerLanguage: (l: LanguageCode) => void;
+  onConfirm: () => void;
+  updating: boolean;
+}) {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <Header />
+      <main className="mx-auto max-w-2xl px-4 pt-20 pb-12 sm:pt-24">
+        <div className="text-center mb-8">
+          <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <Globe className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">
+            Quelle est votre langue ?
+          </h1>
+          <p className="text-muted-foreground">
+            Choisissez la langue de l'apprenant pour ce diagnostic.
+            <br />
+            <span className="text-sm">
+              اختر لغتك · Choose your language · Elige tu idioma · Выберите язык
+            </span>
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6 space-y-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                type="button"
+                onClick={() => setLearnerLanguage(lang.code as LanguageCode)}
+                className={cn(
+                  "rounded-xl border-2 p-4 text-base font-medium transition-all",
+                  learnerLanguage === lang.code
+                    ? "border-primary bg-primary/10 ring-2 ring-primary/30"
+                    : "border-border bg-card hover:border-primary/40"
+                )}
+              >
+                <div className="text-3xl mb-2">{lang.flag}</div>
+                {lang.label}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            onClick={onConfirm}
+            disabled={updating}
+            size="lg"
+            className="w-full gap-2"
+          >
+            {updating ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="h-4 w-4" />
+            )}
+            Continuer
           </Button>
         </div>
       </main>
