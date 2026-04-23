@@ -23,6 +23,7 @@ import {
   type DiagnosticQuestion,
 } from "@/lib/diagnosticQuestions";
 import type { LanguageCode } from "@/lib/translations";
+import { CreateLearnerDialog } from "@/components/Formateur/CreateLearnerDialog";
 
 interface AnswerRow {
   id?: string;
@@ -662,36 +663,39 @@ function SetupScreen({
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
+  const loadLearners = useCallback(async () => {
     if (!user) return;
-    (async () => {
-      try {
-        const { data: links } = await supabase
-          .from("formateur_learners")
-          .select("learner_id")
-          .eq("formateur_id", user.id);
-        const ids = (links || []).map((l: any) => l.learner_id);
-        if (!ids.length) {
-          setLoading(false);
-          return;
-        }
-        const { data: profs } = await supabase
-          .from("profiles")
-          .select("user_id, first_name, last_name, email")
-          .in("user_id", ids);
-        setLearners(
-          (profs || []).map((p: any) => ({
-            id: p.user_id,
-            first_name: p.first_name,
-            last_name: p.last_name,
-            email: p.email,
-          }))
-        );
-      } finally {
-        setLoading(false);
+    setLoading(true);
+    try {
+      const { data: links } = await supabase
+        .from("formateur_learners")
+        .select("learner_id")
+        .eq("formateur_id", user.id);
+      const ids = (links || []).map((l: any) => l.learner_id);
+      if (!ids.length) {
+        setLearners([]);
+        return;
       }
-    })();
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, first_name, last_name, email")
+        .in("user_id", ids);
+      setLearners(
+        (profs || []).map((p: any) => ({
+          id: p.user_id,
+          first_name: p.first_name,
+          last_name: p.last_name,
+          email: p.email,
+        }))
+      );
+    } finally {
+      setLoading(false);
+    }
   }, [user]);
+
+  useEffect(() => {
+    loadLearners();
+  }, [loadLearners]);
 
   const create = async () => {
     if (!user || !selectedLearner) {
@@ -735,12 +739,15 @@ function SetupScreen({
         <div className="rounded-2xl border bg-card p-6 space-y-5">
           {/* Apprenant */}
           <div>
-            <label className="text-sm font-medium mb-2 block">1. Apprenant</label>
+            <div className="flex items-center justify-between mb-2 gap-2">
+              <label className="text-sm font-medium">1. Apprenant</label>
+              <CreateLearnerDialog onCreated={loadLearners} />
+            </div>
             {loading ? (
               <div className="text-sm text-muted-foreground">Chargement…</div>
             ) : learners.length === 0 ? (
-              <p className="text-sm text-destructive">
-                Aucun apprenant rattaché. Ajoutez-en un depuis l'onglet Apprenants.
+              <p className="text-sm text-muted-foreground rounded-lg border border-dashed p-3">
+                Aucun apprenant rattaché. Cliquez sur « Créer un apprenant » ci-dessus pour en ajouter un.
               </p>
             ) : (
               <select
