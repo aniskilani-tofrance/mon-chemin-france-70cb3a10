@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
-import { Mic, ArrowRight, Sparkles, BookOpen } from "lucide-react";
+import { Mic, ArrowRight, Sparkles, ClipboardList, GraduationCap } from "lucide-react";
 import heroImage from "@/assets/hero-welcome.jpg";
 import logoTofrance from "@/assets/logo-tofrance.png";
 import marianneAvatar from "@/assets/marianne-avatar.png";
