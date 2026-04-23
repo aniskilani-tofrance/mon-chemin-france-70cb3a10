@@ -38,12 +38,13 @@ const SharedDiagnostic = () => {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const diagnosticIdParam = searchParams.get("id");
+  const codeParam = searchParams.get("code");
 
   const [diagnosticId, setDiagnosticId] = useState<string | null>(diagnosticIdParam);
   const [learnerLanguage, setLearnerLanguage] = useState<LanguageCode>("fr");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
-  const [loading, setLoading] = useState(!!diagnosticIdParam);
+  const [loading, setLoading] = useState(!!diagnosticIdParam || !!codeParam);
   const [translating, setTranslating] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -65,29 +66,42 @@ const SharedDiagnostic = () => {
   ).length;
   const progressPercent = (validatedCount / total) * 100;
 
-  // ─── Load existing diagnostic ─────────────────────────────────
+  // ─── Load existing diagnostic (by id or by code) ──────────────
   useEffect(() => {
-    if (!diagnosticIdParam || !user) return;
+    if (!user) return;
+    if (!diagnosticIdParam && !codeParam) return;
     let cancelled = false;
     (async () => {
       try {
-        const { data: diagnostic, error: dErr } = await supabase
-          .from("shared_diagnostics")
-          .select("*")
-          .eq("id", diagnosticIdParam)
-          .maybeSingle();
+        let query = supabase.from("shared_diagnostics").select("*");
+        query = diagnosticIdParam
+          ? query.eq("id", diagnosticIdParam)
+          : query.eq("access_code", codeParam!.toUpperCase());
+
+        const { data: diagnostic, error: dErr } = await query.maybeSingle();
         if (dErr || !diagnostic) {
           toast.error("Diagnostic introuvable.");
-          navigate("/formateur/apprenants");
+          navigate("/");
           return;
         }
         if (cancelled) return;
+
+        // If learner is empty and we arrived via code, claim the diagnostic
+        if (!diagnostic.learner_id && codeParam) {
+          const { error: claimErr } = await supabase
+            .from("shared_diagnostics")
+            .update({ learner_id: user.id })
+            .eq("id", diagnostic.id);
+          if (claimErr) console.warn("Claim error", claimErr);
+        }
+
+        setDiagnosticId(diagnostic.id);
         setLearnerLanguage((diagnostic.learner_language as LanguageCode) || "fr");
 
         const { data: ans } = await supabase
           .from("shared_diagnostic_answers")
           .select("*")
-          .eq("diagnostic_id", diagnosticIdParam);
+          .eq("diagnostic_id", diagnostic.id);
         if (cancelled) return;
         const map: Record<string, AnswerRow> = {};
         (ans || []).forEach((row: any) => {
@@ -106,7 +120,7 @@ const SharedDiagnostic = () => {
       }
     })();
     return () => { cancelled = true; };
-  }, [diagnosticIdParam, user, navigate]);
+  }, [diagnosticIdParam, codeParam, user, navigate]);
 
   // ─── Realtime sync (so the apprenant or another window sees updates) ──
   useEffect(() => {
