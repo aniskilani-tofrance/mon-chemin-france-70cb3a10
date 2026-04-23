@@ -466,7 +466,7 @@ const SharedDiagnostic = () => {
                 variant={currentAnswer?.validated_by_learner ? "default" : "outline"}
                 className={cn(
                   "w-full mt-4 gap-2",
-                  currentAnswer?.validated_by_learner && "bg-green-600 hover:bg-green-700"
+                  currentAnswer?.validated_by_learner && "bg-success text-success-foreground hover:bg-success/90"
                 )}
                 disabled={!currentAnswer?.answer_native?.trim()}
               >
@@ -542,7 +542,7 @@ const SharedDiagnostic = () => {
                 variant={currentAnswer?.validated_by_formateur ? "default" : "outline"}
                 className={cn(
                   "w-full mt-4 gap-2",
-                  currentAnswer?.validated_by_formateur && "bg-green-600 hover:bg-green-700"
+                  currentAnswer?.validated_by_formateur && "bg-success text-success-foreground hover:bg-success/90"
                 )}
                 disabled={!currentAnswer?.answer_fr?.trim()}
               >
@@ -569,7 +569,7 @@ const SharedDiagnostic = () => {
 
           <div className="text-center text-sm flex-1 min-w-[180px]">
             {bothValidated ? (
-              <span className="inline-flex items-center gap-1 text-green-600 font-medium">
+              <span className="inline-flex items-center gap-1 text-success font-medium">
                 <Check className="h-4 w-4" /> Question validée par les deux
               </span>
             ) : (
@@ -589,7 +589,7 @@ const SharedDiagnostic = () => {
             <Button
               onClick={completeDiagnostic}
               disabled={completing || validatedCount < total}
-              className="gap-2 bg-green-600 hover:bg-green-700"
+              className="gap-2 bg-success text-success-foreground hover:bg-success/90"
             >
               {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
               Terminer le diagnostic
