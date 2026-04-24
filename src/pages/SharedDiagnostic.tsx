@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2, Mic, MicOff, Check, ChevronLeft, ChevronRight,
@@ -46,7 +46,8 @@ const SharedDiagnostic = () => {
   const [languageConfirmed, setLanguageConfirmed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
-  const [loading, setLoading] = useState(!!diagnosticIdParam || !!codeParam);
+  const needsAuthenticatedAccess = !!diagnosticIdParam || !!codeParam;
+  const [loading, setLoading] = useState(needsAuthenticatedAccess);
   const [translating, setTranslating] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -345,6 +346,10 @@ const SharedDiagnostic = () => {
       setCompleting(false);
     }
   };
+
+  if (!user) {
+    return <FormateurLoginPrompt />;
+  }
 
   // ─── Setup screen (no diagnostic id yet) ─────────────────────
   if (!diagnosticId) {
