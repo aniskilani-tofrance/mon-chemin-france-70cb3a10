@@ -63,6 +63,7 @@ const Onboarding = () => {
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
+  const [accessStatus, setAccessStatus] = useState<"checking" | "granted" | "denied">("checking");
   const resumeAttemptedRef = useRef(false);
 
   const isRTL = language === "ar";
@@ -427,10 +428,25 @@ const Onboarding = () => {
       ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
       : 100;
 
-  const accessCode = searchParams.get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-  const hasMarianneAccess = accessCode === "MARIAN" || accessCode === "TOFRCE";
+  const accessCode = searchParams.get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || "";
 
-  if (!hasMarianneAccess) {
+  useEffect(() => {
+    let mounted = true;
+    if (accessCode.length < 4 || accessCode.length > 12) {
+      setAccessStatus("denied");
+      return;
+    }
+    setAccessStatus("checking");
+    supabase.rpc("check_marianne_access_code", { _code: accessCode }).then(({ data, error }) => {
+      if (!mounted) return;
+      setAccessStatus(!error && (data as any)?.valid ? "granted" : "denied");
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [accessCode]);
+
+  if (accessStatus !== "granted") {
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
         <Header />
@@ -442,7 +458,9 @@ const Onboarding = () => {
             Marianne est en accès pilote
           </h1>
           <p className="mb-8 max-w-xl text-muted-foreground">
-            L'orientation immédiate reste en ligne, mais l'accès est validé par code pendant la finalisation du service.
+            {accessStatus === "checking"
+              ? "Vérification du code d'accès…"
+              : "L'orientation immédiate reste en ligne, mais l'accès est validé par code pendant la finalisation du service."}
           </p>
           <button
             type="button"
