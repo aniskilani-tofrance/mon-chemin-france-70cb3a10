@@ -40,6 +40,7 @@ const SharedDiagnostic = () => {
   const { user } = useAuth();
   const diagnosticIdParam = searchParams.get("id");
   const codeParam = searchParams.get("code");
+  const trainerParam = searchParams.get("formateur");
 
   const [diagnosticId, setDiagnosticId] = useState<string | null>(diagnosticIdParam);
   const [learnerLanguage, setLearnerLanguage] = useState<LanguageCode>("fr");
@@ -348,7 +349,7 @@ const SharedDiagnostic = () => {
   };
 
   if (!user) {
-    return <FormateurLoginPrompt />;
+    return <FormateurLoginPrompt trainerId={trainerParam} />;
   }
 
   // ─── Setup screen (no diagnostic id yet) ─────────────────────
@@ -362,6 +363,7 @@ const SharedDiagnostic = () => {
           // Update URL so refresh works
           window.history.replaceState(null, "", `/diagnostic-partage?id=${id}`);
         }}
+        preferredTrainerId={trainerParam}
       />
     );
   }
@@ -652,7 +654,11 @@ const SharedDiagnostic = () => {
   );
 };
 
-function FormateurLoginPrompt() {
+function FormateurLoginPrompt({ trainerId }: { trainerId: string | null }) {
+  const loginRedirect = trainerId
+    ? `/login?redirect=${encodeURIComponent(`/diagnostic-partage?formateur=${trainerId}`)}`
+    : "/login?redirect=/diagnostic-partage";
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <Header />
@@ -669,7 +675,7 @@ function FormateurLoginPrompt() {
 
         <div className="rounded-2xl border bg-card p-6 space-y-4 text-center">
           <Button size="lg" className="w-full gap-2" asChild>
-            <Link to="/login?redirect=/diagnostic-partage">
+            <Link to={loginRedirect}>
               Connexion formateur
               <ChevronRight className="h-4 w-4" />
             </Link>
@@ -688,10 +694,12 @@ function SetupScreen({
   learnerLanguage,
   setLearnerLanguage,
   onCreate,
+  preferredTrainerId,
 }: {
   learnerLanguage: LanguageCode;
   setLearnerLanguage: (l: LanguageCode) => void;
   onCreate: (id: string) => void;
+  preferredTrainerId: string | null;
 }) {
   const { user } = useAuth();
   const [learners, setLearners] = useState<{ id: string; first_name: string | null; last_name: string | null; email: string | null }[]>([]);
@@ -734,7 +742,8 @@ function SetupScreen({
   }, [loadLearners]);
 
   const create = async () => {
-    if (!user || !selectedLearner) {
+    const formateurId = preferredTrainerId || user?.id;
+    if (!formateurId || !selectedLearner) {
       toast.error("Sélectionnez un apprenant.");
       return;
     }
@@ -744,7 +753,7 @@ function SetupScreen({
         .from("shared_diagnostics")
         .insert({
           learner_id: selectedLearner,
-          formateur_id: user.id,
+          formateur_id: formateurId,
           learner_language: learnerLanguage,
         })
         .select()
