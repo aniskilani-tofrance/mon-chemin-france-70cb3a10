@@ -856,6 +856,45 @@ export type Database = {
           },
         ]
       }
+      marianne_access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          label: string | null
+          last_used_at: string | null
+          max_uses: number
+          updated_at: string
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_used_at?: string | null
+          max_uses?: number
+          updated_at?: string
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          label?: string | null
+          last_used_at?: string | null
+          max_uses?: number
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
       onboarding_checkpoints: {
         Row: {
           completed: boolean
@@ -1506,6 +1545,7 @@ export type Database = {
       }
     }
     Functions: {
+      check_marianne_access_code: { Args: { _code: string }; Returns: Json }
       generate_access_code: { Args: never; Returns: string }
       get_lead_price: {
         Args: { cert_type: Database["public"]["Enums"]["certification_type"] }
@@ -1530,6 +1570,7 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: boolean
       }
+      validate_marianne_access_code: { Args: { _code: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "provider" | "user" | "formateur" | "directeur"
