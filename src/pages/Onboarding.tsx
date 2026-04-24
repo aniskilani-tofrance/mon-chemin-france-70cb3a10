@@ -63,7 +63,10 @@ const Onboarding = () => {
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
-  const [accessStatus, setAccessStatus] = useState<"checking" | "granted" | "denied">("checking");
+  const [accessStatus, setAccessStatus] = useState<"checking" | "granted" | "denied">(() => {
+    const initialCode = new URLSearchParams(window.location.search).get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || "";
+    return initialCode && sessionStorage.getItem(`marianne_access_granted_${initialCode}`) === "true" ? "granted" : "checking";
+  });
   const resumeAttemptedRef = useRef(false);
 
   const isRTL = language === "ar";
@@ -436,8 +439,12 @@ const Onboarding = () => {
       setAccessStatus("denied");
       return;
     }
+    if (sessionStorage.getItem(`marianne_access_granted_${accessCode}`) === "true") {
+      setAccessStatus("granted");
+      return;
+    }
     setAccessStatus("checking");
-    supabase.rpc("check_marianne_access_code", { _code: accessCode }).then(({ data, error }) => {
+    (supabase as any).rpc("check_marianne_access_code", { _code: accessCode }).then(({ data, error }: any) => {
       if (!mounted) return;
       setAccessStatus(!error && (data as any)?.valid ? "granted" : "denied");
     });
