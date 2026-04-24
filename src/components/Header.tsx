@@ -73,7 +73,7 @@ export function Header() {
                   </Link>
                 </Button>
                 <Button variant="hero" size="sm" asChild>
-                  <Link to="/onboarding">{t.startJourney}</Link>
+                  <Link to="/#access-code">Accès pilote</Link>
                 </Button>
               </>
             )}
@@ -154,8 +154,8 @@ export function Header() {
                     </Link>
                   </Button>
                   <Button variant="hero" className="mt-2" asChild>
-                    <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>
-                      {t.startJourney}
+                    <Link to="/#access-code" onClick={() => setMobileMenuOpen(false)}>
+                      Accès pilote
                     </Link>
                   </Button>
                 </>
