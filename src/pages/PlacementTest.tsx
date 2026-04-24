@@ -43,6 +43,13 @@ export default function PlacementTest() {
   const isOral = currentQuestion.type === "oral";
   const progress = ((currentIndex + 1) / questions.length) * 100;
 
+  useEffect(() => {
+    if (!sessionStorage.getItem("placement_candidate")) {
+      toast.error("Le test doit être lancé par un formateur connecté.");
+      navigate("/placement-test", { replace: true });
+    }
+  }, [navigate]);
+
   // Timer
   useEffect(() => {
     if (isQCM) {
