@@ -3,28 +3,16 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { ShieldCheck, UserPlus } from "lucide-react";
+import { UserPlus } from "lucide-react";
 
 const LOGO_URL = "https://qtrypzzcjebvfcihiynt.supabase.co/storage/v1/object/public/base44-prod/public/user_69409edef41e4f2a833c897b/ac7782ec6_logopefpetit.png";
-const TRAINER_PASSWORD = "PEF2025!";
 
 export default function PlacementTestTrainer() {
   const navigate = useNavigate();
-  const [authenticated, setAuthenticated] = useState(false);
-  const [password, setPassword] = useState("");
   const [trainerName, setTrainerName] = useState("");
   const [candidateName, setCandidateName] = useState("");
   const [candidateEmail, setCandidateEmail] = useState("");
   const [candidatePhone, setCandidatePhone] = useState("");
-
-  const handleAuth = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (password === TRAINER_PASSWORD) {
-      setAuthenticated(true);
-    } else {
-      toast.error("Mot de passe incorrect.");
-    }
-  };
 
   const handleLaunch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,30 +31,6 @@ export default function PlacementTestTrainer() {
 
     navigate("/placement-test/test");
   };
-
-  if (!authenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: "#f8fafa" }}>
-        <form onSubmit={handleAuth} className="mx-4 w-full max-w-sm rounded-2xl border bg-white p-8 shadow-xl">
-          <div className="mb-6 text-center">
-            <img src={LOGO_URL} alt="PEF" className="mx-auto mb-4 h-14 w-auto" />
-            <ShieldCheck className="mx-auto h-10 w-10" style={{ color: "#00504e" }} />
-            <h1 className="mt-3 text-xl font-bold" style={{ color: "#00504e" }}>Accès Formateur</h1>
-          </div>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Mot de passe"
-            className="mb-4"
-          />
-          <Button type="submit" className="w-full text-white border-0" style={{ backgroundColor: "#00504e" }}>
-            Accéder
-          </Button>
-        </form>
-      </div>
-    );
-  }
 
   return (
     <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: "#f8fafa" }}>

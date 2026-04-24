@@ -3,8 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ClipboardList, GraduationCap, KeyRound, ArrowRight } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-react";
 import { toast } from "sonner";
 
 export function AccessCodeSection() {
@@ -21,30 +20,11 @@ export function AccessCodeSection() {
     }
     setLoading(true);
     try {
-      // Try diagnostic first
-      const { data: diag } = await supabase
-        .from("shared_diagnostics")
-        .select("id")
-        .eq("access_code", cleaned)
-        .maybeSingle();
-
-      if (diag) {
-        navigate(`/diagnostic-partage?code=${cleaned}`);
+      const marianneCodes = new Set(["MARIAN", "TOFRCE"]);
+      if (marianneCodes.has(cleaned)) {
+        navigate(`/onboarding?code=${cleaned}`);
         return;
       }
-
-      // Try placement test
-      const { data: placement } = await supabase
-        .from("placement_test_sessions")
-        .select("id")
-        .eq("access_code", cleaned)
-        .maybeSingle();
-
-      if (placement) {
-        navigate(`/placement-test?code=${cleaned}`);
-        return;
-      }
-
       toast.error("Code invalide ou expiré");
     } catch (err: any) {
       toast.error("Erreur lors de la vérification du code");
@@ -54,15 +34,15 @@ export function AccessCodeSection() {
   };
 
   return (
-    <section className="py-20 bg-muted/30">
+    <section id="access-code" className="py-20 bg-muted/30 scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Accès formation
+            Accès pilote
           </h2>
           <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            Vous avez rendez-vous avec un formateur ou un conseiller ? Saisissez votre code
-            d'accès ou découvrez nos évaluations.
+            ToFrance est en version pilote. Marianne s'ouvre avec un code d'accès,
+            les autres outils sont réservés aux formateurs connectés.
           </p>
         </div>
 
@@ -73,7 +53,7 @@ export function AccessCodeSection() {
               <div className="flex-1">
                 <label className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
                   <KeyRound className="h-4 w-4 text-primary" />
-                  J'ai un code d'accès
+                  J'ai un code d'accès Marianne
                 </label>
                 <Input
                   value={code}
@@ -96,21 +76,20 @@ export function AccessCodeSection() {
           <Card className="group transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
             <CardContent className="flex h-full flex-col p-8">
               <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                <ClipboardList className="h-6 w-6" />
+                <Mic className="h-6 w-6" />
               </div>
               <h3 className="mb-2 text-xl font-semibold text-foreground">
-                Diagnostic partagé
+                Marianne — orientation immédiate
               </h3>
               <p className="mb-6 flex-1 text-muted-foreground">
-                Entretien guidé avec votre formateur ou CIP, dans votre langue maternelle
-                et en français. Validation conjointe de chaque réponse.
+                Parcours multilingue en accès contrôlé pendant la phase pilote. Demandez votre code à l'équipe ToFrance.
               </p>
               <Button
                 variant="ghost"
                 className="w-fit gap-2 px-0 text-primary hover:bg-transparent hover:text-primary/80"
-                onClick={() => navigate("/diagnostic-partage")}
+                onClick={() => document.getElementById("access-code")?.scrollIntoView({ behavior: "smooth" })}
               >
-                En savoir plus
+                Saisir un code
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </CardContent>
@@ -122,18 +101,17 @@ export function AccessCodeSection() {
                 <GraduationCap className="h-6 w-6" />
               </div>
               <h3 className="mb-2 text-xl font-semibold text-foreground">
-                Test de positionnement
+                Diagnostic partagé
               </h3>
               <p className="mb-6 flex-1 text-muted-foreground">
-                Évaluez gratuitement votre niveau de français (A1 → C2) en environ 30
-                minutes. 71 questions, indicatif CECRL.
+                Entretien guidé en deux langues, ouvert uniquement depuis une connexion formateur.
               </p>
               <Button
                 variant="ghost"
                 className="w-fit gap-2 px-0 text-primary hover:bg-transparent hover:text-primary/80"
-                onClick={() => navigate("/placement-test")}
+                onClick={() => navigate("/login?redirect=/diagnostic-partage")}
               >
-                Démarrer le test
+                Connexion formateur
                 <ArrowRight className="h-4 w-4" />
               </Button>
             </CardContent>

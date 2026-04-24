@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX, RotateCcw } from "lucide-react";
+import { KeyRound, LockKeyhole, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
@@ -426,6 +426,36 @@ const Onboarding = () => {
       : step === "postal-code"
       ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
       : 100;
+
+  const accessCode = searchParams.get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  const hasMarianneAccess = accessCode === "MARIAN" || accessCode === "TOFRCE";
+
+  if (!hasMarianneAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+        <Header />
+        <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-center justify-center px-4 py-24 text-center">
+          <div className="mb-5 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <LockKeyhole className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="mb-3 text-3xl font-bold text-foreground sm:text-4xl">
+            Marianne est en accès pilote
+          </h1>
+          <p className="mb-8 max-w-xl text-muted-foreground">
+            L'orientation immédiate reste en ligne, mais l'accès est validé par code pendant la finalisation du service.
+          </p>
+          <button
+            type="button"
+            onClick={() => navigate("/#access-code")}
+            className="inline-flex items-center gap-2 rounded-full bg-primary px-6 py-3 font-medium text-primary-foreground shadow-soft transition-colors hover:bg-primary/90"
+          >
+            <KeyRound className="h-4 w-4" />
+            Saisir mon code d'accès
+          </button>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div

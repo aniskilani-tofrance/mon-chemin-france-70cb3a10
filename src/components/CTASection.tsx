@@ -34,9 +34,9 @@ export function CTASection() {
                 className="border-white/30 bg-white/20 text-white hover:bg-white/30"
                 asChild
               >
-                <Link to="/onboarding">
+                <Link to="/#access-code">
                   <Mic className="h-5 w-5" />
-                  {t.startJourney}
+                  Accès pilote Marianne
                   <ArrowRight className="h-5 w-5" />
                 </Link>
               </Button>

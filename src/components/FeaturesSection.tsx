@@ -20,7 +20,7 @@ export function FeaturesSection() {
   const hasCompletedOnboarding = !!onboardingResult;
 
   const FEATURES = [
-    { icon: Mic, title: f.marianne.title, description: f.marianne.description, cta: f.marianne.cta, link: "/onboarding", accent: "bg-primary/10 text-primary", gated: false },
+    { icon: Mic, title: f.marianne.title, description: f.marianne.description, cta: "Accès pilote", link: "/#access-code", accent: "bg-primary/10 text-primary", gated: false },
     { icon: BookOpen, title: f.fle.title, description: f.fle.description, cta: f.fle.cta, link: "/fle", accent: "bg-success/10 text-success", gated: true },
     { icon: MapPin, title: f.local.title, description: f.local.description, cta: f.local.cta, link: "/partenaires", accent: "bg-accent text-accent-foreground", gated: false },
   ];
