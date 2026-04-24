@@ -101,7 +101,7 @@ const App = () => (
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
               <Route path="/directeur" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
-              <Route path="/diagnostic-partage" element={<ProtectedRoute><SharedDiagnostic /></ProtectedRoute>} />
+              <Route path="/diagnostic-partage" element={<SharedDiagnostic />} />
               <Route path="/fle" element={<FLEGatedRoute><FLEDashboard /></FLEGatedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<FLEGatedRoute><FLEExercise /></FLEGatedRoute>} />
               <Route path="/fle/dialogue" element={<FLEGatedRoute><FLEDialogue /></FLEGatedRoute>} />
