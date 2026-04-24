@@ -109,7 +109,7 @@ const App = () => (
               <Route path="/placement-test" element={<PlacementTestHome />} />
               <Route path="/placement-test/test" element={<PlacementTest />} />
               <Route path="/placement-test/results" element={<PlacementTestResults />} />
-              <Route path="/placement-test/trainer" element={<PlacementTestTrainer />} />
+              <Route path="/placement-test/trainer" element={<FormateurRoute><PlacementTestTrainer /></FormateurRoute>} />
               <Route path="/placement-test/:page" element={<PlacementTestLegal />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
