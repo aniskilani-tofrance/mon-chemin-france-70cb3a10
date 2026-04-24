@@ -21,9 +21,10 @@ export function AccessCodeSection() {
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc("validate_marianne_access_code", { _code: cleaned });
+      const { data, error } = await (supabase as any).rpc("validate_marianne_access_code", { _code: cleaned });
       if (error) throw error;
       if ((data as any)?.valid) {
+        sessionStorage.setItem(`marianne_access_granted_${cleaned}`, "true");
         navigate(`/onboarding?code=${cleaned}`);
         return;
       }
