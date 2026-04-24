@@ -4,7 +4,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function AccessCodeSection() {
@@ -21,36 +20,11 @@ export function AccessCodeSection() {
     }
     setLoading(true);
     try {
-      const marianneCodes = new Set(["MARIAN", "MARIANNE", "TOFRCE", "TOFRANCE"]);
+      const marianneCodes = new Set(["MARIAN", "TOFRCE"]);
       if (marianneCodes.has(cleaned)) {
         navigate(`/onboarding?code=${cleaned}`);
         return;
       }
-
-      // Try diagnostic first
-      const { data: diag } = await supabase
-        .from("shared_diagnostics")
-        .select("id")
-        .eq("access_code", cleaned)
-        .maybeSingle();
-
-      if (diag) {
-        navigate(`/diagnostic-partage?code=${cleaned}`);
-        return;
-      }
-
-      // Try placement test
-      const { data: placement } = await supabase
-        .from("placement_test_sessions")
-        .select("id")
-        .eq("access_code", cleaned)
-        .maybeSingle();
-
-      if (placement) {
-        navigate(`/placement-test?code=${cleaned}`);
-        return;
-      }
-
       toast.error("Code invalide ou expiré");
     } catch (err: any) {
       toast.error("Erreur lors de la vérification du code");
