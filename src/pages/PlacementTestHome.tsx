@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -83,10 +83,10 @@ export default function PlacementTestHome() {
         <div className="mx-auto max-w-3xl px-4">
           <GraduationCap className="mx-auto mb-6 h-16 w-16 opacity-90" />
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Test de Positionnement
+            Test de positionnement — accès formateur
           </h1>
           <p className="mt-4 text-lg opacity-90">
-            Évaluez votre niveau de français gratuitement en quelques minutes
+            Fonctionnalité en pilote, ouverte depuis un compte formateur.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-6">
             <div className="flex items-center gap-2">
@@ -112,8 +112,11 @@ export default function PlacementTestHome() {
           className="rounded-2xl border bg-white p-8 shadow-xl"
         >
           <h2 className="mb-6 text-xl font-bold" style={{ color: "#00504e" }}>
-            Commencer le test
+            Accès réservé
           </h2>
+          <p className="mb-6 text-sm text-gray-600">
+            Le test reste visible en teaser pendant la finalisation. Connectez-vous comme formateur pour lancer une session candidat.
+          </p>
 
           <div className="space-y-4">
             <div>
@@ -174,13 +177,15 @@ export default function PlacementTestHome() {
           </div>
 
           <Button
-            type="submit"
-            disabled={loading || !gdpr || !name.trim() || !email.trim()}
+            type="button"
+            asChild
             className="mt-6 w-full text-white border-0"
             size="lg"
             style={{ background: "linear-gradient(135deg, #00504e 0%, #17c3b2 100%)" }}
           >
-            {loading ? "Vérification..." : "Démarrer le test gratuit"}
+            <Link to="/login?redirect=/placement-test/trainer">
+              Connexion formateur
+            </Link>
           </Button>
         </form>
       </section>
