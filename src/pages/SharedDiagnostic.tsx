@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Volume2, Mic, MicOff, Check, ChevronLeft, ChevronRight,
@@ -46,7 +46,8 @@ const SharedDiagnostic = () => {
   const [languageConfirmed, setLanguageConfirmed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
-  const [loading, setLoading] = useState(!!diagnosticIdParam || !!codeParam);
+  const needsAuthenticatedAccess = !!diagnosticIdParam || !!codeParam;
+  const [loading, setLoading] = useState(needsAuthenticatedAccess);
   const [translating, setTranslating] = useState(false);
   const [savingAnswer, setSavingAnswer] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -345,6 +346,10 @@ const SharedDiagnostic = () => {
       setCompleting(false);
     }
   };
+
+  if (!user) {
+    return <FormateurLoginPrompt />;
+  }
 
   // ─── Setup screen (no diagnostic id yet) ─────────────────────
   if (!diagnosticId) {
@@ -646,6 +651,37 @@ const SharedDiagnostic = () => {
     </div>
   );
 };
+
+function FormateurLoginPrompt() {
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+      <Header />
+      <main className="mx-auto max-w-2xl px-4 pt-20 pb-12 sm:pt-24">
+        <div className="text-center mb-8">
+          <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
+            <Sparkles className="h-8 w-8 text-primary" />
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-bold mb-2">Diagnostic partagé</h1>
+          <p className="text-muted-foreground">
+            Connectez-vous comme formateur pour choisir un apprenant et démarrer le diagnostic.
+          </p>
+        </div>
+
+        <div className="rounded-2xl border bg-card p-6 space-y-4 text-center">
+          <Button size="lg" className="w-full gap-2" asChild>
+            <Link to="/login?redirect=/diagnostic-partage">
+              Connexion formateur
+              <ChevronRight className="h-4 w-4" />
+            </Link>
+          </Button>
+          <p className="text-sm text-muted-foreground">
+            Après connexion, vous pourrez sélectionner ou créer l'apprenant.
+          </p>
+        </div>
+      </main>
+    </div>
+  );
+}
 
 // ─── Setup screen ────────────────────────────────────────────────
 function SetupScreen({
