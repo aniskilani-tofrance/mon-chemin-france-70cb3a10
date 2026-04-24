@@ -127,6 +127,7 @@ export default function PlacementTestHome() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Votre nom"
+                disabled
                 required
               />
             </div>
@@ -139,6 +140,7 @@ export default function PlacementTestHome() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="votre@email.com"
+                disabled
                 required
               />
             </div>
@@ -151,6 +153,7 @@ export default function PlacementTestHome() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="06 12 34 56 78"
+                disabled
               />
             </div>
 
@@ -161,6 +164,7 @@ export default function PlacementTestHome() {
                 checked={gdpr}
                 onCheckedChange={(v) => setGdpr(v === true)}
                 className="mt-0.5"
+                disabled
               />
               <label htmlFor="gdpr" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
                 J'accepte que mes données soient traitées conformément à la politique de confidentialité pour la réalisation de ce test. *
