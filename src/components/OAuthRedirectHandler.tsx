@@ -16,6 +16,13 @@ export function OAuthRedirectHandler() {
           if (location.pathname !== "/" && location.pathname !== "/login") return;
           handled.current = true;
 
+          const redirect = sessionStorage.getItem("postLoginRedirect");
+          if (redirect?.startsWith("/") && !redirect.startsWith("//")) {
+            sessionStorage.removeItem("postLoginRedirect");
+            navigate(redirect, { replace: true });
+            return;
+          }
+
           const role = await detectUserRole(session.user.id);
           navigate(getRoleDashboardPath(role), { replace: true });
         }

@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { detectUserRole, getRoleDashboardPath } from "@/hooks/useRoleCheck";
@@ -21,11 +21,19 @@ export default function Login() {
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+
+  const getSafeRedirect = useCallback(() => {
+    const redirect = searchParams.get("redirect");
+    return redirect?.startsWith("/") && !redirect.startsWith("//") ? redirect : null;
+  }, [searchParams]);
 
   const handleGoogleLogin = async () => {
     setGoogleLoading(true);
     try {
+      const redirect = getSafeRedirect();
+      if (redirect) sessionStorage.setItem("postLoginRedirect", redirect);
       const result = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
       });
@@ -42,9 +50,14 @@ export default function Login() {
   };
 
   const redirectByRole = useCallback(async (userId: string) => {
+    const redirect = getSafeRedirect();
+    if (redirect) {
+      navigate(redirect, { replace: true });
+      return;
+    }
     const role = await detectUserRole(userId);
     navigate(getRoleDashboardPath(role));
-  }, [navigate]);
+  }, [getSafeRedirect, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -229,6 +242,8 @@ export default function Login() {
               onClick={async () => {
                 setAppleLoading(true);
                 try {
+                  const redirect = getSafeRedirect();
+                  if (redirect) sessionStorage.setItem("postLoginRedirect", redirect);
                   const result = await lovable.auth.signInWithOAuth("apple", {
                     redirect_uri: window.location.origin,
                   });
