@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export function AccessCodeSection() {
@@ -14,14 +15,16 @@ export function AccessCodeSection() {
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleaned = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
-    if (cleaned.length !== 6) {
-      toast.error("Le code doit contenir 6 caractères");
+    if (cleaned.length < 4 || cleaned.length > 12) {
+      toast.error("Le code doit contenir entre 4 et 12 caractères");
       return;
     }
     setLoading(true);
     try {
-      const marianneCodes = new Set(["MARIAN", "TOFRCE"]);
-      if (marianneCodes.has(cleaned)) {
+      const { data, error } = await (supabase as any).rpc("validate_marianne_access_code", { _code: cleaned });
+      if (error) throw error;
+      if ((data as any)?.valid) {
+        sessionStorage.setItem(`marianne_access_granted_${cleaned}`, "true");
         navigate(`/onboarding?code=${cleaned}`);
         return;
       }
@@ -64,7 +67,7 @@ export function AccessCodeSection() {
                   autoComplete="off"
                 />
               </div>
-              <Button type="submit" disabled={loading || code.length < 6} size="lg">
+              <Button type="submit" disabled={loading || code.length < 4} size="lg">
                 {loading ? "Vérification…" : "Rejoindre"}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
