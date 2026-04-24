@@ -50,7 +50,7 @@ export function HeroSection() {
         <AnimatedContainer delay={0.4}>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button variant="hero" size="xl" asChild>
-              <Link to="/onboarding" className="gap-3">
+              <Link to="/#access-code" className="gap-3">
                 <Mic className="h-5 w-5" />
                 Discuter avec Marianne
                 <ArrowRight className="h-5 w-5" />
@@ -62,7 +62,7 @@ export function HeroSection() {
               className="border-white/30 bg-white/20 text-white hover:bg-white/30"
               asChild
             >
-              <Link to="/diagnostic-partage" className="gap-3">
+              <Link to="/login?redirect=/diagnostic-partage" className="gap-3">
                 <ClipboardList className="h-5 w-5" />
                 Diagnostic partagé
               </Link>
@@ -73,7 +73,7 @@ export function HeroSection() {
               className="border-white/30 bg-white/20 text-white hover:bg-white/30"
               asChild
             >
-              <Link to="/placement-test" className="gap-3">
+              <Link to="/login?redirect=/placement-test/trainer" className="gap-3">
                 <GraduationCap className="h-5 w-5" />
                 Test de positionnement
               </Link>
