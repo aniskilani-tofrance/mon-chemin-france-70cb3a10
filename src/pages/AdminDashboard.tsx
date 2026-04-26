@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, Building2, Users, Search, Mail } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Building2, Users, Search, Mail, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { AdminContactRequests } from "@/components/AdminContactRequests";
@@ -201,6 +201,12 @@ export default function AdminDashboard() {
           </div>
 
           <div className="flex gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/admin/leads">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Leads HubSpot
+              </Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link to="/admin/fle">
                 <Users className="mr-2 h-4 w-4" />
