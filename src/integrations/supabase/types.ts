@@ -769,6 +769,48 @@ export type Database = {
         }
         Relationships: []
       }
+      hubspot_diagnostic_sync_logs: {
+        Row: {
+          created_at: string
+          diagnostic_id: string
+          diagnostic_type: string
+          error_message: string | null
+          hubspot_company_id: string | null
+          hubspot_contact_id: string | null
+          hubspot_deal_id: string | null
+          id: string
+          payload_summary: Json
+          score_qualification: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          diagnostic_id: string
+          diagnostic_type: string
+          error_message?: string | null
+          hubspot_company_id?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
+          id?: string
+          payload_summary?: Json
+          score_qualification?: number | null
+          status: string
+        }
+        Update: {
+          created_at?: string
+          diagnostic_id?: string
+          diagnostic_type?: string
+          error_message?: string | null
+          hubspot_company_id?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
+          id?: string
+          payload_summary?: Json
+          score_qualification?: number | null
+          status?: string
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           consent_id: string | null

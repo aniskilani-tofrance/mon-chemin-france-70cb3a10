@@ -339,6 +339,9 @@ const SharedDiagnostic = () => {
         .update({ status: "completed", completed_at: new Date().toISOString() })
         .eq("id", diagnosticId);
       if (error) throw error;
+      supabase.functions.invoke("sync-hubspot-diagnostic", {
+        body: { diagnosticType: "shared_diagnostic", diagnosticId },
+      }).catch((syncError) => console.error("HubSpot sync error:", syncError));
       toast.success("Diagnostic terminé !");
       navigate("/formateur/apprenants");
     } catch (e: any) {

@@ -273,12 +273,17 @@ const Onboarding = () => {
       track("onboarding_completed", { route: orientation.parcours, score: orientation.score }, "/onboarding", language);
 
       try {
-        await supabase.from("onboarding_results").insert([
+        const { data: insertedResult, error: resultError } = await supabase.from("onboarding_results").insert([
           {
             user_id: user?.id ?? null,
             email: data.email,
             language,
-            answers: JSON.parse(JSON.stringify({ ...flat, contact_email: data.email })),
+            answers: JSON.parse(JSON.stringify({
+              ...flat,
+              contact_email: data.email,
+              consent_lead_sharing: data.consent_lead_sharing,
+              consent_marketing: data.consent_marketing,
+            })),
             french_level_cecrl: (flat.french_level_cecrl as string) || null,
             main_goal: (flat.main_goal as string) || null,
             target_sector: (flat.target_sector as string) || null,
@@ -288,7 +293,14 @@ const Onboarding = () => {
             literacy: (flat.literacy as string) || null,
             barriers: Array.isArray(flat.barriers) ? (flat.barriers as string[]) : null,
           },
-        ]);
+        ]).select("id").single();
+        if (resultError) throw resultError;
+
+        if (insertedResult?.id) {
+          supabase.functions.invoke("sync-hubspot-diagnostic", {
+            body: { diagnosticType: "marianne", diagnosticId: insertedResult.id },
+          }).catch((error) => console.error("HubSpot sync error:", error));
+        }
       } catch (error) {
         console.error("Error saving onboarding results:", error);
       }
