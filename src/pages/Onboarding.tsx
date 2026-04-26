@@ -85,18 +85,6 @@ const Onboarding = () => {
   const totalSteps = activeQuestions.length + 3; // + postal + contact + email
   const leadSource = useMemo(() => resolveLeadSource(searchParams.get("source")), [searchParams]);
 
-  useEffect(() => {
-    if (leadSource.slug === "tofrance" || prefillAppliedRef.current === leadSource.slug) return;
-    prefillAppliedRef.current = leadSource.slug;
-    const prefilled = getLeadSourcePrefill(leadSource);
-    setAnswers((current) => {
-      const next = { ...prefilled, ...current } as VisualAnswers;
-      persistCheckpoint("language", next);
-      return next;
-    });
-    track("onboarding_source_prefilled", { source: leadSource.slug, location: leadSource.name }, "/onboarding", language);
-  }, [leadSource, persistCheckpoint, track, language]);
-
   // ─── Reprise via ?resume=1 ou utilisateur connecté ──────────
   useEffect(() => {
     if (resumeAttemptedRef.current) return;
@@ -193,6 +181,18 @@ const Onboarding = () => {
     },
     [saveCheckpoint, language]
   );
+
+  useEffect(() => {
+    if (leadSource.slug === "tofrance" || prefillAppliedRef.current === leadSource.slug) return;
+    prefillAppliedRef.current = leadSource.slug;
+    const prefilled = getLeadSourcePrefill(leadSource);
+    setAnswers((current) => {
+      const next = { ...prefilled, ...current } as VisualAnswers;
+      persistCheckpoint("language", next);
+      return next;
+    });
+    track("onboarding_source_prefilled", { source: leadSource.slug, location: leadSource.name }, "/onboarding", language);
+  }, [leadSource, persistCheckpoint, track, language]);
 
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
