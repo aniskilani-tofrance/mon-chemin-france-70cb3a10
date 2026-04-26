@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.25.76";
+import { findDealStageId } from "../_shared/hubspot-status.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,24 +29,10 @@ const CONTACT_PROPERTIES = [
   "mobilite",
 ].join(",");
 
-const STATUS_TO_STAGE_LABEL: Record<string, string> = {
-  "Nouveau diagnostic": "Nouveau diagnostic",
-  "À rappeler": "À rappeler",
-  "Contacté": "Contacté",
-  "Orienté": "Orientation proposée",
-  "Orientation proposée": "Orientation proposée",
-  "RDV fixé": "RDV fixé",
-  "En suivi": "En suivi",
-  "Converti": "Converti",
-  "Non qualifié": "Non qualifié",
-  "Injoignable": "Injoignable",
-  "Perdu": "Perdu",
-};
-
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list"), after: z.string().optional() }),
   z.object({ action: z.literal("owners") }),
-  z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
+  z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), diagnosticId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
   z.object({
     action: z.literal("createTask"),
     contactId: z.string().min(1),
