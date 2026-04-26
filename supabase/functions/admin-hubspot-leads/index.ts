@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.25.76";
+import { findDealStageId } from "../_shared/hubspot-status.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,24 +29,10 @@ const CONTACT_PROPERTIES = [
   "mobilite",
 ].join(",");
 
-const STATUS_TO_STAGE_LABEL: Record<string, string> = {
-  "Nouveau diagnostic": "Nouveau diagnostic",
-  "À rappeler": "À rappeler",
-  "Contacté": "Contacté",
-  "Orienté": "Orientation proposée",
-  "Orientation proposée": "Orientation proposée",
-  "RDV fixé": "RDV fixé",
-  "En suivi": "En suivi",
-  "Converti": "Converti",
-  "Non qualifié": "Non qualifié",
-  "Injoignable": "Injoignable",
-  "Perdu": "Perdu",
-};
-
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list"), after: z.string().optional() }),
   z.object({ action: z.literal("owners") }),
-  z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
+  z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), diagnosticId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
   z.object({
     action: z.literal("createTask"),
     contactId: z.string().min(1),
@@ -154,29 +141,45 @@ async function listContacts(after?: string) {
   return { contacts, paging: data?.paging || null };
 }
 
-async function getDealStageId(status: string) {
-  const targetLabel = STATUS_TO_STAGE_LABEL[status] || status;
-  const pipelines = await hubspot("/crm/v3/pipelines/deals");
-  const pipeline = pipelines?.results?.find((p: any) => p.label === "Leads ToFrance" || p.id === "leads_tofrance") || pipelines?.results?.[0];
-  if (!pipeline) throw new Error("Aucun pipeline HubSpot disponible");
-  const stage = pipeline.stages?.find((s: any) => s.label === targetLabel || s.id === targetLabel);
-  if (!stage) throw new Error(`Dealstage HubSpot introuvable pour "${targetLabel}"`);
-  return stage.id as string;
+async function logStatusSync(entry: Record<string, unknown>) {
+  const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+  const { error } = await supabaseAdmin.from("sync_logs").insert({
+    direction: "tofrance_to_hubspot",
+    source_system: "tofrance",
+    target_system: "hubspot",
+    ...entry,
+  });
+  if (error) console.error("sync_logs insert failed:", error.message);
 }
 
-async function updateStatus(contactId: string, dealId: string | null | undefined, status: string) {
+async function updateLocalStatus(contactId: string, dealId: string | null | undefined, diagnosticId: string | null | undefined, status: string) {
+  const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+  const values = { statut_lead: status, hubspot_contact_id: contactId, hubspot_deal_id: dealId ?? null, status_updated_from: "tofrance", status_updated_at: new Date().toISOString() };
+  if (diagnosticId) await supabaseAdmin.from("onboarding_results").update(values).eq("id", diagnosticId);
+  await supabaseAdmin.from("profiles").update(values).eq("hubspot_contact_id", contactId);
+  await supabaseAdmin.from("leads").update(values).eq("hubspot_contact_id", contactId);
+}
+
+async function updateStatus(contactId: string, dealId: string | null | undefined, diagnosticId: string | null | undefined, status: string) {
   await hubspot(`/crm/v3/objects/contacts/${contactId}`, {
     method: "PATCH",
     body: JSON.stringify({ properties: { statut_lead: status } }),
   });
 
-  if (!dealId) return { contactUpdated: true, dealUpdated: false, warning: "Aucun deal associé à ce contact" };
-  const dealstage = await getDealStageId(status);
-  await hubspot(`/crm/v3/objects/deals/${dealId}`, {
-    method: "PATCH",
-    body: JSON.stringify({ properties: { dealstage } }),
-  });
-  return { contactUpdated: true, dealUpdated: true, dealstage };
+  let dealstage: string | null = null;
+  let dealUpdated = false;
+  if (dealId) {
+    const stage = await findDealStageId(hubspot, status);
+    dealstage = stage.dealstage;
+    await hubspot(`/crm/v3/objects/deals/${dealId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ properties: { dealstage: stage.stageId } }),
+    });
+    dealUpdated = true;
+  }
+  await updateLocalStatus(contactId, dealId, diagnosticId, status);
+  await logStatusSync({ diagnostic_id: diagnosticId, hubspot_contact_id: contactId, hubspot_deal_id: dealId, new_status: status, hubspot_dealstage: dealstage, status: "success" });
+  return { contactUpdated: true, dealUpdated, dealstage, warning: dealId ? undefined : "Aucun deal associé à ce contact" };
 }
 
 async function listOwners() {
@@ -226,7 +229,7 @@ serve(async (req) => {
 
     if (parsed.data.action === "list") return json(await listContacts(parsed.data.after));
     if (parsed.data.action === "owners") return json(await listOwners());
-    if (parsed.data.action === "updateStatus") return json(await updateStatus(parsed.data.contactId, parsed.data.dealId, parsed.data.status));
+    if (parsed.data.action === "updateStatus") return json(await updateStatus(parsed.data.contactId, parsed.data.dealId, parsed.data.diagnosticId, parsed.data.status));
     return json(await createTask(parsed.data));
   } catch (error) {
     const message = error instanceof Error ? error.message : "Erreur inconnue";

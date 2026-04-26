@@ -97,6 +97,19 @@ async function logSync(supabaseAdmin: any, entry: {
   if (error) console.error("hubspot sync log insert failed:", error.message);
 }
 
+async function rememberHubSpotStatus(supabaseAdmin: any, diagnosticType: DiagnosticType, diagnosticId: string, contactId: string, dealId: string | null, status: string) {
+  const values = {
+    statut_lead: status,
+    hubspot_contact_id: contactId,
+    hubspot_deal_id: dealId,
+    status_updated_from: "tofrance",
+    status_updated_at: new Date().toISOString(),
+  };
+  if (diagnosticType === "marianne") await supabaseAdmin.from("onboarding_results").update(values).eq("id", diagnosticId);
+  await supabaseAdmin.from("profiles").update(values).eq("id", diagnosticId);
+  await supabaseAdmin.from("leads").update(values).eq("profile_id", diagnosticId);
+}
+
 function sourceFromAnswers(answers: Record<string, unknown>) {
   const sourceSlug = text(answers.source_slug) || text(answers.sourceSlug) || text(answers.utm_source) || "tofrance";
   return {
@@ -458,6 +471,7 @@ serve(async (req) => {
     const company = payload.source_slug ? await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]) : null;
     const companyId = company?.id || null;
     const dealId = await createDeal(payload, contactId, companyId);
+    await rememberHubSpotStatus(supabaseAdmin, diagnosticType, diagnosticId, contactId, dealId, payload.statut_lead);
 
     let status: SyncStatus = "success";
     let errorMessage: string | null = null;
