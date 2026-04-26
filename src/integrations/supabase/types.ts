@@ -856,6 +856,42 @@ export type Database = {
           },
         ]
       }
+      marianne_access_code_audit_logs: {
+        Row: {
+          access_code_id: string | null
+          code: string
+          created_at: string
+          id: string
+          ip_address: unknown
+          reason: string | null
+          success: boolean
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          access_code_id?: string | null
+          code: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          access_code_id?: string | null
+          code?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          reason?: string | null
+          success?: boolean
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       marianne_access_codes: {
         Row: {
           code: string
@@ -1570,7 +1606,12 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: boolean
       }
-      validate_marianne_access_code: { Args: { _code: string }; Returns: Json }
+      validate_marianne_access_code:
+        | { Args: { _code: string }; Returns: Json }
+        | {
+            Args: { _code: string; _ip_address?: string; _user_agent?: string }
+            Returns: Json
+          }
     }
     Enums: {
       app_role: "admin" | "provider" | "user" | "formateur" | "directeur"

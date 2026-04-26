@@ -25,7 +25,7 @@ serve(async (req) => {
     // Fetch provider info
     const { data: provider, error: provErr } = await supabaseAdmin
       .from("training_providers")
-      .select("name, email")
+      .select("id, name, email")
       .eq("id", providerId)
       .single();
 
