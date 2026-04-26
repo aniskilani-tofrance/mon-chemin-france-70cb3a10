@@ -371,37 +371,6 @@ function cecrlToNumber(level?: string): number | null {
   return level ? (map[level] ?? null) : null;
 }
 
-function calculateScore(answers: Record<string, unknown>): number {
-  let score = 0;
-  
-  // Completude (0-30)
-  if (answers.contact_email) score += 10;
-  if (answers.contact_firstname) score += 5;
-  if (answers.contact_phone) score += 5;
-  if (answers.location) score += 5;
-  if (answers.main_goal && answers.main_goal !== "need_help") score += 5;
-
-  // Fit (0-50)
-  const level = answers.french_level_cecrl as string | undefined;
-  if (level === "b1") score += 15;
-  else if (level === "a2") score += 10;
-  else if (level === "a1") score += 5;
-  else if (level === "alpha") score += 2;
-
-  if (answers.worked_in_france === "yes") score += 10;
-  else if (answers.worked_in_france === "partial") score += 5;
-  if (answers.real_comprehension_score === "yes") score += 5;
-
-  if (answers.location) score += 10;
-  if (answers.target_sector || answers.fle_type) score += 10;
-
-  // Reactivity (0-20)
-  if (answers.contact_48h === "yes") score += 10;
-  if (answers.contact_email) score += 10;
-
-  return Math.min(score, 100);
-}
-
 // ── Candidate confirmation email ──
 
 const ROUTE_LABELS: Record<string, { label: string; emoji: string; desc: string; color: string }> = {
