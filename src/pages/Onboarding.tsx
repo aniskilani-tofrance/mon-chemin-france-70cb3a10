@@ -24,6 +24,7 @@ import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
 import { computeOrientation } from "@/lib/orientationEngine";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
+import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 
 type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "email" | "magic-link-sent" | "complete";
 
@@ -64,7 +65,7 @@ const Onboarding = () => {
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
   const [accessStatus, setAccessStatus] = useState<"checking" | "granted" | "denied">(() => {
-    const initialCode = new URLSearchParams(window.location.search).get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || "";
+    const initialCode = normalizeMarianneAccessCode(new URLSearchParams(window.location.search).get("code") || "");
     return initialCode && sessionStorage.getItem(`marianne_access_granted_${initialCode}`) === "true" ? "granted" : "checking";
   });
   const resumeAttemptedRef = useRef(false);
@@ -431,7 +432,7 @@ const Onboarding = () => {
       ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
       : 100;
 
-  const accessCode = searchParams.get("code")?.trim().toUpperCase().replace(/[^A-Z0-9]/g, "") || "";
+  const accessCode = normalizeMarianneAccessCode(searchParams.get("code") || "");
 
   useEffect(() => {
     let mounted = true;
