@@ -18,6 +18,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useTTS } from "@/hooks/useTTS";
 import { useAnalytics } from "@/hooks/useAnalytics";
 import { useAuth } from "@/hooks/useAuth";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useOnboardingCheckpoint } from "@/hooks/useOnboardingCheckpoint";
 import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
@@ -54,6 +55,7 @@ const Onboarding = () => {
   const tts = useTTS({ language });
   const { track } = useAnalytics();
   const { user } = useAuth();
+  const { isAdmin, loading: adminLoading } = useAdminCheck();
   const { saveCheckpoint, loadCheckpoint, markCompleted } = useOnboardingCheckpoint();
 
   const [step, setStep] = useState<OnboardingStep>("language");
@@ -503,6 +505,11 @@ const Onboarding = () => {
 
   useEffect(() => {
     let mounted = true;
+    if (adminLoading) return;
+    if (isAdmin) {
+      setAccessStatus("granted");
+      return;
+    }
     if (leadSource.slug !== "tofrance") {
       setAccessStatus("granted");
       return;
@@ -523,7 +530,7 @@ const Onboarding = () => {
     return () => {
       mounted = false;
     };
-  }, [accessCode, leadSource.slug]);
+  }, [accessCode, leadSource.slug, isAdmin, adminLoading]);
 
   if (accessStatus !== "granted") {
     return (
