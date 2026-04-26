@@ -1,51 +1,132 @@
+Objectif : envoyer automatiquement vers HubSpot les diagnostics terminés, pour Marianne onboarding et le diagnostic partagé formateur/apprenant.
 
+Plan d’implémentation
 
-# Plan : Deux parcours d'onboarding (Q&R visuel + Vocal verrouillé)
+1. Connecter HubSpot au projet
+- Utiliser le connecteur HubSpot natif, comme choisi.
+- Aucune connexion HubSpot n’est actuellement liée au projet : au moment de l’implémentation, je lancerai la connexion HubSpot et tu pourras sélectionner ou créer la connexion.
+- Les appels HubSpot seront faits côté backend uniquement, via Lovable Cloud, jamais depuis le navigateur.
 
-## Objectif
-À l'arrivée sur l'onboarding (après le choix de langue et l'intro Marianne), proposer à l'utilisateur **deux parcours distincts** :
+2. Ajouter une table de journalisation locale
+Créer un journal technique d’intégration, par exemple `hubspot_diagnostic_sync_logs`, avec :
+- `diagnostic_type` : `marianne` ou `shared_diagnostic`
+- `diagnostic_id`
+- `hubspot_contact_id`
+- `hubspot_company_id`
+- `hubspot_deal_id`
+- `score_qualification`
+- `status` : succès / échec / warning
+- `error_message`
+- `payload_summary`
+- `created_at`
 
-1. **Parcours visuel (actif)** — Questions/réponses avec PhotoLanguageChoice (le système actuel basé sur le decision tree avec widgets visuels).
-2. **Parcours vocal (verrouillé)** — Conversation libre avec Marianne via voix, marqué **"Bientôt disponible"** et non cliquable.
+Accès : lecture admin uniquement. Cela permettra de suivre tous les envois réussis et les échecs.
 
-## Changements à apporter
+3. Créer une fonction backend `sync-hubspot-diagnostic`
+Cette fonction recevra un diagnostic terminé et :
+- validera les données reçues côté backend
+- calculera `score_qualification` sur 100 :
+  - téléphone présent : +30
+  - consentement rappel : +20
+  - consentement transmission : +20
+  - besoin clair : +20
+  - niveau français déclaré : +10
+- recherchera le contact HubSpot existant, prioritairement par téléphone, puis par email si disponible
+- créera ou mettra à jour le contact
+- recherchera l’entreprise HubSpot correspondant à `source_slug`
+- créera le deal dans le pipeline “Leads ToFrance”
+- associera le deal au contact et à l’entreprise si trouvée
+- loguera le résultat dans la base
 
-### 1. Nouveau composant `OnboardingPathChoice.tsx`
-Écran de sélection avec deux grandes cartes côte à côte (mobile : empilées) :
-- **Carte 1 — Parcours guidé** : icône (ex: `Images` ou `MousePointerClick`), titre "Questions & images", sous-titre "Réponds à des questions simples avec des images", badge "Recommandé", cliquable.
-- **Carte 2 — Parcours vocal** : icône (`Mic`), titre "Conversation vocale", sous-titre "Discute avec Marianne à l'oral", badge **"Bientôt disponible"**, état désactivé (opacité réduite, cadenas, `cursor-not-allowed`, pas d'action au clic).
+4. Mapping HubSpot contact
+Envoyer les propriétés demandées :
+- `firstname`
+- `phone`
+- `email`
+- `city`
+- `diagnostic_id`
+- `source_location`
+- `source_slug`
+- `langue_diagnostic`
+- `niveau_francais`
+- `lecture_ecriture_francais`
+- `besoin_principal`
+- `route_orientation`
+- `secteur_metier`
+- `freins_identifies`
+- `disponibilite`
+- `mobilite`
+- `whatsapp`
+- `consentement_rappel`
+- `consentement_transmission`
+- `date_diagnostic`
+- `statut_lead = "Nouveau diagnostic"`
+- `score_qualification`
 
-Animations Framer Motion cohérentes avec le reste de l'onboarding, support i18n (6 langues + RTL arabe).
+Note : ces propriétés doivent exister dans HubSpot, sinon HubSpot rejettera l’écriture. Je gérerai les erreurs clairement dans les logs.
 
-### 2. Modification de `src/pages/Onboarding.tsx`
-Ajouter une nouvelle étape `"path-choice"` dans le type `OnboardingStep` :
+5. Gestion de l’entreprise source
+- Chercher l’entreprise HubSpot par propriété `source_slug`.
+- Si elle existe : l’associer au deal.
+- Si elle n’existe pas :
+  - créer quand même le contact et le deal
+  - créer une note HubSpot indiquant que l’entreprise source est introuvable
+  - journaliser un warning côté ToFrance
+  - prévoir une notification admin via le mécanisme existant d’email/admin si possible
+
+6. Création du deal
+Créer un deal dans le pipeline “Leads ToFrance” avec :
+- `dealname` : `[Prénom] - [Route orientation] - [Lieu source]`
+- `dealstage` : `Nouveau diagnostic`
+- si `score_qualification >= 70`, utiliser `À rappeler`
+- `amount` : `0`
+- `closedate` : aujourd’hui + 30 jours
+- association au contact
+- association à l’entreprise source si trouvée
+
+Détail important : HubSpot utilise souvent des IDs internes pour les pipelines et stages, pas les libellés visibles. Je prévoirai une configuration claire côté code pour retrouver ou utiliser les bons IDs.
+
+7. Brancher Marianne onboarding
+À la fin de Marianne, après l’enregistrement de `onboarding_results` et des consentements :
+- appeler `sync-hubspot-diagnostic`
+- mapper les réponses existantes vers les propriétés HubSpot
+- ne pas bloquer l’utilisateur si HubSpot répond en erreur : l’erreur sera loguée pour reprise admin
+
+8. Brancher le diagnostic partagé
+À la fin du diagnostic partagé, quand `shared_diagnostics.status` passe à `completed` :
+- récupérer les réponses validées dans `shared_diagnostic_answers`
+- construire le payload HubSpot
+- appeler `sync-hubspot-diagnostic`
+- ne pas bloquer le formateur en cas d’erreur HubSpot : afficher un message léger et journaliser l’échec
+
+9. Interface admin minimale
+Ajouter dans l’admin un panneau de suivi “Synchronisations HubSpot” avec :
+- date
+- type de diagnostic
+- statut
+- score
+- IDs HubSpot si disponibles
+- erreur/warning si besoin
+
+10. Tests et validation
+- Tester le calcul de score.
+- Tester le mapping Marianne.
+- Tester le mapping diagnostic partagé.
+- Tester les cas : contact existant par téléphone, email absent, entreprise introuvable, score >= 70.
+- Vérifier les logs backend après appel de la fonction.
+
+Résultat attendu
 
 ```text
-language → intro Marianne → path-choice → chat (parcours visuel actuel)
+Diagnostic terminé
+  -> Backend ToFrance
+    -> Normalise et valide les données
+    -> Calcule score_qualification
+    -> Upsert contact HubSpot
+    -> Recherche entreprise par source_slug
+    -> Crée deal HubSpot
+    -> Associe contact + entreprise
+    -> Journalise succès/échec
 ```
 
-- Le bouton "Continuer" de `MarianneIntroStep` mène désormais à `path-choice` au lieu de `chat`.
-- Sur `path-choice`, seul le parcours visuel est actif → mène à `chat` (flow existant inchangé).
-- Le parcours vocal est verrouillé → aucun clic possible.
-
-### 3. Traductions i18n
-Ajouter dans les 6 fichiers locales (`fr.json`, `en.json`, `ar.json`, `es.json`, `pt.json`, `ru.json`) :
-- `onboarding.pathChoice.title` — "Comment souhaites-tu répondre ?"
-- `onboarding.pathChoice.subtitle` — "Choisis le parcours qui te convient"
-- `onboarding.pathChoice.visual.title` / `.subtitle` / `.badge` ("Recommandé")
-- `onboarding.pathChoice.vocal.title` / `.subtitle` / `.badge` ("Bientôt disponible")
-
-### 4. Analytics
-Tracker `onboarding_path_selected` avec `{ path: "visual" | "vocal" }` pour mesurer l'intérêt pour le parcours vocal (utile pour prioriser son développement).
-
-## Fichiers touchés
-- **Créé** : `src/components/VocalOnboarding/OnboardingPathChoice.tsx`
-- **Modifié** : `src/pages/Onboarding.tsx` (ajout étape, routing)
-- **Modifié** : `src/components/VocalOnboarding/MarianneIntroStep.tsx` (renommage callback si besoin, ou inchangé)
-- **Modifié** : `src/i18n/locales/{fr,en,ar,es,pt,ru}.json` (nouvelles clés)
-
-## Hors scope
-- Pas de suppression du code lié au vocal (préservé pour activation future).
-- Pas de modification du parcours visuel/chat lui-même.
-- Pas de changement du système de checkpoints/reprise.
-
+Je garderai la gestion des leads HubSpot comme source principale, tout en conservant les données locales nécessaires à l’audit, au diagnostic et au bon fonctionnement de ToFrance.
