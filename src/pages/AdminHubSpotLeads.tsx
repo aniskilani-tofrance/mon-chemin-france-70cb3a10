@@ -58,7 +58,7 @@ const LEAD_STATUSES = [
   "Perdu",
 ];
 
-const csvEscape = (value: unknown) => `"${String(value ?? "").replaceAll('"', '""')}"`;
+const csvEscape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
 
 function uniqueValues(leads: HubSpotLead[], key: keyof HubSpotLead) {
   return Array.from(new Set(leads.map((lead) => String(lead[key] || "").trim()).filter(Boolean))).sort((a, b) => a.localeCompare(b));
