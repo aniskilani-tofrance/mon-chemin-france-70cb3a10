@@ -37,6 +37,10 @@ interface HubSpotPayload {
   date_diagnostic: string;
   statut_lead: string;
   score_qualification: number;
+  source_location_id?: string | null;
+  source_name?: string | null;
+  source_type?: string | null;
+  source_campaign?: string | null;
 }
 
 const text = (value: unknown): string | null => {
@@ -98,6 +102,10 @@ function sourceFromAnswers(answers: Record<string, unknown>) {
   return {
     source_slug: sourceSlug,
     source_location: text(answers.source_location) || text(answers.sourceLocation) || text(answers.source_name) || "ToFrance",
+    source_location_id: text(answers.source_location_id) || sourceSlug,
+    source_name: text(answers.source_name) || text(answers.source_location) || "ToFrance",
+    source_type: text(answers.source_type),
+    source_campaign: text(answers.source_campaign),
   };
 }
 
@@ -134,6 +142,10 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
     diagnostic_id: diagnosticId,
     source_location: source.source_location,
     source_slug: source.source_slug,
+    source_location_id: source.source_location_id,
+    source_name: source.source_name,
+    source_type: source.source_type,
+    source_campaign: source.source_campaign,
     langue_diagnostic: text(data.language),
     niveau_francais: niveauFrancais,
     lecture_ecriture_francais: text(data.literacy) || text(answers.literacy),
@@ -245,7 +257,7 @@ async function searchObject(objectType: string, propertyName: string, value: str
   return data?.results?.[0] || null;
 }
 
-async function upsertContact(payload: HubSpotPayload) {
+async function upsertContact(payload: HubSpotPayload): Promise<{ id: string; created: boolean }> {
   let existing = payload.phone ? await searchObject("contacts", "phone", payload.phone, ["phone", "email"]) : null;
   if (!existing && payload.email) existing = await searchObject("contacts", "email", payload.email, ["phone", "email"]);
 
@@ -255,14 +267,62 @@ async function upsertContact(payload: HubSpotPayload) {
       method: "PATCH",
       body: JSON.stringify({ properties }),
     });
-    return existing.id as string;
+    return { id: existing.id as string, created: false };
   }
 
   const created = await hubspot("/crm/v3/objects/contacts", {
     method: "POST",
     body: JSON.stringify({ properties }),
   });
-  return created.id as string;
+  return { id: created.id as string, created: true };
+}
+
+function diagnosticUrl(payload: HubSpotPayload) {
+  return `https://mon-chemin-france.lovable.app/fiche/${encodeURIComponent(payload.diagnostic_id)}`;
+}
+
+function hubspotContactUrl(contactId: string) {
+  return `https://app.hubspot.com/contacts/contact/${contactId}`;
+}
+
+async function notifySlackNewDiagnostic(payload: HubSpotPayload, contactId: string) {
+  const webhookUrl = Deno.env.get("SLACK_WEBHOOK_URL");
+  if (!webhookUrl) {
+    console.warn("SLACK_WEBHOOK_URL is not configured; Slack notification skipped");
+    return;
+  }
+
+  const needsCallback = payload.score_qualification >= 70 && payload.consentement_rappel === true;
+  const blocks: any[] = [
+    { type: "header", text: { type: "plain_text", text: "Nouveau diagnostic ToFrance", emoji: true } },
+    { type: "section", fields: [
+      { type: "mrkdwn", text: `*Prénom :*\n${payload.firstname || "—"}` },
+      { type: "mrkdwn", text: `*Téléphone :*\n${payload.phone || "—"}` },
+      { type: "mrkdwn", text: `*Lieu source :*\n${payload.source_location || "—"}` },
+      { type: "mrkdwn", text: `*Langue :*\n${payload.langue_diagnostic || "—"}` },
+      { type: "mrkdwn", text: `*Besoin :*\n${payload.besoin_principal || "—"}` },
+      { type: "mrkdwn", text: `*Score qualification :*\n${payload.score_qualification}/100` },
+      { type: "mrkdwn", text: `*Statut :*\n${payload.statut_lead || "—"}` },
+    ] },
+  ];
+  if (needsCallback) {
+    blocks.push({ type: "section", text: { type: "mrkdwn", text: "*Action requise : À rappeler dans les 24h*" } });
+  }
+  blocks.push({
+    type: "actions",
+    elements: [
+      { type: "button", text: { type: "plain_text", text: "Voir dans HubSpot" }, url: hubspotContactUrl(contactId) },
+      { type: "button", text: { type: "plain_text", text: "Voir fiche ToFrance" }, url: diagnosticUrl(payload) },
+    ],
+  });
+  blocks.push({ type: "divider" });
+
+  const response = await fetch(webhookUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ text: `Nouveau diagnostic ToFrance — ${payload.firstname || payload.phone || payload.diagnostic_id}`, blocks }),
+  });
+  if (!response.ok) throw new Error(`Slack webhook failed [${response.status}]: ${await response.text()}`);
 }
 
 async function findPipelineAndStage(score: number) {
@@ -379,7 +439,15 @@ serve(async (req) => {
       ? await buildMariannePayload(supabaseAdmin, diagnosticId)
       : await buildSharedPayload(supabaseAdmin, diagnosticId);
 
-    const contactId = await upsertContact(payload);
+    const contact = await upsertContact(payload);
+    const contactId = contact.id;
+    if (contact.created && payload.diagnostic_id) {
+      try {
+        await notifySlackNewDiagnostic(payload, contactId);
+      } catch (slackErr) {
+        console.warn("Slack diagnostic notification failed:", (slackErr as Error).message);
+      }
+    }
     const company = payload.source_slug ? await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]) : null;
     const companyId = company?.id || null;
     const dealId = await createDeal(payload, contactId, companyId);
