@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { z } from "https://esm.sh/zod@3.25.76";
 import { findDealStageId } from "../_shared/hubspot-status.ts";
+import { notifySlackLeadStatusChange } from "../_shared/slack-notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -161,6 +162,9 @@ async function updateLocalStatus(contactId: string, dealId: string | null | unde
 }
 
 async function updateStatus(contactId: string, dealId: string | null | undefined, diagnosticId: string | null | undefined, status: string) {
+  const contact = await hubspot(`/crm/v3/objects/contacts/${contactId}?properties=firstname,email,phone,source_location,route_orientation,statut_lead`);
+  const previousStatus = contact?.properties?.statut_lead || null;
+
   await hubspot(`/crm/v3/objects/contacts/${contactId}`, {
     method: "PATCH",
     body: JSON.stringify({ properties: { statut_lead: status } }),
@@ -179,6 +183,23 @@ async function updateStatus(contactId: string, dealId: string | null | undefined
   }
   await updateLocalStatus(contactId, dealId, diagnosticId, status);
   await logStatusSync({ diagnostic_id: diagnosticId, hubspot_contact_id: contactId, hubspot_deal_id: dealId, new_status: status, hubspot_dealstage: dealstage, status: "success" });
+  try {
+    await notifySlackLeadStatusChange({
+      source: "Admin ToFrance",
+      previousStatus,
+      newStatus: status,
+      contactId,
+      dealId,
+      diagnosticId,
+      firstname: contact?.properties?.firstname,
+      email: contact?.properties?.email,
+      phone: contact?.properties?.phone,
+      sourceLocation: contact?.properties?.source_location,
+      routeOrientation: contact?.properties?.route_orientation,
+    });
+  } catch (error) {
+    console.error("Slack lead status notification failed:", error instanceof Error ? error.message : error);
+  }
   return { contactUpdated: true, dealUpdated, dealstage, warning: dealId ? undefined : "Aucun deal associé à ce contact" };
 }
 
