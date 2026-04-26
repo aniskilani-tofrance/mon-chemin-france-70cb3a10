@@ -244,6 +244,7 @@ function hubspotProperties(payload: HubSpotPayload) {
     diagnostic_id: payload.diagnostic_id,
     source_location: payload.source_location,
     source_slug: payload.source_slug,
+    source_location_id: payload.source_location_id,
     source_name: payload.source_name,
     source_type: payload.source_type,
     source_campaign: payload.source_campaign,
