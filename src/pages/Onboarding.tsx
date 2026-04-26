@@ -308,6 +308,8 @@ const Onboarding = () => {
           {
             user_id: user?.id ?? null,
             email: data.email,
+            first_name: String(flat.contact_firstname || "").trim(),
+            phone: String(flat.contact_phone || "").trim(),
             language,
             answers: JSON.parse(JSON.stringify({
               ...flat,

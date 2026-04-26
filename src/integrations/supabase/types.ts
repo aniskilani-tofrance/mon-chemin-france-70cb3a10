@@ -817,11 +817,13 @@ export type Database = {
           contacted_at: string | null
           converted_at: string | null
           created_at: string
+          first_name: string | null
           hubspot_contact_id: string | null
           hubspot_deal_id: string | null
           id: string
           match_score: number | null
           notes: string | null
+          phone: string | null
           price_charged: number | null
           profile_id: string | null
           provider_id: string
@@ -842,11 +844,13 @@ export type Database = {
           contacted_at?: string | null
           converted_at?: string | null
           created_at?: string
+          first_name?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
           id?: string
           match_score?: number | null
           notes?: string | null
+          phone?: string | null
           price_charged?: number | null
           profile_id?: string | null
           provider_id: string
@@ -867,11 +871,13 @@ export type Database = {
           contacted_at?: string | null
           converted_at?: string | null
           created_at?: string
+          first_name?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
           id?: string
           match_score?: number | null
           notes?: string | null
+          phone?: string | null
           price_charged?: number | null
           profile_id?: string | null
           provider_id?: string
@@ -1056,6 +1062,7 @@ export type Database = {
           created_at: string
           distance_to_job: number | null
           email: string | null
+          first_name: string | null
           french_level_cecrl: string | null
           hubspot_contact_id: string | null
           hubspot_deal_id: string | null
@@ -1065,6 +1072,7 @@ export type Database = {
           lead_score: number | null
           literacy: string | null
           main_goal: string | null
+          phone: string | null
           source_campaign: string | null
           source_location_id: string | null
           source_name: string | null
@@ -1083,6 +1091,7 @@ export type Database = {
           created_at?: string
           distance_to_job?: number | null
           email?: string | null
+          first_name?: string | null
           french_level_cecrl?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
@@ -1092,6 +1101,7 @@ export type Database = {
           lead_score?: number | null
           literacy?: string | null
           main_goal?: string | null
+          phone?: string | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null
@@ -1110,6 +1120,7 @@ export type Database = {
           created_at?: string
           distance_to_job?: number | null
           email?: string | null
+          first_name?: string | null
           french_level_cecrl?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
@@ -1119,6 +1130,7 @@ export type Database = {
           lead_score?: number | null
           literacy?: string | null
           main_goal?: string | null
+          phone?: string | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null

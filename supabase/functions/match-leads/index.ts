@@ -49,6 +49,7 @@ function isRateLimited(ip: string): boolean {
 
 // Email validation regex
 const EMAIL_REGEX = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/;
+const PHONE_REGEX = /^[+\d][\d\s().-]{7,29}$/;
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -105,6 +106,12 @@ serve(async (req) => {
     answers.contact_firstname = maxLen(answers.contact_firstname, 100);
     answers.contact_lastname = maxLen(answers.contact_lastname, 100);
     answers.contact_phone = maxLen(answers.contact_phone, 30);
+    if (!answers.contact_firstname || String(answers.contact_firstname).length < 2) {
+      throw new Error("Prénom requis");
+    }
+    if (!answers.contact_phone || !PHONE_REGEX.test(String(answers.contact_phone))) {
+      throw new Error("Téléphone requis ou invalide");
+    }
     answers.location = maxLen(answers.location, 100);
     answers.postal_code = maxLen(answers.postal_code, 10);
     answers.source_location_id = maxLen(answers.source_location_id, 120);
@@ -263,6 +270,8 @@ serve(async (req) => {
       consent_id: consent.id,
       status: "pending" as const,
       match_score: score,
+      first_name: answers.contact_firstname || null,
+      phone: answers.contact_phone || null,
       source_location_id: answers.source_location_id || null,
       source_name: answers.source_name || null,
       source_type: answers.source_type || null,
