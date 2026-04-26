@@ -47,7 +47,7 @@ serve(async (req) => {
       limit: 50,
     });
 
-    const payments = sessions.data.map((s) => ({
+    const payments = sessions.data.map((s: Stripe.Checkout.Session) => ({
       id: s.id,
       amount: s.amount_total,
       currency: s.currency,
@@ -62,7 +62,8 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error("get-payment-history error:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    const message = error instanceof Error ? error.message : "Erreur inconnue";
+    return new Response(JSON.stringify({ error: message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });
