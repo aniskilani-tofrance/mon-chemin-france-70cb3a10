@@ -301,7 +301,7 @@ const Onboarding = () => {
         consent_lead_sharing: data.consent_lead_sharing,
       }).total;
 
-      track("onboarding_completed", { route: orientation.parcours, score: orientation.score }, "/onboarding", language);
+      track("onboarding_completed", { route: orientation.parcours, score: leadScore, source: leadSource.slug }, "/onboarding", language);
 
       try {
         const { data: insertedResult, error: resultError } = await supabase.from("onboarding_results").insert([
@@ -487,6 +487,10 @@ const Onboarding = () => {
 
   useEffect(() => {
     let mounted = true;
+    if (leadSource.slug !== "tofrance") {
+      setAccessStatus("granted");
+      return;
+    }
     if (accessCode.length < 4 || accessCode.length > 12) {
       setAccessStatus("denied");
       return;
@@ -503,7 +507,7 @@ const Onboarding = () => {
     return () => {
       mounted = false;
     };
-  }, [accessCode]);
+  }, [accessCode, leadSource.slug]);
 
   if (accessStatus !== "granted") {
     return (

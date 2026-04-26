@@ -34,6 +34,8 @@ const AdminEmailLogs = lazy(() => import("./pages/AdminEmailLogs"));
 const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminFLEProgress = lazy(() => import("./pages/AdminFLEProgress"));
 const AdminHubSpotLeads = lazy(() => import("./pages/AdminHubSpotLeads"));
+const AdminPilotes = lazy(() => import("./pages/AdminPilotes"));
+const ToSourceRedirect = lazy(() => import("./pages/ToSourceRedirect"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Heberger = lazy(() => import("./pages/Heberger"));
 const PitchRegion = lazy(() => import("./pages/PitchRegion"));
@@ -83,6 +85,7 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/to/:sourceSlug" element={<ToSourceRedirect />} />
               <Route path="/confirmation" element={<ConfirmationPage />} />
               <Route path="/partners" element={<AdminRoute><Partners /></AdminRoute>} />
               <Route path="/devenir-partenaire" element={<PartnersInfo />} />
@@ -100,6 +103,7 @@ const App = () => (
               <Route path="/admin/email-preview" element={<AdminRoute><AdminEmailPreview /></AdminRoute>} />
               <Route path="/admin/email-logs" element={<AdminRoute><AdminEmailLogs /></AdminRoute>} />
               <Route path="/admin/leads" element={<AdminRoute><AdminHubSpotLeads /></AdminRoute>} />
+              <Route path="/admin/pilotes" element={<AdminRoute><AdminPilotes /></AdminRoute>} />
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
               <Route path="/directeur" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
