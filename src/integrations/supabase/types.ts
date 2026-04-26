@@ -1606,6 +1606,10 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: boolean
       }
+      normalize_marianne_access_code: {
+        Args: { _code: string }
+        Returns: string
+      }
       validate_marianne_access_code:
         | { Args: { _code: string }; Returns: Json }
         | {
