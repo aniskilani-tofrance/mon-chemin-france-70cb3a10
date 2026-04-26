@@ -1,132 +1,90 @@
-Objectif : envoyer automatiquement vers HubSpot les diagnostics terminés, pour Marianne onboarding et le diagnostic partagé formateur/apprenant.
+Objectif : rendre les diagnostics pilotables par lieu source, mieux capter prénom/téléphone, unifier le scoring, et créer une vue admin pilote.
 
 Plan d’implémentation
 
-1. Connecter HubSpot au projet
-- Utiliser le connecteur HubSpot natif, comme choisi.
-- Aucune connexion HubSpot n’est actuellement liée au projet : au moment de l’implémentation, je lancerai la connexion HubSpot et tu pourras sélectionner ou créer la connexion.
-- Les appels HubSpot seront faits côté backend uniquement, via Lovable Cloud, jamais depuis le navigateur.
+1. Source du lead dans la base
+- Ajouter les colonnes suivantes à `onboarding_results`, `profiles` et `leads` :
+  - `source_location_id`
+  - `source_name`
+  - `source_type`
+  - `source_campaign`
+- Conserver la compatibilité avec les champs déjà envoyés vers HubSpot (`source_location`, `source_slug`) en mappant :
+  - `source_name` -> `source_location`
+  - slug URL -> `source_slug`
+- Indexer les champs source utiles pour les vues admin et exports.
 
-2. Ajouter une table de journalisation locale
-Créer un journal technique d’intégration, par exemple `hubspot_diagnostic_sync_logs`, avec :
-- `diagnostic_type` : `marianne` ou `shared_diagnostic`
-- `diagnostic_id`
-- `hubspot_contact_id`
-- `hubspot_company_id`
-- `hubspot_deal_id`
-- `score_qualification`
-- `status` : succès / échec / warning
-- `error_message`
-- `payload_summary`
-- `created_at`
+2. URLs QR code par lieu
+- Ajouter la route `/to/:sourceSlug`.
+- Cette route redirigera vers `/onboarding?source=<sourceSlug>` en conservant une URL courte imprimable sur QR code.
+- Gérer aussi directement `/onboarding?source=aurore`.
+- Préconfigurer les sources pilotes :
+  - `aurore`
+  - `emmaus-victoire`
+  - `mdq-landy`
+- Chaque source aura un nom lisible, un type et éventuellement une campagne par défaut.
 
-Accès : lecture admin uniquement. Cela permettra de suivre tous les envois réussis et les échecs.
+3. Prénom + téléphone dans le parcours
+- Ajouter une étape contact dédiée dans l’onboarding visuel avant l’email, avec :
+  - prénom obligatoire
+  - téléphone obligatoire
+  - email conservé séparément
+- Sauvegarder ces données dans `answers`, `onboarding_results`, `profiles`, l’appel `match-leads`, puis HubSpot.
+- Adapter la reprise de parcours pour ne pas perdre prénom/téléphone si l’utilisateur revient plus tard.
 
-3. Créer une fonction backend `sync-hubspot-diagnostic`
-Cette fonction recevra un diagnostic terminé et :
-- validera les données reçues côté backend
-- calculera `score_qualification` sur 100 :
-  - téléphone présent : +30
-  - consentement rappel : +20
-  - consentement transmission : +20
-  - besoin clair : +20
-  - niveau français déclaré : +10
-- recherchera le contact HubSpot existant, prioritairement par téléphone, puis par email si disponible
-- créera ou mettra à jour le contact
-- recherchera l’entreprise HubSpot correspondant à `source_slug`
-- créera le deal dans le pipeline “Leads ToFrance”
-- associera le deal au contact et à l’entreprise si trouvée
-- loguera le résultat dans la base
+4. Un seul moteur de scoring
+- Créer une fonction commune de scoring utilisable côté frontend et côté backend, avec une version partagée pour les Edge Functions.
+- Remplacer les calculs dispersés :
+  - score `orientationEngine`
+  - score `match-leads`
+  - ancien `calculateLeadScore` dans `decisionTree`
+  - score qualification HubSpot si nécessaire
+- Garder une séparation claire :
+  - `route_orientation` décide du parcours recommandé
+  - `score_qualification` mesure la qualité du lead
+- Harmoniser le score enregistré dans :
+  - `onboarding_results.lead_score`
+  - `profiles.lead_score`
+  - `leads.match_score`
+  - HubSpot `score_qualification`
 
-4. Mapping HubSpot contact
-Envoyer les propriétés demandées :
-- `firstname`
-- `phone`
-- `email`
-- `city`
-- `diagnostic_id`
-- `source_location`
-- `source_slug`
-- `langue_diagnostic`
-- `niveau_francais`
-- `lecture_ecriture_francais`
-- `besoin_principal`
-- `route_orientation`
-- `secteur_metier`
-- `freins_identifies`
-- `disponibilite`
-- `mobilite`
-- `whatsapp`
-- `consentement_rappel`
-- `consentement_transmission`
-- `date_diagnostic`
-- `statut_lead = "Nouveau diagnostic"`
-- `score_qualification`
+5. Vue pilote admin `/admin/pilotes`
+- Créer une page protégée admin `/admin/pilotes`.
+- Afficher des indicateurs filtrables par lieu/source :
+  - nombre de diagnostics par lieu
+  - profils qualifiés
+  - orientations / routes
+  - statuts
+  - taux de contactabilité téléphone
+  - score moyen
+- Ajouter un tableau détaillé des diagnostics/leads avec filtres par source, campagne, statut et date.
+- Ajouter export CSV des données filtrées.
+- Ajouter un mode “bilan imprimable” avec une mise en page propre pour impression/PDF navigateur.
+- Ajouter un lien vers cette vue depuis le dashboard admin.
 
-Note : ces propriétés doivent exister dans HubSpot, sinon HubSpot rejettera l’écriture. Je gérerai les erreurs clairement dans les logs.
+6. Intégration HubSpot et Slack déjà prévue à sécuriser
+- Propager les nouveaux champs source vers HubSpot lors de `sync-hubspot-diagnostic`.
+- Ajouter la notification Slack automatique après création d’un nouveau contact HubSpot avec `diagnostic_id`, en Block Kit, vers `SLACK_WEBHOOK_URL`.
+- Si `score_qualification >= 70` et `consentement_rappel = true`, ajouter le bloc d’action “À rappeler dans les 24h”.
+- Ajouter une journalisation non bloquante : si Slack échoue, le diagnostic et HubSpot restent valides, mais l’échec est visible dans les logs.
 
-5. Gestion de l’entreprise source
-- Chercher l’entreprise HubSpot par propriété `source_slug`.
-- Si elle existe : l’associer au deal.
-- Si elle n’existe pas :
-  - créer quand même le contact et le deal
-  - créer une note HubSpot indiquant que l’entreprise source est introuvable
-  - journaliser un warning côté ToFrance
-  - prévoir une notification admin via le mécanisme existant d’email/admin si possible
+Détails techniques
 
-6. Création du deal
-Créer un deal dans le pipeline “Leads ToFrance” avec :
-- `dealname` : `[Prénom] - [Route orientation] - [Lieu source]`
-- `dealstage` : `Nouveau diagnostic`
-- si `score_qualification >= 70`, utiliser `À rappeler`
-- `amount` : `0`
-- `closedate` : aujourd’hui + 30 jours
-- association au contact
-- association à l’entreprise source si trouvée
-
-Détail important : HubSpot utilise souvent des IDs internes pour les pipelines et stages, pas les libellés visibles. Je prévoirai une configuration claire côté code pour retrouver ou utiliser les bons IDs.
-
-7. Brancher Marianne onboarding
-À la fin de Marianne, après l’enregistrement de `onboarding_results` et des consentements :
-- appeler `sync-hubspot-diagnostic`
-- mapper les réponses existantes vers les propriétés HubSpot
-- ne pas bloquer l’utilisateur si HubSpot répond en erreur : l’erreur sera loguée pour reprise admin
-
-8. Brancher le diagnostic partagé
-À la fin du diagnostic partagé, quand `shared_diagnostics.status` passe à `completed` :
-- récupérer les réponses validées dans `shared_diagnostic_answers`
-- construire le payload HubSpot
-- appeler `sync-hubspot-diagnostic`
-- ne pas bloquer le formateur en cas d’erreur HubSpot : afficher un message léger et journaliser l’échec
-
-9. Interface admin minimale
-Ajouter dans l’admin un panneau de suivi “Synchronisations HubSpot” avec :
-- date
-- type de diagnostic
-- statut
-- score
-- IDs HubSpot si disponibles
-- erreur/warning si besoin
-
-10. Tests et validation
-- Tester le calcul de score.
-- Tester le mapping Marianne.
-- Tester le mapping diagnostic partagé.
-- Tester les cas : contact existant par téléphone, email absent, entreprise introuvable, score >= 70.
-- Vérifier les logs backend après appel de la fonction.
+- Base de données : migration uniquement pour les nouvelles colonnes et index.
+- Backend : mise à jour de `match-leads` et `sync-hubspot-diagnostic` pour transporter les champs source et utiliser le scoring unifié.
+- Frontend : mise à jour de `Onboarding.tsx`, ajout de la route courte `/to/:sourceSlug`, ajout de `/admin/pilotes`.
+- Sécurité : la page pilote reste derrière `AdminRoute`; les exports sont générés côté navigateur à partir des données admin autorisées.
+- Secrets : `SLACK_WEBHOOK_URL` devra être ajouté comme secret runtime avant déploiement de la notification Slack.
 
 Résultat attendu
 
 ```text
-Diagnostic terminé
-  -> Backend ToFrance
-    -> Normalise et valide les données
-    -> Calcule score_qualification
-    -> Upsert contact HubSpot
-    -> Recherche entreprise par source_slug
-    -> Crée deal HubSpot
-    -> Associe contact + entreprise
-    -> Journalise succès/échec
+QR code lieu
+  -> /to/aurore
+  -> /onboarding?source=aurore
+  -> diagnostic complété avec prénom + téléphone
+  -> source enregistrée localement
+  -> score unique calculé
+  -> HubSpot contact/deal
+  -> notification Slack
+  -> pilotage admin /admin/pilotes
 ```
-
-Je garderai la gestion des leads HubSpot comme source principale, tout en conservant les données locales nécessaires à l’audit, au diagnostic et au bon fonctionnement de ToFrance.

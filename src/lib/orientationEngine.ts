@@ -1,3 +1,4 @@
+import { calculateUnifiedLeadScore } from "./leadScoring";
 // ============================================================
 // ToFrance — Arbre de décision v2 (TypeScript)
 // Fichier : src/lib/decisionTree.ts
@@ -204,34 +205,12 @@ export const ACTIONS_LABELS: Record<ActionId, string> = {
 //  Total                       | 100
 
 function computeScore(r: UserResponses): number {
-  let score = 0;
-
-  // Droit de travailler
-  if (r.q2_droit_travailler === "oui") score += 25;
-  else if (r.q2_droit_travailler === "nsp") score += 10;
-
-  // Inscription France Travail
-  if (r.q3_france_travail === "oui") score += 20;
-  else if (r.q3_france_travail === "nsp") score += 8;
-
-  // Clarté du projet
-  if (r.q1_interet !== "nsp" && r.q1_interet !== "autre") score += 20;
-  else if (r.q1_interet === "nsp") score += 8;
-
-  // Niveau français
-  if (r.q4_niveau_francais === "B1plus") score += 15;
-  else if (r.q4_niveau_francais === "A2") score += 10;
-  else score += 3; // A0/A1
-
-  // Secteur identifié
-  if (r.q6_secteur !== "nsp") score += 10;
-
-  // Contraintes
-  if (r.q7_contraintes.includes("aucune") || r.q7_contraintes.length === 0)
-    score += 10;
-  else if (r.q7_contraintes.length === 1) score += 5;
-
-  return Math.min(score, 100);
+  return calculateUnifiedLeadScore({
+    main_goal: r.q1_interet,
+    work_right: r.q2_droit_travailler === "oui" ? "yes" : r.q2_droit_travailler === "non" ? "no" : "unknown",
+    french_level_cecrl: r.q4_niveau_francais === "B1plus" ? "b1" : r.q4_niveau_francais === "A2" ? "a2" : "a1",
+    target_sector: r.q6_secteur !== "nsp" ? r.q6_secteur : undefined,
+  }).total;
 }
 
 function getScoreLabel(score: number): OrientationResult["scoreLabel"] {

@@ -1,3 +1,4 @@
+import { calculateUnifiedLeadScore } from "./leadScoring";
 // Decision tree for onboarding - structured questions with predefined choices
 // Refactored for 3-route orientation (FLE, OF Métiers, Employeurs)
 
@@ -1896,70 +1897,8 @@ export function getNextQuestion(
 
 // Calculate lead score (0-100)
 export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdown {
-  let completude = 0;
-  let fit = 0;
-  let reactivite = 0;
-
-  // Complétude (0-30 points)
-  if (answers.contact_email) completude += 5;
-  if (answers.contact_firstname && answers.contact_lastname) completude += 5;
-  if (answers.location) completude += 5;
-  if (answers.main_goal && answers.main_goal !== "need_help") completude += 5;
-  if (answers.french_level_cecrl) completude += 5;
-  if (answers.contact_48h === "yes") completude += 5;
-
-  // Fit (0-50 points)
-  const frenchLevel = answers.french_level_cecrl;
-  const mainGoal = answers.main_goal;
-  const workRight = answers.work_right;
-
-  // Match niveau langue avec prérequis
-  if (frenchLevel === "b1") fit += 15;
-  else if (frenchLevel === "a2") fit += 10;
-  else if (frenchLevel === "a1") fit += 5;
-  else if (frenchLevel === "alpha") fit += 2;
-
-  // Distance to job bonus/malus
-  const distanceToJob = calculateDistanceToJob(answers);
-  if (distanceToJob === 0) fit += 15;
-  else if (distanceToJob === 1) fit += 10;
-  else if (distanceToJob === 2) fit += 5;
-  else if (distanceToJob >= 3) fit -= 5;
-
-  // Worked in France bonus
-  if (answers.worked_in_france === "yes") fit += 10;
-  else if (answers.worked_in_france === "partial") fit += 5;
-
-  // Real comprehension bonus
-  if (answers.real_comprehension_score === "yes") fit += 5;
-
-  // Match zone géographique (si localisation fournie)
-  if (answers.location) fit += 10;
-
-  // Match secteur/compétences
-  if (answers.target_sector || answers.fle_type) fit += 10;
-
-  // Réactivité (0-20 points)
-  if (answers.contact_48h === "yes") reactivite += 10;
-  
-  // Session complète (si on a l'email, on considère que c'est complet)
-  if (answers.contact_email) reactivite += 10;
-
-  // Work right bonus for Route C
-  if (mainGoal === "find_job" && workRight === "yes") fit += 5;
-  // Cap at max values
-  completude = Math.min(completude, 30);
-  fit = Math.min(fit, 50);
-  reactivite = Math.min(reactivite, 20);
-
-  return {
-    completude,
-    fit,
-    reactivite,
-    total: completude + fit + reactivite,
-  };
+  return calculateUnifiedLeadScore(answers);
 }
-
 // Estimate total questions based on route
 export function estimateTotalQuestions(answers: OnboardingAnswers): number {
   // Base: location, main_goal, contact_48h, literacy, french_level_cecrl, work_right, barriers = 7

@@ -208,6 +208,12 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link to="/admin/pilotes">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                Vue pilotes
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link to="/admin/fle">
                 <Users className="mr-2 h-4 w-4" />
                 Suivi FLE

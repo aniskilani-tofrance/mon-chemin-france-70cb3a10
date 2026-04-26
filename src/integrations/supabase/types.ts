@@ -824,6 +824,10 @@ export type Database = {
           profile_id: string | null
           provider_id: string
           purchased_at: string | null
+          source_campaign: string | null
+          source_location_id: string | null
+          source_name: string | null
+          source_type: string | null
           status: Database["public"]["Enums"]["lead_status"]
           training_id: string | null
           updated_at: string
@@ -840,6 +844,10 @@ export type Database = {
           profile_id?: string | null
           provider_id: string
           purchased_at?: string | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           training_id?: string | null
           updated_at?: string
@@ -856,6 +864,10 @@ export type Database = {
           profile_id?: string | null
           provider_id?: string
           purchased_at?: string | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
           training_id?: string | null
           updated_at?: string
@@ -1036,6 +1048,10 @@ export type Database = {
           lead_score: number | null
           literacy: string | null
           main_goal: string | null
+          source_campaign: string | null
+          source_location_id: string | null
+          source_name: string | null
+          source_type: string | null
           target_sector: string | null
           user_id: string | null
           work_right: string | null
@@ -1054,6 +1070,10 @@ export type Database = {
           lead_score?: number | null
           literacy?: string | null
           main_goal?: string | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           target_sector?: string | null
           user_id?: string | null
           work_right?: string | null
@@ -1072,6 +1092,10 @@ export type Database = {
           lead_score?: number | null
           literacy?: string | null
           main_goal?: string | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           target_sector?: string | null
           user_id?: string | null
           work_right?: string | null
@@ -1151,6 +1175,10 @@ export type Database = {
           previous_job: string | null
           real_comprehension_score: string | null
           skills: string[] | null
+          source_campaign: string | null
+          source_location_id: string | null
+          source_name: string | null
+          source_type: string | null
           target_sector: string | null
           training_duration: string | null
           updated_at: string
@@ -1189,6 +1217,10 @@ export type Database = {
           previous_job?: string | null
           real_comprehension_score?: string | null
           skills?: string[] | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           target_sector?: string | null
           training_duration?: string | null
           updated_at?: string
@@ -1227,6 +1259,10 @@ export type Database = {
           previous_job?: string | null
           real_comprehension_score?: string | null
           skills?: string[] | null
+          source_campaign?: string | null
+          source_location_id?: string | null
+          source_name?: string | null
+          source_type?: string | null
           target_sector?: string | null
           training_duration?: string | null
           updated_at?: string
