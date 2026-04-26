@@ -21,6 +21,7 @@ import { AdminLeadsManager } from "@/components/AdminLeadsManager";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { AdminCheckpointAnalytics } from "@/components/AdminCheckpointAnalytics";
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
+import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
 
 interface Provider {
   id: string;
@@ -357,6 +358,10 @@ export default function AdminDashboard() {
 
         <div className="mt-10">
           <AdminMarianneCodes />
+        </div>
+
+        <div className="mt-10">
+          <AdminHubSpotSyncLogs />
         </div>
 
         <div className="mt-10">
