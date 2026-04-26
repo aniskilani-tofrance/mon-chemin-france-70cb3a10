@@ -817,6 +817,8 @@ export type Database = {
           contacted_at: string | null
           converted_at: string | null
           created_at: string
+          hubspot_contact_id: string | null
+          hubspot_deal_id: string | null
           id: string
           match_score: number | null
           notes: string | null
@@ -829,6 +831,9 @@ export type Database = {
           source_name: string | null
           source_type: string | null
           status: Database["public"]["Enums"]["lead_status"]
+          status_updated_at: string | null
+          status_updated_from: string | null
+          statut_lead: string | null
           training_id: string | null
           updated_at: string
         }
@@ -837,6 +842,8 @@ export type Database = {
           contacted_at?: string | null
           converted_at?: string | null
           created_at?: string
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           match_score?: number | null
           notes?: string | null
@@ -849,6 +856,9 @@ export type Database = {
           source_name?: string | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           training_id?: string | null
           updated_at?: string
         }
@@ -857,6 +867,8 @@ export type Database = {
           contacted_at?: string | null
           converted_at?: string | null
           created_at?: string
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           match_score?: number | null
           notes?: string | null
@@ -869,6 +881,9 @@ export type Database = {
           source_name?: string | null
           source_type?: string | null
           status?: Database["public"]["Enums"]["lead_status"]
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           training_id?: string | null
           updated_at?: string
         }
@@ -1042,6 +1057,8 @@ export type Database = {
           distance_to_job: number | null
           email: string | null
           french_level_cecrl: string | null
+          hubspot_contact_id: string | null
+          hubspot_deal_id: string | null
           id: string
           language: string
           lead_route: string | null
@@ -1052,6 +1069,9 @@ export type Database = {
           source_location_id: string | null
           source_name: string | null
           source_type: string | null
+          status_updated_at: string | null
+          status_updated_from: string | null
+          statut_lead: string | null
           target_sector: string | null
           user_id: string | null
           work_right: string | null
@@ -1064,6 +1084,8 @@ export type Database = {
           distance_to_job?: number | null
           email?: string | null
           french_level_cecrl?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           language?: string
           lead_route?: string | null
@@ -1074,6 +1096,9 @@ export type Database = {
           source_location_id?: string | null
           source_name?: string | null
           source_type?: string | null
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           target_sector?: string | null
           user_id?: string | null
           work_right?: string | null
@@ -1086,6 +1111,8 @@ export type Database = {
           distance_to_job?: number | null
           email?: string | null
           french_level_cecrl?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           language?: string
           lead_route?: string | null
@@ -1096,6 +1123,9 @@ export type Database = {
           source_location_id?: string | null
           source_name?: string | null
           source_type?: string | null
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           target_sector?: string | null
           user_id?: string | null
           work_right?: string | null
@@ -1160,6 +1190,8 @@ export type Database = {
           french_level_cecrl: string | null
           full_name: string | null
           funding_status: string | null
+          hubspot_contact_id: string | null
+          hubspot_deal_id: string | null
           id: string
           immediate_availability: boolean | null
           last_name: string | null
@@ -1179,6 +1211,9 @@ export type Database = {
           source_location_id: string | null
           source_name: string | null
           source_type: string | null
+          status_updated_at: string | null
+          status_updated_from: string | null
+          statut_lead: string | null
           target_sector: string | null
           training_duration: string | null
           updated_at: string
@@ -1202,6 +1237,8 @@ export type Database = {
           french_level_cecrl?: string | null
           full_name?: string | null
           funding_status?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           immediate_availability?: boolean | null
           last_name?: string | null
@@ -1221,6 +1258,9 @@ export type Database = {
           source_location_id?: string | null
           source_name?: string | null
           source_type?: string | null
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           target_sector?: string | null
           training_duration?: string | null
           updated_at?: string
@@ -1244,6 +1284,8 @@ export type Database = {
           french_level_cecrl?: string | null
           full_name?: string | null
           funding_status?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
           id?: string
           immediate_availability?: boolean | null
           last_name?: string | null
@@ -1263,6 +1305,9 @@ export type Database = {
           source_location_id?: string | null
           source_name?: string | null
           source_type?: string | null
+          status_updated_at?: string | null
+          status_updated_from?: string | null
+          statut_lead?: string | null
           target_sector?: string | null
           training_duration?: string | null
           updated_at?: string
@@ -1356,6 +1401,69 @@ export type Database = {
           notes?: string | null
           status?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      sync_logs: {
+        Row: {
+          conflict_resolution: string | null
+          created_at: string
+          diagnostic_id: string | null
+          direction: string
+          entity_type: string
+          error_message: string | null
+          hubspot_contact_id: string | null
+          hubspot_deal_id: string | null
+          hubspot_dealstage: string | null
+          id: string
+          lead_id: string | null
+          new_status: string
+          payload_summary: Json
+          previous_status: string | null
+          profile_id: string | null
+          source_system: string
+          status: string
+          target_system: string
+        }
+        Insert: {
+          conflict_resolution?: string | null
+          created_at?: string
+          diagnostic_id?: string | null
+          direction: string
+          entity_type?: string
+          error_message?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
+          hubspot_dealstage?: string | null
+          id?: string
+          lead_id?: string | null
+          new_status: string
+          payload_summary?: Json
+          previous_status?: string | null
+          profile_id?: string | null
+          source_system: string
+          status?: string
+          target_system: string
+        }
+        Update: {
+          conflict_resolution?: string | null
+          created_at?: string
+          diagnostic_id?: string | null
+          direction?: string
+          entity_type?: string
+          error_message?: string | null
+          hubspot_contact_id?: string | null
+          hubspot_deal_id?: string | null
+          hubspot_dealstage?: string | null
+          id?: string
+          lead_id?: string | null
+          new_status?: string
+          payload_summary?: Json
+          previous_status?: string | null
+          profile_id?: string | null
+          source_system?: string
+          status?: string
+          target_system?: string
         }
         Relationships: []
       }
