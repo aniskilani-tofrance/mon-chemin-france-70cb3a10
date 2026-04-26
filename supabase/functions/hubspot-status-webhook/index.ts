@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { normalizeToFranceStatus } from "../_shared/hubspot-status.ts";
+import { notifySlackLeadStatusChange } from "../_shared/slack-notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -45,7 +46,7 @@ async function logSync(supabaseAdmin: any, entry: Record<string, unknown>) {
 }
 
 async function updateLocalStatus(supabaseAdmin: any, contactId: string, newStatus: string, payload: Record<string, unknown>) {
-  const contact = await hubspot(`/crm/v3/objects/contacts/${contactId}?properties=diagnostic_id,statut_lead&associations=deals`);
+  const contact = await hubspot(`/crm/v3/objects/contacts/${contactId}?properties=diagnostic_id,statut_lead,firstname,email,phone,source_location,route_orientation&associations=deals`);
   const diagnosticId = contact?.properties?.diagnostic_id || null;
   const hubspotStatus = contact?.properties?.statut_lead || newStatus;
   const normalizedStatus = normalizeToFranceStatus(hubspotStatus);
@@ -88,6 +89,24 @@ async function updateLocalStatus(supabaseAdmin: any, contactId: string, newStatu
     status: "success",
     payload_summary: { hubspot_status: hubspotStatus, webhook: payload },
   });
+
+  try {
+    await notifySlackLeadStatusChange({
+      source: "HubSpot",
+      previousStatus,
+      newStatus: normalizedStatus,
+      contactId,
+      dealId,
+      diagnosticId,
+      firstname: contact?.properties?.firstname,
+      email: contact?.properties?.email,
+      phone: contact?.properties?.phone,
+      sourceLocation: contact?.properties?.source_location,
+      routeOrientation: contact?.properties?.route_orientation,
+    });
+  } catch (error) {
+    console.error("Slack lead status notification failed:", error instanceof Error ? error.message : error);
+  }
 
   return { diagnosticId, contactId, dealId, status: normalizedStatus };
 }
