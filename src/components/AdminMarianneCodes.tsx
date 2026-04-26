@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { CalendarPlus, KeyRound, Loader2, Plus, RefreshCw } from "lucide-react";
+import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 
 type MarianneAccessCode = {
   id: string;
@@ -50,7 +51,7 @@ function formatDate(value: string | null) {
 }
 
 function normalizeCode(value: string) {
-  return value.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 12);
+  return normalizeMarianneAccessCode(value).slice(0, 12);
 }
 
 export function AdminMarianneCodes() {

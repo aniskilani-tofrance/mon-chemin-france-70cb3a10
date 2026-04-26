@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 
 export function AccessCodeSection() {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ export function AccessCodeSection() {
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
-    const cleaned = code.trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+    const cleaned = normalizeMarianneAccessCode(code);
     if (cleaned.length < 4 || cleaned.length > 12) {
       toast.error("Le code doit contenir entre 4 et 12 caractères");
       return;
@@ -64,9 +65,9 @@ export function AccessCodeSection() {
                 </label>
                 <Input
                   value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase())}
+                  onChange={(e) => setCode(normalizeMarianneAccessCode(e.target.value).slice(0, 12))}
                   placeholder="EX : A2B4D6"
-                  maxLength={8}
+                  maxLength={16}
                   className="font-mono text-lg tracking-widest uppercase"
                   autoComplete="off"
                 />
