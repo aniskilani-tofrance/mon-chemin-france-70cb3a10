@@ -24,7 +24,7 @@ import { LanguageCode } from "@/lib/translations";
 import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
 import { computeOrientation } from "@/lib/orientationEngine";
 import { calculateUnifiedLeadScore } from "@/lib/leadScoring";
-import { resolveLeadSource } from "@/lib/leadSources";
+import { getLeadSourcePrefill, resolveLeadSource } from "@/lib/leadSources";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
@@ -72,6 +72,7 @@ const Onboarding = () => {
     return initialCode && sessionStorage.getItem(`marianne_access_granted_${initialCode}`) === "true" ? "granted" : "checking";
   });
   const resumeAttemptedRef = useRef(false);
+  const prefillAppliedRef = useRef<string | null>(null);
 
   const isRTL = language === "ar";
   const soundText = SOUND_TEXT[language] || SOUND_TEXT.fr;
@@ -181,6 +182,18 @@ const Onboarding = () => {
     [saveCheckpoint, language]
   );
 
+  useEffect(() => {
+    if (leadSource.slug === "tofrance" || prefillAppliedRef.current === leadSource.slug) return;
+    prefillAppliedRef.current = leadSource.slug;
+    const prefilled = getLeadSourcePrefill(leadSource);
+    setAnswers((current) => {
+      const next = { ...prefilled, ...current } as VisualAnswers;
+      persistCheckpoint("language", next);
+      return next;
+    });
+    track("onboarding_source_prefilled", { source: leadSource.slug, location: leadSource.name }, "/onboarding", language);
+  }, [leadSource, persistCheckpoint, track, language]);
+
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
@@ -274,6 +287,7 @@ const Onboarding = () => {
       setIsSubmitting(true);
 
       const flat: Record<string, any> = {
+        ...getLeadSourcePrefill(leadSource),
         ...answers,
         postal_code: postalCode,
         source_location_id: leadSource.id,
