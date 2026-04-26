@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/mod.ts";
-import { calculateQualificationScore } from "./index.ts";
+import { calculateQualificationScore } from "../_shared/hubspot-score.ts";
 
 Deno.test("calculateQualificationScore returns 100 for a fully qualified lead", () => {
   assertEquals(calculateQualificationScore({

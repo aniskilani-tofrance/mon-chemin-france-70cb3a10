@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendOutlookMail } from "../_shared/outlook-mail.ts";
+import { calculateQualificationScore } from "../_shared/hubspot-score.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -50,22 +51,6 @@ const boolish = (value: unknown): boolean => {
   const normalized = String(value ?? "").trim().toLowerCase();
   return ["true", "yes", "oui", "1", "whatsapp"].includes(normalized);
 };
-
-export function calculateQualificationScore(input: {
-  phone?: unknown;
-  consentement_rappel?: unknown;
-  consentement_transmission?: unknown;
-  besoin_principal?: unknown;
-  niveau_francais?: unknown;
-}) {
-  let score = 0;
-  if (text(input.phone)) score += 30;
-  if (boolish(input.consentement_rappel)) score += 20;
-  if (boolish(input.consentement_transmission)) score += 20;
-  if (text(input.besoin_principal)) score += 20;
-  if (text(input.niveau_francais)) score += 10;
-  return Math.min(score, 100);
-}
 
 async function hubspot(path: string, init: RequestInit = {}) {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
