@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Download, Printer, RefreshCcw, Users, MapPin, Target, PhoneCall, ClipboardCheck } from "lucide-react";
+import { Download, Loader2, MapPin, PhoneCall, Printer, RefreshCcw, Route, Target, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -12,51 +12,134 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
 
-type PilotDiagnostic = {
+const QUALIFIED_SCORE = 70;
+
+type SourceFields = {
+  source_location_id: string | null;
+  source_name: string | null;
+  source_type: string | null;
+  source_campaign: string | null;
+};
+
+type PilotDiagnostic = SourceFields & {
   id: string;
   created_at: string;
   email: string | null;
   language: string;
   lead_route: string | null;
   lead_score: number | null;
-  source_location_id: string | null;
-  source_name: string | null;
-  source_type: string | null;
-  source_campaign: string | null;
-  answers: Record<string, unknown>;
+  statut_lead: string | null;
+  first_name: string | null;
+  phone: string | null;
+  answers: Record<string, unknown> | null;
 };
 
-type PilotLead = {
+type PilotProfile = SourceFields & {
   id: string;
-  status: string;
-  match_score: number | null;
-  source_location_id: string | null;
   created_at: string;
+  email: string | null;
+  first_name: string | null;
+  full_name: string | null;
+  phone: string | null;
+  lead_route: string | null;
+  lead_score: number | null;
+  statut_lead: string | null;
+};
+
+type PilotLead = SourceFields & {
+  id: string;
+  created_at: string;
+  status: string | null;
+  statut_lead: string | null;
+  match_score: number | null;
+  first_name: string | null;
+  phone: string | null;
+};
+
+type PilotRow = {
+  kind: "Diagnostic" | "Profil" | "Orientation";
+  id: string;
+  createdAt: string;
+  sourceId: string;
+  sourceName: string;
+  sourceType: string;
+  sourceCampaign: string;
+  firstName: string;
+  phone: string;
+  email: string;
+  route: string;
+  score: number | null;
+  status: string;
+};
+
+type SourceStat = {
+  id: string;
+  name: string;
+  type: string;
+  campaign: string;
+  diagnostics: number;
+  qualifiedProfiles: number;
+  orientations: number;
+  contactable: number;
+  scoreTotal: number;
+  scoreCount: number;
+  routes: Record<string, number>;
+  statuses: Record<string, number>;
 };
 
 const csvEscape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-const sourceLabel = (row: PilotDiagnostic) => row.source_name || row.source_location_id || "ToFrance";
-const sourceId = (row: PilotDiagnostic) => row.source_location_id || "tofrance";
-const isQualified = (score: number | null) => (score ?? 0) >= 70;
+const sourceId = (row: SourceFields) => row.source_location_id || "tofrance";
+const sourceLabel = (row: SourceFields) => row.source_name || row.source_location_id || "ToFrance";
+const sourceType = (row: SourceFields) => row.source_type || "direct";
+const sourceCampaign = (row: SourceFields) => row.source_campaign || "organique";
+const isQualified = (score: number | null) => (score ?? 0) >= QUALIFIED_SCORE;
+const answerText = (answers: Record<string, unknown> | null, key: string) => String(answers?.[key] || "");
+
+function addCount(target: Record<string, number>, key?: string | null) {
+  const label = key?.trim() || "Non défini";
+  target[label] = (target[label] || 0) + 1;
+}
+
+function mergeSourceOption(rows: SourceFields[]) {
+  return Array.from(new Map(rows.map((row) => [sourceId(row), sourceLabel(row)])).entries()).sort((a, b) => a[1].localeCompare(b[1]));
+}
 
 export default function AdminPilotes() {
   const { toast } = useToast();
   const [diagnostics, setDiagnostics] = useState<PilotDiagnostic[]>([]);
+  const [profiles, setProfiles] = useState<PilotProfile[]>([]);
   const [leads, setLeads] = useState<PilotLead[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({ source: "all", campaign: "all", route: "all", date: "" });
+  const [filters, setFilters] = useState({ source: "all", type: "all", campaign: "all", route: "all", status: "all", date: "" });
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [{ data: diagnosticRows, error: diagnosticsError }, { data: leadRows, error: leadsError }] = await Promise.all([
-        (supabase as any).from("onboarding_results").select("id, created_at, email, language, lead_route, lead_score, source_location_id, source_name, source_type, source_campaign, answers").order("created_at", { ascending: false }).limit(1000),
-        (supabase as any).from("leads").select("id, status, match_score, source_location_id, created_at").order("created_at", { ascending: false }).limit(1000),
+      const [diagnosticResult, profileResult, leadResult] = await Promise.all([
+        (supabase as any)
+          .from("onboarding_results")
+          .select("id, created_at, email, language, lead_route, lead_score, statut_lead, first_name, phone, source_location_id, source_name, source_type, source_campaign, answers")
+          .order("created_at", { ascending: false })
+          .limit(1000),
+        (supabase as any)
+          .from("profiles")
+          .select("id, created_at, email, first_name, full_name, phone, lead_route, lead_score, statut_lead, source_location_id, source_name, source_type, source_campaign")
+          .order("created_at", { ascending: false })
+          .limit(1000),
+        (supabase as any)
+          .from("leads")
+          .select("id, created_at, status, statut_lead, match_score, first_name, phone, source_location_id, source_name, source_type, source_campaign")
+          .order("created_at", { ascending: false })
+          .limit(1000),
       ]);
-      if (diagnosticsError) throw diagnosticsError;
-      if (leadsError) throw leadsError;
-      setDiagnostics((diagnosticRows || []) as PilotDiagnostic[]);
-      setLeads((leadRows || []) as PilotLead[]);
+
+      if (diagnosticResult.error) throw diagnosticResult.error;
+      if (profileResult.error) throw profileResult.error;
+      if (leadResult.error) throw leadResult.error;
+
+      setDiagnostics((diagnosticResult.data || []) as PilotDiagnostic[]);
+      setProfiles((profileResult.data || []) as PilotProfile[]);
+      setLeads((leadResult.data || []) as PilotLead[]);
     } catch (error) {
       toast({ variant: "destructive", title: "Chargement impossible", description: error instanceof Error ? error.message : "Erreur inconnue" });
     } finally {
@@ -68,49 +151,121 @@ export default function AdminPilotes() {
     fetchData();
   }, []);
 
-  const filteredDiagnostics = useMemo(() => diagnostics.filter((row) => {
-    const matchesSource = filters.source === "all" || sourceId(row) === filters.source;
-    const matchesCampaign = filters.campaign === "all" || (row.source_campaign || "") === filters.campaign;
-    const matchesRoute = filters.route === "all" || (row.lead_route || "") === filters.route;
-    const matchesDate = !filters.date || row.created_at.slice(0, 10) === filters.date;
-    return matchesSource && matchesCampaign && matchesRoute && matchesDate;
-  }), [diagnostics, filters]);
+  const rows = useMemo<PilotRow[]>(() => {
+    const diagnosticRows = diagnostics.map((row) => ({
+      kind: "Diagnostic" as const,
+      id: row.id,
+      createdAt: row.created_at,
+      sourceId: sourceId(row),
+      sourceName: sourceLabel(row),
+      sourceType: sourceType(row),
+      sourceCampaign: sourceCampaign(row),
+      firstName: row.first_name || answerText(row.answers, "contact_firstname"),
+      phone: row.phone || answerText(row.answers, "contact_phone"),
+      email: row.email || "",
+      route: row.lead_route || "",
+      score: row.lead_score,
+      status: row.statut_lead || "Diagnostic complété",
+    }));
 
-  const sourceOptions = useMemo(() => Array.from(new Map(diagnostics.map((row) => [sourceId(row), sourceLabel(row)])).entries()), [diagnostics]);
-  const campaignOptions = useMemo(() => Array.from(new Set(diagnostics.map((row) => row.source_campaign).filter(Boolean))) as string[], [diagnostics]);
-  const routeOptions = useMemo(() => Array.from(new Set(diagnostics.map((row) => row.lead_route).filter(Boolean))) as string[], [diagnostics]);
+    const profileRows = profiles.map((row) => ({
+      kind: "Profil" as const,
+      id: row.id,
+      createdAt: row.created_at,
+      sourceId: sourceId(row),
+      sourceName: sourceLabel(row),
+      sourceType: sourceType(row),
+      sourceCampaign: sourceCampaign(row),
+      firstName: row.first_name || row.full_name || "",
+      phone: row.phone || "",
+      email: row.email || "",
+      route: row.lead_route || "",
+      score: row.lead_score,
+      status: row.statut_lead || "Profil créé",
+    }));
 
-  const sourceStats = useMemo(() => {
-    const grouped = new Map<string, { name: string; diagnostics: number; qualified: number; phone: number; scoreTotal: number; orientations: Record<string, number>; statuses: Record<string, number> }>();
-    for (const row of filteredDiagnostics) {
-      const id = sourceId(row);
-      const stat = grouped.get(id) || { name: sourceLabel(row), diagnostics: 0, qualified: 0, phone: 0, scoreTotal: 0, orientations: {}, statuses: {} };
-      stat.diagnostics += 1;
-      stat.qualified += isQualified(row.lead_score) ? 1 : 0;
-      stat.phone += row.answers?.contact_phone ? 1 : 0;
-      stat.scoreTotal += row.lead_score || 0;
-      const route = row.lead_route || "Non défini";
-      stat.orientations[route] = (stat.orientations[route] || 0) + 1;
-      const relatedStatuses = leads.filter((lead) => (lead.source_location_id || "tofrance") === id).map((lead) => lead.status);
-      for (const status of relatedStatuses.length ? relatedStatuses : ["diagnostic"]) stat.statuses[status] = (stat.statuses[status] || 0) + 1;
-      grouped.set(id, stat);
+    const leadRows = leads.map((row) => ({
+      kind: "Orientation" as const,
+      id: row.id,
+      createdAt: row.created_at,
+      sourceId: sourceId(row),
+      sourceName: sourceLabel(row),
+      sourceType: sourceType(row),
+      sourceCampaign: sourceCampaign(row),
+      firstName: row.first_name || "",
+      phone: row.phone || "",
+      email: "",
+      route: "Orientation partenaire",
+      score: row.match_score,
+      status: row.statut_lead || row.status || "Orientation créée",
+    }));
+
+    return [...diagnosticRows, ...profileRows, ...leadRows].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  }, [diagnostics, profiles, leads]);
+
+  const filteredRows = useMemo(() => rows.filter((row) => {
+    const matchesSource = filters.source === "all" || row.sourceId === filters.source;
+    const matchesType = filters.type === "all" || row.sourceType === filters.type;
+    const matchesCampaign = filters.campaign === "all" || row.sourceCampaign === filters.campaign;
+    const matchesRoute = filters.route === "all" || row.route === filters.route;
+    const matchesStatus = filters.status === "all" || row.status === filters.status;
+    const matchesDate = !filters.date || row.createdAt.slice(0, 10) === filters.date;
+    return matchesSource && matchesType && matchesCampaign && matchesRoute && matchesStatus && matchesDate;
+  }), [rows, filters]);
+
+  const sourceOptions = useMemo(() => mergeSourceOption([...diagnostics, ...profiles, ...leads]), [diagnostics, profiles, leads]);
+  const typeOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.sourceType).filter(Boolean))).sort(), [rows]);
+  const campaignOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.sourceCampaign).filter(Boolean))).sort(), [rows]);
+  const routeOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.route).filter(Boolean))).sort(), [rows]);
+  const statusOptions = useMemo(() => Array.from(new Set(rows.map((row) => row.status).filter(Boolean))).sort(), [rows]);
+
+  const stats = useMemo(() => {
+    const grouped = new Map<string, SourceStat>();
+    for (const row of filteredRows) {
+      const stat = grouped.get(row.sourceId) || {
+        id: row.sourceId,
+        name: row.sourceName,
+        type: row.sourceType,
+        campaign: row.sourceCampaign,
+        diagnostics: 0,
+        qualifiedProfiles: 0,
+        orientations: 0,
+        contactable: 0,
+        scoreTotal: 0,
+        scoreCount: 0,
+        routes: {},
+        statuses: {},
+      };
+
+      if (row.kind === "Diagnostic") stat.diagnostics += 1;
+      if (row.kind === "Profil" && isQualified(row.score)) stat.qualifiedProfiles += 1;
+      if (row.kind === "Orientation") stat.orientations += 1;
+      if (row.phone) stat.contactable += 1;
+      if (typeof row.score === "number") {
+        stat.scoreTotal += row.score;
+        stat.scoreCount += 1;
+      }
+      addCount(stat.routes, row.route);
+      addCount(stat.statuses, row.status);
+      grouped.set(row.sourceId, stat);
     }
-    return Array.from(grouped.entries()).map(([id, stat]) => ({ id, ...stat, scoreAvg: stat.diagnostics ? Math.round(stat.scoreTotal / stat.diagnostics) : 0 }));
-  }, [filteredDiagnostics, leads]);
+    return Array.from(grouped.values()).map((stat) => ({ ...stat, scoreAvg: stat.scoreCount ? Math.round(stat.scoreTotal / stat.scoreCount) : 0 }));
+  }, [filteredRows]);
 
   const totals = useMemo(() => {
-    const diagnosticsCount = filteredDiagnostics.length;
-    const qualified = filteredDiagnostics.filter((row) => isQualified(row.lead_score)).length;
-    const phone = filteredDiagnostics.filter((row) => row.answers?.contact_phone).length;
-    const orientations = new Set(filteredDiagnostics.map((row) => row.lead_route).filter(Boolean)).size;
-    const scoreAvg = diagnosticsCount ? Math.round(filteredDiagnostics.reduce((sum, row) => sum + (row.lead_score || 0), 0) / diagnosticsCount) : 0;
-    return { diagnosticsCount, qualified, phoneRate: diagnosticsCount ? Math.round((phone / diagnosticsCount) * 100) : 0, orientations, scoreAvg };
-  }, [filteredDiagnostics]);
+    const diagnosticsCount = filteredRows.filter((row) => row.kind === "Diagnostic").length;
+    const qualifiedProfiles = filteredRows.filter((row) => row.kind === "Profil" && isQualified(row.score)).length;
+    const orientations = filteredRows.filter((row) => row.kind === "Orientation").length;
+    const contactable = filteredRows.filter((row) => row.phone).length;
+    const scoredRows = filteredRows.filter((row) => typeof row.score === "number");
+    const scoreAvg = scoredRows.length ? Math.round(scoredRows.reduce((sum, row) => sum + (row.score || 0), 0) / scoredRows.length) : 0;
+    return { diagnosticsCount, qualifiedProfiles, orientations, contactRate: filteredRows.length ? Math.round((contactable / filteredRows.length) * 100) : 0, scoreAvg };
+  }, [filteredRows]);
 
   const exportCsv = () => {
-    const headers = ["Date", "Lieu", "Campagne", "Type", "Prénom", "Téléphone", "Email", "Route", "Score", "Langue"];
-    const rows = filteredDiagnostics.map((row) => [row.created_at.slice(0, 10), sourceLabel(row), row.source_campaign, row.source_type, row.answers?.contact_firstname, row.answers?.contact_phone, row.email, row.lead_route, row.lead_score, row.language]);
-    const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
+    const headers = ["Type", "Date", "Lieu", "Source ID", "Type source", "Campagne", "Prénom", "Téléphone", "Email", "Orientation", "Score", "Statut", "ID"];
+    const csvRows = filteredRows.map((row) => [row.kind, row.createdAt.slice(0, 10), row.sourceName, row.sourceId, row.sourceType, row.sourceCampaign, row.firstName, row.phone, row.email, row.route, row.score ?? "", row.status, row.id]);
+    const csv = [headers, ...csvRows].map((row) => row.map(csvEscape).join(",")).join("\n");
     const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
@@ -125,23 +280,32 @@ export default function AdminPilotes() {
       <SEO title="Admin pilotes — ToFrance" description="Pilotage des diagnostics par lieu ToFrance" path="/admin/pilotes" />
       <Header />
       <main className="container mx-auto px-4 py-24 print:py-6">
+        <div className="mb-8 hidden print:block">
+          <h1 className="text-2xl font-bold text-foreground">Bilan pilotes ToFrance</h1>
+          <p className="text-sm text-muted-foreground">Édité le {new Date().toLocaleDateString("fr-FR")} · {filteredRows.length} ligne{filteredRows.length > 1 ? "s" : ""}</p>
+        </div>
+
         <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between print:hidden">
           <div>
             <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground"><MapPin className="h-8 w-8 text-primary" />Vue pilotes</h1>
-            <p className="mt-1 text-muted-foreground">Diagnostics, orientations et statuts par lieu source.</p>
+            <p className="mt-1 text-muted-foreground">Diagnostics, profils qualifiés, orientations et statuts par lieu source.</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild><Link to="/admin">Admin</Link></Button>
             <Button variant="outline" onClick={fetchData} disabled={loading}><RefreshCcw className="mr-2 h-4 w-4" />Actualiser</Button>
-            <Button variant="outline" onClick={() => window.print()}><Printer className="mr-2 h-4 w-4" />Bilan imprimable</Button>
-            <Button onClick={exportCsv} disabled={!filteredDiagnostics.length}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
+            <Button variant="outline" onClick={() => window.print()} disabled={!filteredRows.length}><Printer className="mr-2 h-4 w-4" />Bilan imprimable</Button>
+            <Button onClick={exportCsv} disabled={!filteredRows.length}><Download className="mr-2 h-4 w-4" />Export CSV</Button>
           </div>
         </div>
 
-        <div className="mb-6 grid gap-3 md:grid-cols-4 print:hidden">
+        <div className="mb-6 grid gap-3 md:grid-cols-2 xl:grid-cols-6 print:hidden">
           <Select value={filters.source} onValueChange={(source) => setFilters((current) => ({ ...current, source }))}>
             <SelectTrigger><SelectValue placeholder="Lieu source" /></SelectTrigger>
             <SelectContent><SelectItem value="all">Tous les lieux</SelectItem>{sourceOptions.map(([id, label]) => <SelectItem key={id} value={id}>{label}</SelectItem>)}</SelectContent>
+          </Select>
+          <Select value={filters.type} onValueChange={(type) => setFilters((current) => ({ ...current, type }))}>
+            <SelectTrigger><SelectValue placeholder="Type source" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">Tous les types</SelectItem>{typeOptions.map((type) => <SelectItem key={type} value={type}>{type}</SelectItem>)}</SelectContent>
           </Select>
           <Select value={filters.campaign} onValueChange={(campaign) => setFilters((current) => ({ ...current, campaign }))}>
             <SelectTrigger><SelectValue placeholder="Campagne" /></SelectTrigger>
@@ -151,34 +315,74 @@ export default function AdminPilotes() {
             <SelectTrigger><SelectValue placeholder="Orientation" /></SelectTrigger>
             <SelectContent><SelectItem value="all">Toutes orientations</SelectItem>{routeOptions.map((route) => <SelectItem key={route} value={route}>{route}</SelectItem>)}</SelectContent>
           </Select>
+          <Select value={filters.status} onValueChange={(status) => setFilters((current) => ({ ...current, status }))}>
+            <SelectTrigger><SelectValue placeholder="Statut" /></SelectTrigger>
+            <SelectContent><SelectItem value="all">Tous les statuts</SelectItem>{statusOptions.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}</SelectContent>
+          </Select>
           <Input type="date" value={filters.date} onChange={(event) => setFilters((current) => ({ ...current, date: event.target.value }))} />
         </div>
 
         <section className="mb-6 grid gap-4 md:grid-cols-2 xl:grid-cols-5">
-          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><ClipboardCheck className="h-4 w-4" />Diagnostics</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.diagnosticsCount}</CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Target className="h-4 w-4" />Qualifiés</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.qualified}</CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><PhoneCall className="h-4 w-4" />Contactables</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.phoneRate}%</CardContent></Card>
-          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Users className="h-4 w-4" />Orientations</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.orientations}</CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Users className="h-4 w-4" />Diagnostics</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.diagnosticsCount}</CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Target className="h-4 w-4" />Profils qualifiés</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.qualifiedProfiles}</CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><Route className="h-4 w-4" />Orientations</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.orientations}</CardContent></Card>
+          <Card><CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-sm"><PhoneCall className="h-4 w-4" />Contactables</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.contactRate}%</CardContent></Card>
           <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Score moyen</CardTitle></CardHeader><CardContent className="text-3xl font-bold">{totals.scoreAvg}/100</CardContent></Card>
         </section>
 
         <Card className="mb-6">
-          <CardHeader><CardTitle>Diagnostics par lieu</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Indicateurs par lieu/source</CardTitle></CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader><TableRow><TableHead>Lieu</TableHead><TableHead>Diagnostics</TableHead><TableHead>Qualifiés</TableHead><TableHead>Score moyen</TableHead><TableHead>Orientations</TableHead><TableHead>Statuts</TableHead></TableRow></TableHeader>
-              <TableBody>{sourceStats.map((stat) => <TableRow key={stat.id}><TableCell className="font-medium">{stat.name}</TableCell><TableCell>{stat.diagnostics}</TableCell><TableCell>{stat.qualified}</TableCell><TableCell>{stat.scoreAvg}/100</TableCell><TableCell className="space-x-1">{Object.entries(stat.orientations).map(([route, count]) => <Badge key={route} variant="outline">{route}: {count}</Badge>)}</TableCell><TableCell className="space-x-1">{Object.entries(stat.statuses).map(([status, count]) => <Badge key={status} variant="secondary">{status}: {count}</Badge>)}</TableCell></TableRow>)}</TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow><TableHead>Lieu</TableHead><TableHead>Diagnostics</TableHead><TableHead>Profils qualifiés</TableHead><TableHead>Orientations</TableHead><TableHead>Score moyen</TableHead><TableHead>Statuts</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" /></TableCell></TableRow>
+                  ) : stats.length === 0 ? (
+                    <TableRow><TableCell colSpan={6} className="py-10 text-center text-muted-foreground">Aucune donnée pilote trouvée</TableCell></TableRow>
+                  ) : stats.map((stat) => (
+                    <TableRow key={stat.id}>
+                      <TableCell className="font-medium"><div>{stat.name}</div><div className="text-xs text-muted-foreground">{stat.type} · {stat.campaign}</div></TableCell>
+                      <TableCell>{stat.diagnostics}</TableCell>
+                      <TableCell>{stat.qualifiedProfiles}</TableCell>
+                      <TableCell>{stat.orientations}</TableCell>
+                      <TableCell>{stat.scoreAvg}/100</TableCell>
+                      <TableCell><div className="flex max-w-xl flex-wrap gap-1">{Object.entries(stat.statuses).map(([status, count]) => <Badge key={status} variant="secondary">{status}: {count}</Badge>)}</div></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader><CardTitle>Détail des diagnostics</CardTitle></CardHeader>
+          <CardHeader><CardTitle>Détail exportable</CardTitle></CardHeader>
           <CardContent className="p-0">
-            <Table>
-              <TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Prénom</TableHead><TableHead>Téléphone</TableHead><TableHead>Lieu</TableHead><TableHead>Orientation</TableHead><TableHead>Score</TableHead><TableHead>Langue</TableHead></TableRow></TableHeader>
-              <TableBody>{filteredDiagnostics.map((row) => <TableRow key={row.id}><TableCell>{new Date(row.created_at).toLocaleDateString("fr-FR")}</TableCell><TableCell>{String(row.answers?.contact_firstname || "—")}</TableCell><TableCell>{String(row.answers?.contact_phone || "—")}</TableCell><TableCell>{sourceLabel(row)}</TableCell><TableCell>{row.lead_route || "—"}</TableCell><TableCell><Badge variant={isQualified(row.lead_score) ? "default" : "outline"}>{row.lead_score ?? 0}/100</Badge></TableCell><TableCell>{row.language}</TableCell></TableRow>)}</TableBody>
-            </Table>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader><TableRow><TableHead>Type</TableHead><TableHead>Date</TableHead><TableHead>Lieu</TableHead><TableHead>Prénom</TableHead><TableHead>Téléphone</TableHead><TableHead>Orientation</TableHead><TableHead>Score</TableHead><TableHead>Statut</TableHead></TableRow></TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow><TableCell colSpan={8} className="py-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" /></TableCell></TableRow>
+                  ) : filteredRows.length === 0 ? (
+                    <TableRow><TableCell colSpan={8} className="py-10 text-center text-muted-foreground">Aucune ligne ne correspond aux filtres</TableCell></TableRow>
+                  ) : filteredRows.map((row) => (
+                    <TableRow key={`${row.kind}-${row.id}`}>
+                      <TableCell><Badge variant="outline">{row.kind}</Badge></TableCell>
+                      <TableCell>{new Date(row.createdAt).toLocaleDateString("fr-FR")}</TableCell>
+                      <TableCell>{row.sourceName}</TableCell>
+                      <TableCell>{row.firstName || "—"}</TableCell>
+                      <TableCell>{row.phone || "—"}</TableCell>
+                      <TableCell>{row.route || "—"}</TableCell>
+                      <TableCell><Badge variant={isQualified(row.score) ? "default" : "outline"}>{row.score ?? 0}/100</Badge></TableCell>
+                      <TableCell>{row.status}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
       </main>
