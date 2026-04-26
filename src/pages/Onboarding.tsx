@@ -11,6 +11,7 @@ import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
 import { VisualRecapStep } from "@/components/VisualOnboarding/VisualRecapStep";
 import { PostalCodeStep } from "@/components/VisualOnboarding/PostalCodeStep";
+import { ContactStep } from "@/components/VisualOnboarding/ContactStep";
 import { EmailStep } from "@/components/VisualOnboarding/EmailStep";
 import { MagicLinkSentStep } from "@/components/VisualOnboarding/MagicLinkSentStep";
 import { useLanguage } from "@/hooks/useLanguage";
@@ -22,11 +23,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
 import { computeOrientation } from "@/lib/orientationEngine";
+import { calculateUnifiedLeadScore } from "@/lib/leadScoring";
+import { resolveLeadSource } from "@/lib/leadSources";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "email" | "magic-link-sent" | "complete";
+type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "contact" | "email" | "magic-link-sent" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
@@ -78,7 +81,8 @@ const Onboarding = () => {
     () => VISUAL_QUESTIONS.filter((q) => !q.showIf || q.showIf(answers)),
     [answers]
   );
-  const totalSteps = activeQuestions.length + 2; // + postal + email
+  const totalSteps = activeQuestions.length + 3; // + postal + contact + email
+  const leadSource = useMemo(() => resolveLeadSource(searchParams.get("source")), [searchParams]);
 
   // ─── Reprise via ?resume=1 ou utilisateur connecté ──────────
   useEffect(() => {
@@ -117,8 +121,10 @@ const Onboarding = () => {
       let resolvedStep: OnboardingStep = "visual-quiz";
       let resolvedIdx = 0;
 
-      if (cs === "email" || (partial.postal_code && partial.contact_email)) {
+      if (cs === "email" || (partial.postal_code && partial.contact_firstname && partial.contact_phone)) {
         resolvedStep = "email";
+      } else if (cs === "contact" || (partial.postal_code && (!partial.contact_firstname || !partial.contact_phone))) {
+        resolvedStep = "contact";
       } else if (cs === "postal-code" || (lastAnsweredIdx === activeQuestions.length - 1 && !partial.postal_code)) {
         resolvedStep = "postal-code";
       } else {
@@ -225,6 +231,10 @@ const Onboarding = () => {
 
   const handlePrevious = () => {
     if (step === "email") {
+      setStep("contact");
+      return;
+    }
+    if (step === "contact") {
       setStep("postal-code");
       return;
     }
@@ -248,6 +258,13 @@ const Onboarding = () => {
     setPostalCode(code);
     const next = { ...answers, postal_code: code };
     setAnswers(next);
+    persistCheckpoint("contact", next);
+    setStep("contact");
+  };
+
+  const handleContactSubmit = (data: { firstname: string; phone: string }) => {
+    const next = { ...answers, contact_firstname: data.firstname, contact_phone: data.phone };
+    setAnswers(next);
     persistCheckpoint("email", next);
     setStep("email");
   };
@@ -256,7 +273,16 @@ const Onboarding = () => {
     async (data: { email: string; consent_lead_sharing: boolean; consent_marketing: boolean }) => {
       setIsSubmitting(true);
 
-      const flat: Record<string, any> = { ...answers, postal_code: postalCode };
+      const flat: Record<string, any> = {
+        ...answers,
+        postal_code: postalCode,
+        source_location_id: leadSource.id,
+        source_name: leadSource.name,
+        source_type: leadSource.type,
+        source_campaign: leadSource.campaign,
+        source_slug: leadSource.slug,
+        source_location: leadSource.name,
+      };
 
       const v2Answers = mapAnswersToV2({
         main_goal: flat.main_goal,
@@ -269,6 +295,11 @@ const Onboarding = () => {
         continue_field: flat.continue_field,
       });
       const orientation = computeOrientation(v2Answers);
+      const leadScore = calculateUnifiedLeadScore({
+        ...flat,
+        contact_email: data.email,
+        consent_lead_sharing: data.consent_lead_sharing,
+      }).total;
 
       track("onboarding_completed", { route: orientation.parcours, score: orientation.score }, "/onboarding", language);
 
@@ -288,11 +319,15 @@ const Onboarding = () => {
             main_goal: (flat.main_goal as string) || null,
             target_sector: (flat.target_sector as string) || null,
             lead_route: orientation.parcours,
-            lead_score: orientation.score,
+            lead_score: leadScore,
             work_right: (flat.work_right as string) || null,
             literacy: (flat.literacy as string) || null,
             barriers: Array.isArray(flat.barriers) ? (flat.barriers as string[]) : null,
-          },
+            source_location_id: leadSource.id,
+            source_name: leadSource.name,
+            source_type: leadSource.type,
+            source_campaign: leadSource.campaign,
+          } as any,
         ]).select("id").single();
         if (resultError) throw resultError;
 
@@ -327,7 +362,7 @@ const Onboarding = () => {
 
         await supabase.functions.invoke("match-leads", {
           body: {
-            answers: { ...flat, contact_email: data.email, leadRoute: orientation.parcours, leadScore: orientation.score },
+            answers: { ...flat, contact_email: data.email, leadRoute: orientation.parcours, leadScore },
             onboardingStartedAt,
           },
         });
@@ -366,7 +401,7 @@ const Onboarding = () => {
         ...flat,
         contact_email: data.email,
         leadRoute: orientation.parcours,
-        leadScore: orientation.score,
+        leadScore,
       };
       localStorage.setItem("onboarding_answers", JSON.stringify(finalAnswers));
 
@@ -384,7 +419,7 @@ const Onboarding = () => {
       // Si magic link envoyé → écran de confirmation, sinon directement complete
       setStep(magicSent ? "magic-link-sent" : "complete");
     },
-    [answers, postalCode, language, onboardingStartedAt, track, user, persistCheckpoint, markCompleted]
+    [answers, postalCode, language, onboardingStartedAt, track, user, persistCheckpoint, markCompleted, leadSource]
   );
 
   const handleResendMagicLink = useCallback(async () => {
@@ -431,6 +466,8 @@ const Onboarding = () => {
       ? activeQuestions.length
       : step === "postal-code"
       ? activeQuestions.length + 1
+      : step === "contact"
+      ? activeQuestions.length + 2
       : step === "email"
       ? totalSteps
       : 1;
@@ -442,6 +479,8 @@ const Onboarding = () => {
       ? Math.round((activeQuestions.length / totalSteps) * 100)
       : step === "postal-code"
       ? Math.round(((activeQuestions.length + 1) / totalSteps) * 100)
+      : step === "contact"
+      ? Math.round(((activeQuestions.length + 2) / totalSteps) * 100)
       : 100;
 
   const accessCode = normalizeMarianneAccessCode(searchParams.get("code") || "");
@@ -602,6 +641,20 @@ const Onboarding = () => {
                 key="postal-code"
                 initialValue={postalCode}
                 onSubmit={handlePostalSubmit}
+                onPrevious={handlePrevious}
+                progressPercent={progressPercent}
+                questionNumber={stepNumber}
+                totalQuestions={totalSteps}
+                tts={tts}
+              />
+            )}
+
+            {step === "contact" && (
+              <ContactStep
+                key="contact"
+                initialFirstname={(answers.contact_firstname as string) || ""}
+                initialPhone={(answers.contact_phone as string) || ""}
+                onSubmit={handleContactSubmit}
                 onPrevious={handlePrevious}
                 progressPercent={progressPercent}
                 questionNumber={stepNumber}
