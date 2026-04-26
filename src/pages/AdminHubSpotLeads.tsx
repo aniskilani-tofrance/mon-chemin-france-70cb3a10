@@ -47,15 +47,16 @@ interface HubSpotOwner {
 
 const LEAD_STATUSES = [
   "Nouveau diagnostic",
+  "À qualifier",
   "À rappeler",
   "Contacté",
-  "Orienté",
-  "RDV fixé",
-  "En suivi",
-  "Converti",
-  "Non qualifié",
-  "Injoignable",
-  "Perdu",
+  "Orientation proposée",
+  "Transmis au partenaire",
+  "RDV pris",
+  "Entré en formation",
+  "Non joignable",
+  "Non éligible",
+  "Abandonné",
 ];
 
 const csvEscape = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
@@ -128,9 +129,9 @@ export default function AdminHubSpotLeads() {
   const handleStatusChange = async (lead: HubSpotLead, status: string) => {
     setUpdatingId(lead.id);
     try {
-      const data = await invokeHubSpot({ action: "updateStatus", contactId: lead.id, dealId: lead.dealId, status });
+      const data = await invokeHubSpot({ action: "updateStatus", contactId: lead.id, dealId: lead.dealId, diagnosticId: lead.diagnostic_id, status });
       setLeads((current) => current.map((item) => item.id === lead.id ? { ...item, statut_lead: status } : item));
-      toast({ title: data.warning || "Statut HubSpot mis à jour" });
+      toast({ title: data.warning || "Statut synchronisé ToFrance ↔ HubSpot" });
     } catch (error) {
       toast({ variant: "destructive", title: "Erreur de mise à jour", description: error instanceof Error ? error.message : "Action impossible" });
     } finally {
