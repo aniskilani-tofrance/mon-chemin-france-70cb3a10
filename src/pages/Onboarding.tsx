@@ -5,6 +5,7 @@ import { KeyRound, LockKeyhole, RotateCcw, Volume2, VolumeX } from "lucide-react
 import { useTranslation } from "react-i18next";
 import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
@@ -546,8 +547,18 @@ const Onboarding = () => {
           <p className="mb-8 max-w-xl text-muted-foreground">
             {accessStatus === "checking"
               ? "Vérification du code d'accès…"
-              : "L'orientation immédiate reste en ligne, mais l'accès est validé par code pendant la finalisation du service."}
+              : "L'accès est encore en phase de test et disponible uniquement pour les pilotes et les administrateurs."}
           </p>
+          {accessStatus === "denied" && (
+            <Alert className="mb-6 max-w-xl text-left border-border/60 bg-card/90 shadow-soft">
+              <LockKeyhole className="h-4 w-4" />
+              <AlertTitle>Accès limité pendant les tests</AlertTitle>
+              <AlertDescription>
+                Si vous ne faites pas partie d'un lieu pilote, l'onboarding Marianne n'est pas encore ouvert au public.
+                Vous pourrez y accéder plus largement dès la fin de cette phase de validation.
+              </AlertDescription>
+            </Alert>
+          )}
           <button
             type="button"
             onClick={() => navigate("/#access-code")}
