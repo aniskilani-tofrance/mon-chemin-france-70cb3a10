@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendOutlookMail } from "../_shared/outlook-mail.ts";
+import { calculateUnifiedLeadScore } from "../_shared/lead-scoring.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -106,10 +107,14 @@ serve(async (req) => {
     answers.contact_phone = maxLen(answers.contact_phone, 30);
     answers.location = maxLen(answers.location, 100);
     answers.postal_code = maxLen(answers.postal_code, 10);
+    answers.source_location_id = maxLen(answers.source_location_id, 120);
+    answers.source_name = maxLen(answers.source_name, 200);
+    answers.source_type = maxLen(answers.source_type, 80);
+    answers.source_campaign = maxLen(answers.source_campaign, 120);
 
     // Determine route and score
     const route = determineRoute(answers);
-    const score = calculateScore(answers);
+    const score = calculateUnifiedLeadScore(answers).total;
     const targetSectorId = answers.target_sector || "transversal";
     const targetSectors = SECTOR_MAP[targetSectorId] || ["Transversal (tous secteurs)"];
 
@@ -147,6 +152,10 @@ serve(async (req) => {
       admin_status: answers.admin_status || null,
       real_comprehension_score: answers.real_comprehension_score || null,
       distance_to_job: answers.distance_to_job != null ? Number(answers.distance_to_job) : null,
+      source_location_id: answers.source_location_id || null,
+      source_name: answers.source_name || null,
+      source_type: answers.source_type || null,
+      source_campaign: answers.source_campaign || null,
     };
 
     // Check if profile already exists with this email
@@ -254,6 +263,10 @@ serve(async (req) => {
       consent_id: consent.id,
       status: "pending" as const,
       match_score: score,
+      source_location_id: answers.source_location_id || null,
+      source_name: answers.source_name || null,
+      source_type: answers.source_type || null,
+      source_campaign: answers.source_campaign || null,
     }));
 
     if (leadsToInsert.length > 0) {
