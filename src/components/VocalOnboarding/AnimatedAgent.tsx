@@ -37,7 +37,7 @@ export function AnimatedAgent({
     >
       {/* Outer glow */}
       <motion.div
-        className="absolute inset-[-12px] rounded-full bg-primary/15 blur-2xl"
+        className="absolute inset-[-12px] rounded-3xl bg-primary/10 blur-2xl"
         animate={{
           scale: state === "listening" ? [1, 1.4, 1] : state === "speaking" ? [1, 1.25, 1] : [1, 1.1, 1],
           opacity: state === "idle" ? [0.1, 0.25, 0.1] : [0.2, 0.45, 0.2],
@@ -79,14 +79,14 @@ export function AnimatedAgent({
 
       {/* Main avatar image */}
       <motion.div
-        className="relative z-10 overflow-hidden rounded-full"
+        className="relative z-10 overflow-hidden rounded-3xl border-2 border-primary/20 bg-accent/50 p-2 shadow-md"
         style={{ width: s, height: s }}
         animate={bodyAnim()}
       >
         <img
           src={marianneAvatar}
           alt="Marianne – votre conseillère ToFrance"
-          className="h-full w-full object-cover object-top"
+          className="h-full w-full rounded-2xl object-cover object-top"
           draggable={false}
         />
         
