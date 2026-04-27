@@ -67,6 +67,25 @@ serve(async (req) => {
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
   try {
+    const body = await req.json().catch(() => ({}));
+
+    if (body?.test === true) {
+      await notifySlack({
+        id: "test-slack-reminder",
+        first_name: "Test ToFrance",
+        phone: null,
+        statut_lead: "À recontacter",
+        status_updated_at: new Date(Date.now() - 49 * 60 * 60 * 1000).toISOString(),
+        source_name: "Test relance automatique",
+        source_location_id: "Slack",
+        hubspot_contact_id: null,
+        hubspot_deal_id: null,
+        profile_id: null,
+        slack_reminder_sent_at: null,
+      });
+      return json({ ok: true, test: true, message: "Slack test reminder sent" });
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
