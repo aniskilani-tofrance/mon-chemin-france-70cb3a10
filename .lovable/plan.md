@@ -1,90 +1,34 @@
-Objectif : rendre les diagnostics pilotables par lieu source, mieux capter prénom/téléphone, unifier le scoring, et créer une vue admin pilote.
+## Plan
 
-Plan d’implémentation
+1. Corriger le garde d’accès de `/onboarding`
+- Stabiliser la logique d’autorisation pour qu’un administrateur connecté puisse toujours entrer dans Marianne sans code.
+- Éviter les états transitoires où la page reste bloquée alors que le rôle admin a déjà été confirmé.
+- Conserver l’accès automatique pour les routes préconfigurées via `?source=` et `/to/:sourceSlug`.
 
-1. Source du lead dans la base
-- Ajouter les colonnes suivantes à `onboarding_results`, `profiles` et `leads` :
-  - `source_location_id`
-  - `source_name`
-  - `source_type`
-  - `source_campaign`
-- Conserver la compatibilité avec les champs déjà envoyés vers HubSpot (`source_location`, `source_slug`) en mappant :
-  - `source_name` -> `source_location`
-  - slug URL -> `source_slug`
-- Indexer les champs source utiles pour les vues admin et exports.
+2. Rendre le démarrage admin explicite dans l’interface
+- Ajouter un point d’entrée clair depuis la home pour les administrateurs connectés afin de lancer Marianne sans passer par “Accès pilote”.
+- Garder le flux par code pour les pilotes non-admins.
 
-2. URLs QR code par lieu
-- Ajouter la route `/to/:sourceSlug`.
-- Cette route redirigera vers `/onboarding?source=<sourceSlug>` en conservant une URL courte imprimable sur QR code.
-- Gérer aussi directement `/onboarding?source=aurore`.
-- Préconfigurer les sources pilotes :
-  - `aurore`
-  - `emmaus-victoire`
-  - `mdq-landy`
-- Chaque source aura un nom lisible, un type et éventuellement une campagne par défaut.
+3. Afficher un message clair pour les non-autorisés
+- Remplacer le blocage actuel par un message explicite : accès encore en phase de test, réservé aux pilotes.
+- Ajouter un libellé cohérent entre la home, le header et la page bloquée pour éviter toute ambiguïté.
 
-3. Prénom + téléphone dans le parcours
-- Ajouter une étape contact dédiée dans l’onboarding visuel avant l’email, avec :
-  - prénom obligatoire
-  - téléphone obligatoire
-  - email conservé séparément
-- Sauvegarder ces données dans `answers`, `onboarding_results`, `profiles`, l’appel `match-leads`, puis HubSpot.
-- Adapter la reprise de parcours pour ne pas perdre prénom/téléphone si l’utilisateur revient plus tard.
+4. Vérifier les cas d’usage critiques
+- Admin connecté sans code → accès direct à l’onboarding.
+- Utilisateur avec code valide → accès maintenu.
+- Utilisateur sans code et sans rôle autorisé → message de phase de test.
+- Source partenaire (`/onboarding?source=...`) → préremplissage conservé.
 
-4. Un seul moteur de scoring
-- Créer une fonction commune de scoring utilisable côté frontend et côté backend, avec une version partagée pour les Edge Functions.
-- Remplacer les calculs dispersés :
-  - score `orientationEngine`
-  - score `match-leads`
-  - ancien `calculateLeadScore` dans `decisionTree`
-  - score qualification HubSpot si nécessaire
-- Garder une séparation claire :
-  - `route_orientation` décide du parcours recommandé
-  - `score_qualification` mesure la qualité du lead
-- Harmoniser le score enregistré dans :
-  - `onboarding_results.lead_score`
-  - `profiles.lead_score`
-  - `leads.match_score`
-  - HubSpot `score_qualification`
+## Ce que j’ai identifié
+- Le backend confirme bien le rôle admin (`has_role = true`) dans les requêtes récentes.
+- Le vrai problème est côté front : l’entrée principale de la home renvoie encore vers le bloc “Accès pilote”, ce qui donne l’impression que Marianne ne démarre pas, même pour un admin.
+- La logique d’accès doit aussi être rendue plus robuste autour de la session auth réactive.
 
-5. Vue pilote admin `/admin/pilotes`
-- Créer une page protégée admin `/admin/pilotes`.
-- Afficher des indicateurs filtrables par lieu/source :
-  - nombre de diagnostics par lieu
-  - profils qualifiés
-  - orientations / routes
-  - statuts
-  - taux de contactabilité téléphone
-  - score moyen
-- Ajouter un tableau détaillé des diagnostics/leads avec filtres par source, campagne, statut et date.
-- Ajouter export CSV des données filtrées.
-- Ajouter un mode “bilan imprimable” avec une mise en page propre pour impression/PDF navigateur.
-- Ajouter un lien vers cette vue depuis le dashboard admin.
-
-6. Intégration HubSpot et Slack déjà prévue à sécuriser
-- Propager les nouveaux champs source vers HubSpot lors de `sync-hubspot-diagnostic`.
-- Ajouter la notification Slack automatique après création d’un nouveau contact HubSpot avec `diagnostic_id`, en Block Kit, vers `SLACK_WEBHOOK_URL`.
-- Si `score_qualification >= 70` et `consentement_rappel = true`, ajouter le bloc d’action “À rappeler dans les 24h”.
-- Ajouter une journalisation non bloquante : si Slack échoue, le diagnostic et HubSpot restent valides, mais l’échec est visible dans les logs.
-
-Détails techniques
-
-- Base de données : migration uniquement pour les nouvelles colonnes et index.
-- Backend : mise à jour de `match-leads` et `sync-hubspot-diagnostic` pour transporter les champs source et utiliser le scoring unifié.
-- Frontend : mise à jour de `Onboarding.tsx`, ajout de la route courte `/to/:sourceSlug`, ajout de `/admin/pilotes`.
-- Sécurité : la page pilote reste derrière `AdminRoute`; les exports sont générés côté navigateur à partir des données admin autorisées.
-- Secrets : `SLACK_WEBHOOK_URL` devra être ajouté comme secret runtime avant déploiement de la notification Slack.
-
-Résultat attendu
-
-```text
-QR code lieu
-  -> /to/aurore
-  -> /onboarding?source=aurore
-  -> diagnostic complété avec prénom + téléphone
-  -> source enregistrée localement
-  -> score unique calculé
-  -> HubSpot contact/deal
-  -> notification Slack
-  -> pilotage admin /admin/pilotes
-```
+## Détails techniques
+- Fichiers ciblés :
+  - `src/pages/Onboarding.tsx`
+  - `src/hooks/useAdminCheck.tsx`
+  - `src/components/AccessCodeSection.tsx`
+  - potentiellement `src/components/Header.tsx` ou une CTA d’accueil si nécessaire
+- Aucune migration backend n’est nécessaire pour cette correction.
+- Après implémentation, je ferai une vérification de build et je validerai les chemins d’accès clés côté app.

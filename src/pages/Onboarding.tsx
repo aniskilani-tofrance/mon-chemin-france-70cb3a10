@@ -547,15 +547,15 @@ const Onboarding = () => {
           <p className="mb-8 max-w-xl text-muted-foreground">
             {accessStatus === "checking"
               ? "Vérification du code d'accès…"
-              : "L'accès est encore en phase de test et disponible uniquement pour les pilotes et les administrateurs."}
+              : "L'accès est encore en phase de test et disponible uniquement pour les lieux pilotes."}
           </p>
           {accessStatus === "denied" && (
             <Alert className="mb-6 max-w-xl text-left border-border/60 bg-card/90 shadow-soft">
               <LockKeyhole className="h-4 w-4" />
               <AlertTitle>Accès limité pendant les tests</AlertTitle>
               <AlertDescription>
-                Si vous ne faites pas partie d'un lieu pilote, l'onboarding Marianne n'est pas encore ouvert au public.
-                Vous pourrez y accéder plus largement dès la fin de cette phase de validation.
+                Si vous n'avez pas encore de code pilote, Marianne n'est pas encore ouverte au public.
+                Les administrateurs connectés peuvent démarrer directement le parcours depuis l'accueil.
               </AlertDescription>
             </Alert>
           )}

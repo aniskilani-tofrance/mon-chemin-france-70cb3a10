@@ -7,9 +7,11 @@ import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 export function AccessCodeSection() {
   const navigate = useNavigate();
+  const { isAdmin } = useAdminCheck();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -57,6 +59,12 @@ export function AccessCodeSection() {
         {/* Code input */}
         <Card className="mx-auto mb-10 max-w-xl border-primary/20 bg-card">
           <CardContent className="p-6">
+            {isAdmin && (
+              <Button type="button" size="lg" className="mb-4 w-full" onClick={() => navigate("/onboarding") }>
+                Démarrer Marianne en admin
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            )}
             <form onSubmit={handleJoin} className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="flex-1">
                 <label className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
