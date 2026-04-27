@@ -1,6 +1,8 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useAuth } from "@/hooks/useAuth";
+import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
 import { Mic, ArrowRight, Sparkles, ClipboardList, GraduationCap } from "lucide-react";
 import heroImage from "@/assets/hero-welcome.jpg";
@@ -9,6 +11,9 @@ import marianneAvatar from "@/assets/marianne-avatar.png";
 
 export function HeroSection() {
   const { t } = useLanguage();
+  const { user } = useAuth();
+  const { isAdmin } = useAdminCheck();
+  const marianneHref = user && isAdmin ? "/onboarding" : "/#access-code";
 
   return (
     <section className="relative min-h-screen overflow-hidden pt-24">
@@ -50,9 +55,9 @@ export function HeroSection() {
         <AnimatedContainer delay={0.4}>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button variant="hero" size="xl" asChild>
-              <Link to="/#access-code" className="gap-3">
+              <Link to={marianneHref} className="gap-3">
                 <Mic className="h-5 w-5" />
-                Discuter avec Marianne
+                {isAdmin ? "Démarrer Marianne" : "Accès pilote Marianne"}
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
