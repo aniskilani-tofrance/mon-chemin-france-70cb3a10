@@ -1,15 +1,17 @@
 import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Users, BookOpen, TrendingUp, Clock, Download, BarChart3 } from "lucide-react";
+import { Loader2, Users, BookOpen, TrendingUp, Clock, Download, BarChart3, Home, LogOut } from "lucide-react";
 import { DemoBanner } from "@/components/DemoBanner";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DirecteurLearnerDetail } from "@/components/Directeur/DirecteurLearnerDetail";
 import { DirecteurOnboardingResults } from "@/components/Directeur/DirecteurOnboardingResults";
+import { useAuth } from "@/hooks/useAuth";
 
 interface FormateurRow {
   id: string;
@@ -35,6 +37,8 @@ const SECTOR_COLORS = [
 ];
 
 export default function DirecteurDashboard() {
+  const navigate = useNavigate();
+  const { signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [formateurs, setFormateurs] = useState<FormateurRow[]>([]);
   const [totalLearners, setTotalLearners] = useState(0);
@@ -117,6 +121,11 @@ export default function DirecteurDashboard() {
     URL.revokeObjectURL(url);
   }
 
+  async function handleSignOut() {
+    await signOut();
+    navigate("/login", { replace: true });
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -133,10 +142,22 @@ export default function DirecteurDashboard() {
           <BarChart3 className="h-7 w-7 text-primary" />
           <h1 className="text-2xl font-bold text-foreground">Tableau de bord Directeur</h1>
         </div>
-        <Button variant="outline" size="sm" onClick={exportCSV}>
-          <Download className="h-4 w-4 mr-2" />
-          Export CSV
-        </Button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/">
+              <Home className="h-4 w-4 mr-2" />
+              Accueil
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" onClick={exportCSV}>
+            <Download className="h-4 w-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button variant="outline" size="sm" onClick={handleSignOut}>
+            <LogOut className="h-4 w-4 mr-2" />
+            Déconnexion
+          </Button>
+        </div>
       </div>
 
       {/* 4 KPI Cards */}

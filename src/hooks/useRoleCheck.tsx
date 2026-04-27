@@ -9,21 +9,43 @@ export function useRoleCheck(role: AppRole) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const check = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+    let mounted = true;
+
+    const check = async (userId?: string | null) => {
+      setLoading(true);
+      if (!userId) {
+        if (!mounted) return;
         setHasRole(false);
         setLoading(false);
         return;
       }
+
       const { data } = await supabase.rpc("has_role", {
-        _user_id: user.id,
+        _user_id: userId,
         _role: role,
       });
+
+      if (!mounted) return;
       setHasRole(!!data);
       setLoading(false);
     };
-    check();
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
+      void check(session?.user?.id ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => {
+        if (!mounted) return;
+        void check(session?.user?.id ?? null);
+      }, 0);
+    });
+
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [role]);
 
   return { hasRole, loading };
