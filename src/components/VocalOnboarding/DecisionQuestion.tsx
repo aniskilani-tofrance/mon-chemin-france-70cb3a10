@@ -13,6 +13,7 @@ import { AnimatedAgent } from "./AnimatedAgent";
 import { PhotoLanguageChoice, PhotoLanguageGrid } from "./PhotoLanguageChoice";
 import { GooglePlacesAutocomplete } from "./GooglePlacesAutocomplete";
 import { playPreSpeech } from "@/lib/sounds";
+import { getOnboardingIllustration } from "@/lib/onboardingIllustrations";
 import { z } from "zod";
 
 // Email validation schema
@@ -286,6 +287,7 @@ export function DecisionQuestion({
                   choiceId={choice.id}
                   label={choiceLabel}
                   customIcon={choice.icon}
+                  customImage={getOnboardingIllustration(choice.id, question.id)}
                   isSelected={isSelected}
                   onClick={() => handleChoiceSelect(choice.id, choice.tags)}
                   index={index}
@@ -317,6 +319,7 @@ export function DecisionQuestion({
                     choiceId={choice.id}
                     label={choiceLabel}
                     customIcon={choice.icon}
+                    customImage={getOnboardingIllustration(choice.id, question.id)}
                     isSelected={isSelected}
                     isMultiSelect
                     onClick={() => handleMultiChoiceToggle(choice.id)}

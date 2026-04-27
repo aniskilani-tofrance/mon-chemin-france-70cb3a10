@@ -141,12 +141,12 @@ export function PhotoLanguageChoice({
       whileTap={{ scale: 0.97 }}
       onClick={onClick}
       className={cn(
-        "group relative flex flex-col items-center justify-center gap-2 rounded-2xl border-2 transition-all duration-300 overflow-hidden",
-        compact ? "p-3 sm:p-4" : "p-3 sm:p-4",
+        "group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 transition-all duration-300",
+        compact ? "p-2.5 sm:p-3" : "p-3 sm:p-4",
         isSelected
           ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 ring-2 ring-primary/30"
           : "border-border bg-card hover:border-primary/50 hover:bg-secondary/30 hover:shadow-md",
-        customImage ? "min-h-[160px] sm:min-h-[200px]" : "min-h-[100px] sm:min-h-[120px]"
+        customImage ? "min-h-[164px] sm:min-h-[200px]" : "min-h-[116px] sm:min-h-[132px]"
       )}
     >
       {/* Numéro d'option (synchronisé avec la lecture vocale "1. ... 2. ...") */}
@@ -182,7 +182,7 @@ export function PhotoLanguageChoice({
           animate={isSelected ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3 }}
           className={cn(
-            "w-full aspect-square rounded-xl overflow-hidden bg-secondary/20 flex items-center justify-center p-1",
+            "flex aspect-square w-full items-center justify-center overflow-hidden rounded-xl border border-primary/10 bg-accent/60 p-2",
             isSelected && "ring-2 ring-primary/30"
           )}
         >
@@ -212,7 +212,7 @@ export function PhotoLanguageChoice({
       {/* Label */}
       <span
         className={cn(
-          "text-center text-xs font-medium leading-tight transition-colors sm:text-sm relative z-10",
+          "relative z-10 min-h-[2rem] text-center text-xs font-medium leading-tight transition-colors sm:text-sm",
           isSelected ? "text-primary" : "text-foreground"
         )}
       >
