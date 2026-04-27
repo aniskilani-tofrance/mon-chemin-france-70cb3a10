@@ -14,7 +14,7 @@ function PlanetLogo() {
   if (svgError) {
     return (
       <motion.div
-        className="relative h-20 w-20 sm:h-24 sm:w-24 cursor-pointer flex items-center justify-center rounded-full bg-gradient-to-br from-primary to-accent shadow-2xl"
+        className="relative flex h-20 w-20 cursor-pointer items-center justify-center rounded-2xl border border-primary/10 bg-accent/60 shadow-md sm:h-24 sm:w-24"
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.95 }}
         initial={{ scale: 0.85, opacity: 0 }}
@@ -23,9 +23,9 @@ function PlanetLogo() {
         tabIndex={0}
         aria-label="Logo planète - sélecteur de langues"
       >
-        <span className="text-4xl sm:text-5xl select-none">🌍</span>
+        <span className="select-none text-4xl sm:text-5xl">🌍</span>
         <motion.div
-          className="absolute inset-[-4px] rounded-full border-2 border-primary/40"
+          className="absolute inset-[-4px] rounded-2xl border-2 border-primary/30"
           animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.2, 0.5] }}
           transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -35,7 +35,7 @@ function PlanetLogo() {
 
   return (
     <motion.div
-      className="relative h-20 w-20 sm:h-24 sm:w-24 cursor-pointer"
+      className="relative h-20 w-20 cursor-pointer sm:h-24 sm:w-24"
       whileHover={{ scale: 1.08 }}
       whileTap={{ scale: 0.95 }}
       initial={{ scale: 0.85, opacity: 0 }}
@@ -47,7 +47,7 @@ function PlanetLogo() {
     >
       {/* Glow effect on hover/focus */}
       <motion.div
-        className="absolute inset-[-8px] rounded-full bg-primary/20 blur-xl"
+        className="absolute inset-[-8px] rounded-2xl bg-primary/10 blur-xl"
         initial={{ opacity: 0, scale: 0.8 }}
         whileHover={{ opacity: 1, scale: 1.1 }}
         whileFocus={{ opacity: 1, scale: 1.1 }}
@@ -56,14 +56,14 @@ function PlanetLogo() {
       
       {/* Pulsing halo */}
       <motion.div
-        className="absolute inset-[-4px] rounded-full border-2 border-primary/40"
+        className="absolute inset-[-4px] rounded-2xl border-2 border-primary/30"
         animate={{ scale: [1, 1.1, 1], opacity: [0.5, 0.2, 0.5] }}
         transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
       />
       
       {/* Orbital ring */}
       <motion.div
-        className="absolute inset-[-6px] rounded-full border-2 border-dashed border-primary/30"
+        className="absolute inset-[-6px] rounded-2xl border-2 border-dashed border-primary/20"
         style={{ transform: "rotateX(60deg)" }}
         animate={{ rotate: 360 }}
         transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
@@ -71,7 +71,7 @@ function PlanetLogo() {
       
       {/* Planet body */}
       <motion.div
-        className="absolute inset-0 overflow-hidden rounded-full bg-gradient-to-br from-primary via-primary/80 to-accent shadow-2xl"
+        className="absolute inset-0 overflow-hidden rounded-2xl border border-primary/10 bg-accent/60 shadow-md"
         whileHover={{ rotate: 10 }}
         transition={{ duration: 0.4 }}
       >
@@ -79,21 +79,21 @@ function PlanetLogo() {
         <svg viewBox="0 0 100 100" className="absolute inset-0 h-full w-full">
           <path
             d="M20,35 Q30,25 45,30 T65,35 Q75,45 70,55 T55,70 Q40,75 30,65 T20,45 Z"
-            fill="hsl(var(--primary-foreground) / 0.9)"
+            fill="hsl(var(--primary) / 0.55)"
           />
           <path
             d="M75,25 Q85,20 90,30 T88,50 Q80,45 75,35 Z"
-            fill="hsl(var(--primary-foreground) / 0.7)"
+            fill="hsl(var(--primary) / 0.45)"
           />
           <path
             d="M45,75 Q55,70 60,80 T50,90 Q40,85 45,75 Z"
-            fill="hsl(var(--primary-foreground) / 0.8)"
+            fill="hsl(var(--primary) / 0.5)"
           />
           {/* Meridians */}
-          <ellipse cx="50" cy="50" rx="35" ry="48" fill="none" stroke="hsl(var(--primary-foreground) / 0.15)" strokeWidth="1" />
-          <ellipse cx="50" cy="50" rx="20" ry="48" fill="none" stroke="hsl(var(--primary-foreground) / 0.15)" strokeWidth="1" />
-          <line x1="50" y1="2" x2="50" y2="98" stroke="hsl(var(--primary-foreground) / 0.15)" strokeWidth="1" />
-          <line x1="15" y1="35" x2="85" y2="65" stroke="hsl(var(--primary-foreground) / 0.1)" strokeWidth="1" />
+          <ellipse cx="50" cy="50" rx="35" ry="48" fill="none" stroke="hsl(var(--primary) / 0.18)" strokeWidth="2" />
+          <ellipse cx="50" cy="50" rx="20" ry="48" fill="none" stroke="hsl(var(--primary) / 0.16)" strokeWidth="2" />
+          <line x1="50" y1="2" x2="50" y2="98" stroke="hsl(var(--primary) / 0.16)" strokeWidth="2" />
+          <line x1="15" y1="35" x2="85" y2="65" stroke="hsl(var(--primary) / 0.12)" strokeWidth="2" />
         </svg>
         
         {/* Glossy reflection */}
