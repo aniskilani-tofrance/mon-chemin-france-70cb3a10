@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { postSlackMessage } from "../_shared/slack-notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,7 @@ type Lead = {
   phone: string | null;
   statut_lead: string | null;
   status_updated_at: string | null;
+  status_updated_from: string | null;
   source_name: string | null;
   source_location_id: string | null;
   hubspot_contact_id: string | null;
@@ -32,15 +34,18 @@ function leadLabel(lead: Lead) {
   return [lead.first_name, lead.phone].filter(Boolean).join(" · ") || `Lead ${lead.id.slice(0, 8)}`;
 }
 
-async function notifySlack(lead: Lead) {
-  const webhookUrl = Deno.env.get("SLACK_WEBHOOK_URL");
-  if (!webhookUrl) throw new Error("SLACK_WEBHOOK_URL is not configured");
+function reminderSource(lead: Pick<Lead, "status_updated_from">) {
+  return lead.status_updated_from === "hubspot" ? "HubSpot" : "Admin ToFrance";
+}
 
+async function notifySlack(lead: Lead) {
   const status = lead.statut_lead || "Statut non renseigné";
+  const source = reminderSource(lead);
   const since = lead.status_updated_at ? new Date(lead.status_updated_at).toLocaleString("fr-FR", { timeZone: "Europe/Paris" }) : "date inconnue";
   const fields = [
     `*Lead :* ${leadLabel(lead)}`,
     `*Statut inchangé :* ${status}`,
+    `*Origine du statut :* ${source}`,
     `*Depuis :* ${since}`,
     lead.source_name ? `*Source :* ${lead.source_name}` : null,
     lead.source_location_id ? `*Lieu source :* ${lead.source_location_id}` : null,
@@ -48,18 +53,10 @@ async function notifySlack(lead: Lead) {
     lead.hubspot_deal_id ? `*Deal HubSpot :* ${lead.hubspot_deal_id}` : null,
   ].filter(Boolean);
 
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      text: [`⏰ *Relance lead — statut inchangé depuis plus de 48h*`, ...fields, "Action attendue : vérifier le suivi ou changer le statut."].join("\n"),
-    }),
-  });
-
-  if (!response.ok) {
-    const body = await response.text();
-    throw new Error(`Slack webhook failed [${response.status}]: ${body.slice(0, 500)}`);
-  }
+  await postSlackMessage(
+    { text: [`⏰ *Relance lead — statut inchangé depuis plus de 48h*`, ...fields, "Action attendue : vérifier le suivi ou changer le statut."].join("\n") },
+    { status, source },
+  );
 }
 
 serve(async (req) => {
@@ -74,8 +71,9 @@ serve(async (req) => {
         id: "test-slack-reminder",
         first_name: "Test ToFrance",
         phone: null,
-        statut_lead: "À recontacter",
+        statut_lead: body.status || "À recontacter",
         status_updated_at: new Date(Date.now() - 49 * 60 * 60 * 1000).toISOString(),
+        status_updated_from: body.source === "HubSpot" ? "hubspot" : "tofrance",
         source_name: "Test relance automatique",
         source_location_id: "Slack",
         hubspot_contact_id: null,
@@ -95,7 +93,7 @@ serve(async (req) => {
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
     const { data: leads, error } = await supabaseAdmin
       .from("leads")
-      .select("id, first_name, phone, statut_lead, status_updated_at, source_name, source_location_id, hubspot_contact_id, hubspot_deal_id, profile_id, slack_reminder_sent_at")
+      .select("id, first_name, phone, statut_lead, status_updated_at, status_updated_from, source_name, source_location_id, hubspot_contact_id, hubspot_deal_id, profile_id, slack_reminder_sent_at")
       .not("statut_lead", "is", null)
       .not("status_updated_at", "is", null)
       .lte("status_updated_at", cutoff)

@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendOutlookMail } from "../_shared/outlook-mail.ts";
 import { calculateQualificationScore } from "../_shared/hubspot-score.ts";
+import { postSlackMessage } from "../_shared/slack-notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -307,12 +308,6 @@ function hubspotContactUrl(contactId: string) {
 }
 
 async function notifySlackNewDiagnostic(payload: HubSpotPayload, contactId: string) {
-  const webhookUrl = Deno.env.get("SLACK_WEBHOOK_URL");
-  if (!webhookUrl) {
-    console.warn("SLACK_WEBHOOK_URL is not configured; Slack notification skipped");
-    return;
-  }
-
   const needsCallback = payload.score_qualification >= 70 && payload.consentement_rappel === true;
   const blocks: any[] = [
     { type: "header", text: { type: "plain_text", text: "Nouveau diagnostic ToFrance", emoji: true } },
@@ -338,12 +333,10 @@ async function notifySlackNewDiagnostic(payload: HubSpotPayload, contactId: stri
   });
   blocks.push({ type: "divider" });
 
-  const response = await fetch(webhookUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: `Nouveau diagnostic ToFrance — ${payload.firstname || payload.phone || payload.diagnostic_id}`, blocks }),
-  });
-  if (!response.ok) throw new Error(`Slack webhook failed [${response.status}]: ${await response.text()}`);
+  await postSlackMessage(
+    { text: `Nouveau diagnostic ToFrance — ${payload.firstname || payload.phone || payload.diagnostic_id}`, blocks },
+    { status: payload.statut_lead, source: "HubSpot" },
+  );
 }
 
 async function findPipelineAndStage(score: number) {
