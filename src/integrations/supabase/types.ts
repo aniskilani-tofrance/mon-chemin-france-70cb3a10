@@ -828,6 +828,7 @@ export type Database = {
           profile_id: string | null
           provider_id: string
           purchased_at: string | null
+          slack_reminder_sent_at: string | null
           source_campaign: string | null
           source_location_id: string | null
           source_name: string | null
@@ -855,6 +856,7 @@ export type Database = {
           profile_id?: string | null
           provider_id: string
           purchased_at?: string | null
+          slack_reminder_sent_at?: string | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null
@@ -882,6 +884,7 @@ export type Database = {
           profile_id?: string | null
           provider_id?: string
           purchased_at?: string | null
+          slack_reminder_sent_at?: string | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null
