@@ -169,12 +169,12 @@ export function LanguageStep({ onSelect }: LanguageStepProps) {
             aria-label={lang.name}
             className={`group relative flex flex-col items-center gap-2.5 rounded-2xl border-2 p-5 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 overflow-hidden ${
               language === lang.code
-                ? "border-primary bg-primary/5 shadow-glow"
+                ? "border-primary bg-accent/70 shadow-glow"
                 : "border-border/60 bg-card hover:border-primary/40 hover:shadow-md"
             }`}
           >
             {/* Subtle gradient overlay on hover */}
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/5 group-hover:to-accent/5 transition-all duration-300" />
+            <div className="absolute inset-0 bg-accent/0 transition-all duration-300 group-hover:bg-accent/40" />
             
             <span className="relative text-4xl sm:text-5xl drop-shadow-sm" aria-hidden="true">{lang.flag}</span>
             <span className="relative text-sm font-semibold text-foreground sm:text-base tracking-wide">
