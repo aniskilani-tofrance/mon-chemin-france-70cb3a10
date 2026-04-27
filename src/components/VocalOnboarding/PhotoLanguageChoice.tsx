@@ -101,6 +101,7 @@ interface PhotoLanguageChoiceProps {
   onClick: () => void;
   index: number;
   compact?: boolean;
+  imagePriority?: boolean;
 }
 
 export function PhotoLanguageChoice({
@@ -113,6 +114,7 @@ export function PhotoLanguageChoice({
   onClick,
   index,
   compact = false,
+  imagePriority = false,
 }: PhotoLanguageChoiceProps) {
   // Get the best icon - custom first, then from mapping, then fallback
   const icon = customIcon || PHOTO_LANGUAGE_ICONS[choiceId] || "📌";
@@ -189,7 +191,9 @@ export function PhotoLanguageChoice({
           <img
             src={customImage}
             alt={label}
-            loading="lazy"
+            loading={imagePriority ? "eager" : "lazy"}
+            decoding="async"
+            fetchPriority={imagePriority ? "high" : "auto"}
             width={512}
             height={512}
             className="h-full w-full object-contain object-center"
