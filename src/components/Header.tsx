@@ -53,6 +53,11 @@ export function Header() {
             <LanguageSelector />
             {user ? (
               <>
+                {isAdmin && (
+                  <Button variant="hero" size="sm" asChild>
+                    <Link to="/onboarding">Démarrer Marianne</Link>
+                  </Button>
+                )}
                 <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground" asChild>
                   <Link to="/dashboard">
                     <User className="h-4 w-4" />
@@ -132,6 +137,16 @@ export function Header() {
               )}
               {user ? (
                 <>
+                  {isAdmin && (
+                    <Link
+                      to="/onboarding"
+                      className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      Démarrer Marianne
+                    </Link>
+                  )}
                   <Link
                     to="/dashboard"
                     className="flex items-center gap-2 rounded-lg px-4 py-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-primary"
