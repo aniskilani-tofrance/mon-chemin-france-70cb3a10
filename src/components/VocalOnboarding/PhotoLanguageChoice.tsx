@@ -182,7 +182,7 @@ export function PhotoLanguageChoice({
           animate={isSelected ? { scale: [1, 1.05, 1] } : {}}
           transition={{ duration: 0.3 }}
           className={cn(
-            "w-full aspect-square rounded-xl overflow-hidden bg-secondary/20 flex items-center justify-center",
+            "w-full aspect-square rounded-xl overflow-hidden bg-secondary/20 flex items-center justify-center p-1",
             isSelected && "ring-2 ring-primary/30"
           )}
         >
@@ -192,7 +192,7 @@ export function PhotoLanguageChoice({
             loading="lazy"
             width={512}
             height={512}
-            className="w-full h-full object-cover"
+            className="h-full w-full object-contain object-center"
             onError={() => setImageError(true)}
           />
         </motion.div>

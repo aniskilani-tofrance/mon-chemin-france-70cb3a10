@@ -66,6 +66,12 @@ export function VisualQuestionStep({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [question.id, tts.isEnabled, tts.isSupported]);
 
+  useEffect(() => {
+    requestAnimationFrame(() => {
+      document.scrollingElement?.scrollTo({ top: 0, behavior: "smooth" });
+    });
+  }, [question.id]);
+
   const handleReplay = () => {
     playPreSpeech();
     setTimeout(() => tts.speak(ttsText), 280);
