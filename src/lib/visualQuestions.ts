@@ -42,6 +42,15 @@ import secAide from "@/assets/onboarding/sector_aide_personne.jpg";
 import secHotel from "@/assets/onboarding/sector_hotellerie.jpg";
 import secCom from "@/assets/onboarding/sector_commerce.jpg";
 
+import tensionBtp from "@/assets/onboarding/tension_btp.jpg";
+import tensionAidePersonne from "@/assets/onboarding/tension_aide_personne.jpg";
+import tensionHotellerie from "@/assets/onboarding/tension_hotellerie.jpg";
+import tensionLogistique from "@/assets/onboarding/tension_logistique.jpg";
+import tensionProprete from "@/assets/onboarding/tension_proprete.jpg";
+import tensionSante from "@/assets/onboarding/tension_sante.jpg";
+import tensionSecurite from "@/assets/onboarding/tension_securite.jpg";
+import tensionTransport from "@/assets/onboarding/tension_transport.jpg";
+
 // Reconnaissance de diplôme
 import goalRecognize from "@/assets/onboarding/goal_recognize_diploma.jpg";
 
@@ -203,14 +212,14 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     type: "info",
     columns: 3,
     options: [
-      { id: "btp", labelKey: "questionnaire.tension_jobs_info.sectors.btp", icon: "🏗️" },
-      { id: "aide_personne", labelKey: "questionnaire.tension_jobs_info.sectors.aide_personne", icon: "❤️" },
-      { id: "hotellerie", labelKey: "questionnaire.tension_jobs_info.sectors.hotellerie", icon: "🍽️" },
-      { id: "logistique", labelKey: "questionnaire.tension_jobs_info.sectors.logistique", icon: "📦" },
-      { id: "proprete", labelKey: "questionnaire.tension_jobs_info.sectors.proprete", icon: "🧹" },
-      { id: "sante", labelKey: "questionnaire.tension_jobs_info.sectors.sante", icon: "🩺" },
-      { id: "securite", labelKey: "questionnaire.tension_jobs_info.sectors.securite", icon: "🛡️" },
-      { id: "transport", labelKey: "questionnaire.tension_jobs_info.sectors.transport", icon: "🚚" },
+      { id: "btp", labelKey: "questionnaire.tension_jobs_info.sectors.btp", icon: "🏗️", illustration: tensionBtp },
+      { id: "aide_personne", labelKey: "questionnaire.tension_jobs_info.sectors.aide_personne", icon: "❤️", illustration: tensionAidePersonne },
+      { id: "hotellerie", labelKey: "questionnaire.tension_jobs_info.sectors.hotellerie", icon: "🍽️", illustration: tensionHotellerie },
+      { id: "logistique", labelKey: "questionnaire.tension_jobs_info.sectors.logistique", icon: "📦", illustration: tensionLogistique },
+      { id: "proprete", labelKey: "questionnaire.tension_jobs_info.sectors.proprete", icon: "🧹", illustration: tensionProprete },
+      { id: "sante", labelKey: "questionnaire.tension_jobs_info.sectors.sante", icon: "🩺", illustration: tensionSante },
+      { id: "securite", labelKey: "questionnaire.tension_jobs_info.sectors.securite", icon: "🛡️", illustration: tensionSecurite },
+      { id: "transport", labelKey: "questionnaire.tension_jobs_info.sectors.transport", icon: "🚚", illustration: tensionTransport },
     ],
     infoCtaKey: "questionnaire.tension_jobs_info.cta",
     showIf: (a) => goalIncludes(a, "recognize_diploma"),
