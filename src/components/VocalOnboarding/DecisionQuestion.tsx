@@ -295,6 +295,7 @@ export function DecisionQuestion({
                   label={choiceLabel}
                   customIcon={choice.icon}
                   customImage={getOnboardingIllustration(choice.id, question.id)}
+                  imagePriority={index < 2}
                   isSelected={isSelected}
                   onClick={() => handleChoiceSelect(choice.id, choice.tags)}
                   index={index}
@@ -327,6 +328,7 @@ export function DecisionQuestion({
                     label={choiceLabel}
                     customIcon={choice.icon}
                     customImage={getOnboardingIllustration(choice.id, question.id)}
+                    imagePriority={index < 2}
                     isSelected={isSelected}
                     isMultiSelect
                     onClick={() => handleMultiChoiceToggle(choice.id)}
