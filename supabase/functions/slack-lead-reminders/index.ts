@@ -18,6 +18,7 @@ type Lead = {
   hubspot_contact_id: string | null;
   hubspot_deal_id: string | null;
   profile_id: string | null;
+  slack_reminder_sent_at: string | null;
 };
 
 function json(data: unknown, status = 200) {
@@ -75,17 +76,20 @@ serve(async (req) => {
     const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
     const { data: leads, error } = await supabaseAdmin
       .from("leads")
-      .select("id, first_name, phone, statut_lead, status_updated_at, source_name, source_location_id, hubspot_contact_id, hubspot_deal_id, profile_id")
+      .select("id, first_name, phone, statut_lead, status_updated_at, source_name, source_location_id, hubspot_contact_id, hubspot_deal_id, profile_id, slack_reminder_sent_at")
       .not("statut_lead", "is", null)
       .not("status_updated_at", "is", null)
       .lte("status_updated_at", cutoff)
-      .or("slack_reminder_sent_at.is.null,slack_reminder_sent_at.lt.status_updated_at")
-      .limit(25);
+      .limit(100);
 
     if (error) throw new Error(`Lecture des leads impossible: ${error.message}`);
 
+    const eligibleLeads = ((leads || []) as Lead[])
+      .filter((lead) => !lead.slack_reminder_sent_at || new Date(lead.slack_reminder_sent_at) < new Date(lead.status_updated_at || 0))
+      .slice(0, 25);
+
     const results = [];
-    for (const lead of (leads || []) as Lead[]) {
+    for (const lead of eligibleLeads) {
       try {
         await notifySlack(lead);
         const { error: updateError } = await supabaseAdmin
@@ -100,7 +104,7 @@ serve(async (req) => {
       }
     }
 
-    return json({ checked: leads?.length || 0, results });
+    return json({ checked: leads?.length || 0, eligible: eligibleLeads.length, results });
   } catch (error) {
     console.error("slack-lead-reminders error", error);
     return json({ error: (error as Error).message }, 500);
