@@ -164,6 +164,7 @@ export function VisualQuestionStep({
             label={t(option.labelKey)}
             customIcon={option.icon}
             customImage={option.illustration}
+            imagePriority={index < 2}
             isSelected={question.type === "info" ? false : selectedSet.has(option.id)}
             isMultiSelect={question.type === "multi"}
             onClick={() => {

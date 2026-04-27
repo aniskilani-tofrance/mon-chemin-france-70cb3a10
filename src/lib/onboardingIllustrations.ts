@@ -82,7 +82,32 @@ const ILLUSTRATIONS: Record<string, string> = {
   later: contactNo,
 };
 
+const preloadedImages = new Set<string>();
+
+const scheduleIdle = (callback: () => void) => {
+  if (typeof window === "undefined") return;
+  const requestIdle = window.requestIdleCallback || ((cb: IdleRequestCallback) => window.setTimeout(() => cb({ didTimeout: false, timeRemaining: () => 0 }), 120));
+  requestIdle(callback, { timeout: 900 });
+};
+
 export function getOnboardingIllustration(choiceId: string, contextId?: string) {
   const scopedKey = contextId ? `${contextId}_${choiceId}` : choiceId;
   return ILLUSTRATIONS[scopedKey] || ILLUSTRATIONS[choiceId];
+}
+
+export function preloadOnboardingIllustrations(urls: Array<string | undefined>) {
+  if (typeof window === "undefined") return;
+  const uniqueUrls = urls.filter((url): url is string => !!url && !preloadedImages.has(url));
+  if (!uniqueUrls.length) return;
+
+  scheduleIdle(() => {
+    uniqueUrls.forEach((url) => {
+      if (preloadedImages.has(url)) return;
+      preloadedImages.add(url);
+      const img = new Image();
+      img.decoding = "async";
+      img.loading = "eager";
+      img.src = url;
+    });
+  });
 }

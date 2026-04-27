@@ -13,7 +13,7 @@ import { AnimatedAgent } from "./AnimatedAgent";
 import { PhotoLanguageChoice, PhotoLanguageGrid } from "./PhotoLanguageChoice";
 import { GooglePlacesAutocomplete } from "./GooglePlacesAutocomplete";
 import { playPreSpeech } from "@/lib/sounds";
-import { getOnboardingIllustration } from "@/lib/onboardingIllustrations";
+import { getOnboardingIllustration, preloadOnboardingIllustrations } from "@/lib/onboardingIllustrations";
 import { z } from "zod";
 
 // Email validation schema
@@ -81,6 +81,13 @@ export function DecisionQuestion({
     setTextValue("");
     setEmailError(null);
   }, [question.id]);
+
+  useEffect(() => {
+    if (!question.choices?.length) return;
+    preloadOnboardingIllustrations(
+      question.choices.map((choice) => getOnboardingIllustration(choice.id, question.id))
+    );
+  }, [question.id, question.choices]);
 
   // Handle single choice selection
   const handleChoiceSelect = (choiceId: string, tags?: string[]) => {
@@ -288,6 +295,7 @@ export function DecisionQuestion({
                   label={choiceLabel}
                   customIcon={choice.icon}
                   customImage={getOnboardingIllustration(choice.id, question.id)}
+                  imagePriority={index < 2}
                   isSelected={isSelected}
                   onClick={() => handleChoiceSelect(choice.id, choice.tags)}
                   index={index}
@@ -320,6 +328,7 @@ export function DecisionQuestion({
                     label={choiceLabel}
                     customIcon={choice.icon}
                     customImage={getOnboardingIllustration(choice.id, question.id)}
+                    imagePriority={index < 2}
                     isSelected={isSelected}
                     isMultiSelect
                     onClick={() => handleMultiChoiceToggle(choice.id)}
