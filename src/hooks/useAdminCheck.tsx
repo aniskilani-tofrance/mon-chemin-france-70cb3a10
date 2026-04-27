@@ -29,11 +29,15 @@ export function useAdminCheck() {
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!mounted) return;
       void check(session?.user?.id ?? null);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      void check(session?.user?.id ?? null);
+      setTimeout(() => {
+        if (!mounted) return;
+        void check(session?.user?.id ?? null);
+      }, 0);
     });
 
     return () => {
