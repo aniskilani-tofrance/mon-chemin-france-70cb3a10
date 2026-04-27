@@ -30,6 +30,7 @@ import { getLeadSourcePrefill, resolveLeadSource } from "@/lib/leadSources";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
+import { preloadOnboardingIllustrations } from "@/lib/onboardingIllustrations";
 
 type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "contact" | "email" | "magic-link-sent" | "complete";
 
@@ -210,6 +211,14 @@ const Onboarding = () => {
   };
 
   const currentQuestion = activeQuestions[questionIndex];
+
+  useEffect(() => {
+    if (step !== "visual-quiz") return;
+    const nearbyImages = activeQuestions
+      .slice(questionIndex, questionIndex + 3)
+      .flatMap((question) => question.options.map((option) => option.illustration));
+    preloadOnboardingIllustrations(nearbyImages);
+  }, [activeQuestions, questionIndex, step]);
 
   const handleAnswerChange = (value: string | string[]) => {
     if (!currentQuestion) return;
