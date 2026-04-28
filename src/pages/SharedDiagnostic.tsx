@@ -84,12 +84,12 @@ const SharedDiagnostic = () => {
   });
 
   const question: DiagnosticQuestion | undefined = DIAGNOSTIC_QUESTIONS[currentIndex];
-  const total = DIAGNOSTIC_QUESTIONS.length;
+  const total = DIAGNOSTIC_QUESTIONS.length + 1;
   const currentAnswer = question ? answers[question.key] : undefined;
   const validatedCount = Object.values(answers).filter(
     (a) => a.validated_by_learner && a.validated_by_formateur
   ).length;
-  const progressPercent = (validatedCount / total) * 100;
+  const progressPercent = ((validatedCount + (competenceStepCompleted ? 1 : 0)) / total) * 100;
 
   // ─── Load existing diagnostic (by id or by code) ──────────────
   useEffect(() => {
