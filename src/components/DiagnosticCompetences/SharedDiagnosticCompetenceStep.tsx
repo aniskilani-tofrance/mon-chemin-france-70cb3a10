@@ -17,6 +17,12 @@ import {
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
+interface ExperienceRow {
+  category: string;
+  description: string | null;
+  activities: string[] | null;
+}
+
 const categories = Object.keys(EXPERIENCE_CATEGORY_LABELS) as ExperienceCategory[];
 
 const activitySuggestions: Record<ExperienceCategory, string[]> = {
@@ -71,7 +77,7 @@ export function SharedDiagnosticCompetenceStep({ diagnosticId, onBack, onDone, c
       ]);
       if (cancelled) return;
       const nextDraft: ExperienceDraft = structuredClone(emptyDraft);
-      (experiences || []).forEach((row: any) => {
+      ((experiences || []) as ExperienceRow[]).forEach((row) => {
         if (row.category in nextDraft) {
           nextDraft[row.category as ExperienceCategory] = {
             description: row.description || "",
@@ -121,8 +127,8 @@ export function SharedDiagnosticCompetenceStep({ diagnosticId, onBack, onDone, c
       setScores(result);
       setActiveTab("evaluation");
       if (result.length) toast.success(`${result.length} compétence(s) détectée(s).`);
-    } catch (error: any) {
-      toast.error("Détection impossible : " + (error.message || "erreur inconnue"));
+    } catch (error: unknown) {
+      toast.error("Détection impossible : " + (error instanceof Error ? error.message : "erreur inconnue"));
     } finally {
       setSaving(false);
     }
