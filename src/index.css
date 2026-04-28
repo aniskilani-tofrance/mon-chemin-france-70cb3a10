@@ -513,6 +513,45 @@
   .diagnostic-paper-print [class*="bg-card"] {
     background: white !important;
   }
+
+  .diagnostic-paper-draft {
+    font-family: Arial, sans-serif !important;
+    font-size: 8.8pt !important;
+    line-height: 1.25 !important;
+  }
+
+  .diagnostic-paper-draft * {
+    color: #000 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  .diagnostic-paper-draft .diagnostic-paper-section,
+  .diagnostic-paper-draft .diagnostic-paper-question {
+    margin-bottom: 0.35rem !important;
+    padding: 0.35rem !important;
+    border: 1px solid #999 !important;
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .diagnostic-paper-draft h2 {
+    font-size: 15pt !important;
+    margin-bottom: 0.15rem !important;
+  }
+
+  .diagnostic-paper-draft h3,
+  .diagnostic-paper-draft p {
+    font-size: 9pt !important;
+    margin: 0 !important;
+  }
+
+  .diagnostic-paper-draft .diagnostic-paper-answer {
+    height: 2.4rem !important;
+    border: 0 !important;
+    border-bottom: 1px solid #777 !important;
+  }
 }
 
 /* ═══════════════════════════════════════════════════════════
