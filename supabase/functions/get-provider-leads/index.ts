@@ -31,20 +31,35 @@ serve(async (req) => {
     const { data: userData } = await supabaseClient.auth.getUser(token);
     if (!userData.user) throw new Error("Non authentifié");
 
-    // Get provider for this user
+    // Get provider for this user, either as owner or affiliated team member
     const { data: provider, error: provErr } = await supabaseClient
       .from("training_providers")
       .select("id")
       .eq("user_id", userData.user.id)
       .maybeSingle();
 
-    if (provErr || !provider) throw new Error("Pas un partenaire");
+    if (provErr) throw provErr;
+
+    let providerId = provider?.id;
+    if (!providerId) {
+      const { data: membership, error: memberErr } = await supabaseClient
+        .from("provider_members")
+        .select("provider_id")
+        .neq("status", "disabled")
+        .or(`user_id.eq.${userData.user.id},email.eq.${userData.user.email?.toLowerCase()}`)
+        .limit(1)
+        .maybeSingle();
+      if (memberErr) throw memberErr;
+      providerId = membership?.provider_id;
+    }
+
+    if (!providerId) throw new Error("Pas un partenaire");
 
     // Get leads with profiles
     const { data: leads, error: leadsErr } = await supabaseClient
       .from("leads")
       .select("*, profiles(*), trainings(certification_type, target_sectors, title)")
-      .eq("provider_id", provider.id)
+      .eq("provider_id", providerId)
       .order("created_at", { ascending: false });
 
     if (leadsErr) throw leadsErr;
