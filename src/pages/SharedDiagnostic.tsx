@@ -329,14 +329,15 @@ const SharedDiagnostic = () => {
   const goNext = async () => {
     const ok = await saveCurrent();
     if (!ok) return;
-    if (currentIndex < total - 1) setCurrentIndex(currentIndex + 1);
+    if (currentIndex < DIAGNOSTIC_QUESTIONS.length - 1) setCurrentIndex(currentIndex + 1);
+    else setShowCompetenceStep(true);
   };
 
   const completeDiagnostic = async () => {
     if (!diagnosticId) return;
     setCompleting(true);
     try {
-      await saveCurrent();
+      if (!showCompetenceStep) await saveCurrent();
       const { error } = await supabase
         .from("shared_diagnostics")
         .update({ status: "completed", completed_at: new Date().toISOString() })
