@@ -25,6 +25,7 @@ const PrivacyPage = lazy(() => import("./pages/PrivacyPage"));
 const MyDataPage = lazy(() => import("./pages/MyDataPage"));
 const Pitch = lazy(() => import("./pages/Pitch"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
+const PartnerInvitations = lazy(() => import("./pages/PartnerInvitations"));
 const PartnerProfile = lazy(() => import("./pages/PartnerProfile"));
 const PartnerSignup = lazy(() => import("./pages/PartnerSignup"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
@@ -97,6 +98,7 @@ const App = () => (
               <Route path="/pitch" element={<Pitch />} />
               <Route path="/pitch-region" element={<PitchRegion />} />
               <Route path="/partner-dashboard" element={<ProtectedRoute><PartnerDashboard /></ProtectedRoute>} />
+              <Route path="/partner-invitations" element={<ProtectedRoute><PartnerInvitations /></ProtectedRoute>} />
               <Route path="/partner-profile" element={<ProtectedRoute><PartnerProfile /></ProtectedRoute>} />
               <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
               <Route path="/admin/users" element={<AdminRoute><AdminUsers /></AdminRoute>} />
