@@ -532,10 +532,29 @@
   .diagnostic-paper-print .diagnostic-paper-question {
     margin-bottom: 0.35rem !important;
     padding: 0.45rem !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    overflow: visible !important;
   }
 
   .diagnostic-paper-print .diagnostic-paper-answer {
     height: 3rem !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .diagnostic-paper-print .diagnostic-paper-section:nth-of-type(3),
+  .diagnostic-paper-print .diagnostic-paper-section:nth-of-type(5) {
+    break-before: page !important;
+    page-break-before: always !important;
+  }
+
+  .diagnostic-paper-print article,
+  .diagnostic-paper-print section,
+  .diagnostic-paper-print [class*="grid"],
+  .diagnostic-paper-print [class*="border-b"] {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 
   .diagnostic-paper-print > [class*="border"],
