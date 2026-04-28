@@ -646,6 +646,31 @@
   display: none !important;
 }
 
+.diagnostic-paper-pdf-source {
+  position: fixed;
+  left: -10000px;
+  top: 0;
+  width: 192mm;
+  background: hsl(var(--background));
+  pointer-events: none;
+}
+
+.diagnostic-paper-pdf-source .diagnostic-paper-print {
+  width: 192mm !important;
+  max-width: 192mm !important;
+  min-height: 281mm !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: hsl(var(--background)) !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 9.2pt !important;
+  line-height: 1.28 !important;
+}
+
+.diagnostic-paper-pdf-source .print\:hidden {
+  display: none !important;
+}
+
 /* ═══════════════════════════════════════════════════════════
    Print styles — Pitch Région (/pitch-region)
    ═══════════════════════════════════════════════════════════ */
