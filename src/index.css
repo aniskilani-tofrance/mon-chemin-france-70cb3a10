@@ -234,7 +234,7 @@
   }
 
   @page diagnostic-paper {
-    margin: 1cm;
+    margin: 8mm 9mm;
     size: A4 portrait;
   }
 
@@ -496,11 +496,46 @@
 
   .diagnostic-paper-print {
     page: diagnostic-paper;
-    width: 100% !important;
-    max-width: none !important;
+    width: 192mm !important;
+    max-width: 192mm !important;
+    min-height: 281mm !important;
     margin: 0 !important;
     padding: 0 !important;
     background: white !important;
+    font-family: Arial, sans-serif !important;
+    font-size: 9.2pt !important;
+    line-height: 1.28 !important;
+  }
+
+  .diagnostic-paper-print [class*="space-y-6"] > :not([hidden]) ~ :not([hidden]),
+  .diagnostic-paper-print [class*="space-y-4"] > :not([hidden]) ~ :not([hidden]) {
+    margin-top: 0.35rem !important;
+  }
+
+  .diagnostic-paper-print h2 {
+    font-size: 16pt !important;
+    line-height: 1.1 !important;
+  }
+
+  .diagnostic-paper-print h3 {
+    font-size: 10.5pt !important;
+    line-height: 1.15 !important;
+  }
+
+  .diagnostic-paper-print p,
+  .diagnostic-paper-print span,
+  .diagnostic-paper-print div {
+    line-height: 1.28 !important;
+  }
+
+  .diagnostic-paper-print .diagnostic-paper-section,
+  .diagnostic-paper-print .diagnostic-paper-question {
+    margin-bottom: 0.35rem !important;
+    padding: 0.45rem !important;
+  }
+
+  .diagnostic-paper-print .diagnostic-paper-answer {
+    height: 3rem !important;
   }
 
   .diagnostic-paper-print > [class*="border"],
