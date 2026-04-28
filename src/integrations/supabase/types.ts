@@ -1333,6 +1333,54 @@ export type Database = {
         }
         Relationships: []
       }
+      provider_members: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          invited_at: string
+          invited_by: string
+          phone: string | null
+          provider_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          invited_at?: string
+          invited_by: string
+          phone?: string | null
+          provider_id: string
+          role: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          invited_at?: string
+          invited_by?: string
+          phone?: string | null
+          provider_id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       shared_diagnostic_answers: {
         Row: {
           answer_fr: string | null
@@ -1782,6 +1830,7 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_provider: { Args: { _provider_id: string }; Returns: boolean }
       check_marianne_access_code: { Args: { _code: string }; Returns: Json }
       generate_access_code: { Args: never; Returns: string }
       get_lead_price: {
@@ -1807,6 +1856,8 @@ export type Database = {
         Args: { _profile_id: string }
         Returns: boolean
       }
+      is_provider_member: { Args: { _provider_id: string }; Returns: boolean }
+      is_provider_owner: { Args: { _provider_id: string }; Returns: boolean }
       normalize_marianne_access_code: {
         Args: { _code: string }
         Returns: string
