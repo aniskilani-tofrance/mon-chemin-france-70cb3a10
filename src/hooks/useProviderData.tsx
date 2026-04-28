@@ -188,3 +188,20 @@ export function useInviteProviderMember() {
     },
   });
 }
+
+export function useManageProviderInvitation() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ member_id, action }: { member_id: string; action: "resend" | "revoke" }) => {
+      const { data, error } = await supabase.functions.invoke("manage-provider-invitation", {
+        body: { member_id, action },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["provider-members"] });
+    },
+  });
+}
