@@ -55,9 +55,12 @@ export default function PartnerDashboard() {
   const { data: provider, isLoading: providerLoading } = useProviderProfile();
   const { data: leads, isLoading: leadsLoading } = useProviderLeads();
   const { data: trainings } = useProviderTrainings();
+  const { data: members, isLoading: membersLoading } = useProviderMembers();
   const updateLead = useUpdateLeadStatus();
+  const inviteMember = useInviteProviderMember();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [memberForm, setMemberForm] = useState({ full_name: "", email: "", phone: "", role: "benevole" as "benevole" | "cip" | "accueil" | "formateur" });
   const [searchParams, setSearchParams] = useSearchParams();
   const qc = useQueryClient();
 
@@ -221,6 +224,24 @@ export default function PartnerDashboard() {
 
   const handleStatusChange = (leadId: string, status: Lead["status"], notes?: string) => {
     updateLead.mutate({ leadId, status, notes });
+  };
+
+  const handleInviteMember = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!provider?.id) return;
+    try {
+      await inviteMember.mutateAsync({
+        provider_id: provider.id,
+        email: memberForm.email,
+        role: memberForm.role,
+        full_name: memberForm.full_name || undefined,
+        phone: memberForm.phone || undefined,
+      });
+      toast.success("Membre affilié à la structure");
+      setMemberForm({ full_name: "", email: "", phone: "", role: "benevole" });
+    } catch (e: any) {
+      toast.error(e.message || "Impossible d'affilier ce membre");
+    }
   };
 
   return (
