@@ -24,6 +24,7 @@ import {
 } from "@/lib/diagnosticQuestions";
 import type { LanguageCode } from "@/lib/translations";
 import { CreateLearnerDialog } from "@/components/Formateur/CreateLearnerDialog";
+import { SharedDiagnosticCompetenceStep } from "@/components/DiagnosticCompetences/SharedDiagnosticCompetenceStep";
 
 interface AnswerRow {
   id?: string;
@@ -47,6 +48,8 @@ const SharedDiagnostic = () => {
   const [languageConfirmed, setLanguageConfirmed] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answers, setAnswers] = useState<Record<string, AnswerRow>>({});
+  const [showCompetenceStep, setShowCompetenceStep] = useState(false);
+  const [competenceStepCompleted, setCompetenceStepCompleted] = useState(false);
   const needsAuthenticatedAccess = !!diagnosticIdParam || !!codeParam;
   const [loading, setLoading] = useState(needsAuthenticatedAccess);
   const [translating, setTranslating] = useState(false);
