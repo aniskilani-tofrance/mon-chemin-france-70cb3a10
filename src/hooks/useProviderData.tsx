@@ -14,13 +14,31 @@ export function useProviderProfile() {
     queryFn: async () => {
       await supabase.functions.invoke("accept-provider-membership");
 
-      const { data, error } = await supabase
+      const { data: ownedProvider, error: ownedError } = await supabase
         .from("training_providers")
         .select("*")
-        .or(`user_id.eq.${user!.id},provider_members.user_id.eq.${user!.id},provider_members.email.eq.${user!.email?.toLowerCase()}`)
+        .eq("user_id", user!.id)
         .maybeSingle();
-      if (error) throw error;
-      return data;
+      if (ownedError) throw ownedError;
+      if (ownedProvider) return ownedProvider;
+
+      const { data: membership, error: membershipError } = await supabase
+        .from("provider_members")
+        .select("provider_id")
+        .neq("status", "disabled")
+        .or(`user_id.eq.${user!.id},email.eq.${user!.email?.toLowerCase()}`)
+        .limit(1)
+        .maybeSingle();
+      if (membershipError) throw membershipError;
+      if (!membership) return null;
+
+      const { data: provider, error: providerError } = await supabase
+        .from("training_providers")
+        .select("*")
+        .eq("id", membership.provider_id)
+        .maybeSingle();
+      if (providerError) throw providerError;
+      return provider;
     },
   });
 }
