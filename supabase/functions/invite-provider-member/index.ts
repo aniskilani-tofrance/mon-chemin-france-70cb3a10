@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { sendOutlookMail } from "../_shared/outlook-mail.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,17 @@ const allowedRoles = new Set(["benevole", "cip", "accueil", "formateur"]);
 
 function isEmail(value: string) {
   return /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(value);
+}
+
+const roleLabels: Record<string, string> = {
+  benevole: "bénévole",
+  cip: "CIP",
+  accueil: "accueil",
+  formateur: "formateur",
+};
+
+function escapeHtml(value: string) {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
 }
 
 Deno.serve(async (req) => {
@@ -125,7 +137,23 @@ Deno.serve(async (req) => {
         .upsert({ user_id: matchingUser.id, role }, { onConflict: "user_id,role" });
     }
 
-    return new Response(JSON.stringify({ member, existing_user: !!matchingUser }), {
+    const appUrl = req.headers.get("origin") || "https://www.tofrance.life";
+    const safeName = escapeHtml(fullName || email);
+    const safeProvider = escapeHtml(provider.name);
+    const safeRole = escapeHtml(roleLabels[role] || role);
+    const html = `<!doctype html><html lang="fr"><body style="margin:0;background:#f8fafc;font-family:Arial,sans-serif;color:#0f172a"><div style="padding:32px 16px"><div style="max-width:560px;margin:0 auto;background:#ffffff;border:1px solid #e2e8f0;border-radius:14px;padding:28px"><h1 style="font-size:22px;margin:0 0 12px;color:#0f172a">Invitation ToFrance</h1><p style="font-size:15px;line-height:1.6;color:#334155">Bonjour ${safeName},</p><p style="font-size:15px;line-height:1.6;color:#334155">${safeProvider} vous a affilié à son espace structure avec le rôle <strong>${safeRole}</strong>.</p><p style="font-size:15px;line-height:1.6;color:#334155">Connectez-vous avec cette adresse email pour accéder au dashboard structure.</p><p style="margin:24px 0"><a href="${appUrl}/login" style="display:inline-block;background:#0f766e;color:#ffffff;text-decoration:none;border-radius:10px;padding:12px 18px;font-weight:700">Accéder à ToFrance</a></p><p style="font-size:12px;line-height:1.5;color:#64748b">Si vous n’attendiez pas cette invitation, vous pouvez ignorer cet email.</p></div></div></body></html>`;
+    const inviteEmail = await sendOutlookMail({
+      to: email,
+      subject: `${provider.name} vous invite sur ToFrance`,
+      html,
+      log: {
+        template: "provider-member-invitation",
+        sourceFunction: "invite-provider-member",
+        metadata: { providerId, role, existingUser: !!matchingUser },
+      },
+    });
+
+    return new Response(JSON.stringify({ member, existing_user: !!matchingUser, email_sent: inviteEmail.ok }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
