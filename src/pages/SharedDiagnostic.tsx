@@ -465,7 +465,7 @@ const SharedDiagnostic = () => {
               </span>
               <Badge variant="secondary" className="gap-1">
                 <FileCheck2 className="h-3 w-3" />
-                {validatedCount}/{total} validées
+                {validatedCount + (competenceStepCompleted ? 1 : 0)}/{total} validées
               </Badge>
             </div>
             <Badge variant="outline" className="gap-1.5">
@@ -685,20 +685,17 @@ const SharedDiagnostic = () => {
             )}
           </div>
 
-          {currentIndex < total - 1 ? (
+          {currentIndex < DIAGNOSTIC_QUESTIONS.length - 1 ? (
             <Button onClick={goNext} disabled={savingAnswer} className="gap-2">
               {savingAnswer && <Loader2 className="h-4 w-4 animate-spin" />}
               Suivante
               <ChevronRight className="h-4 w-4" />
             </Button>
           ) : (
-            <Button
-              onClick={completeDiagnostic}
-              disabled={completing || validatedCount < total}
-              className="gap-2 bg-success text-success-foreground hover:bg-success/90"
-            >
-              {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
-              Terminer le diagnostic
+            <Button onClick={goNext} disabled={savingAnswer} className="gap-2">
+              {savingAnswer && <Loader2 className="h-4 w-4 animate-spin" />}
+              Vos compétences
+              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
