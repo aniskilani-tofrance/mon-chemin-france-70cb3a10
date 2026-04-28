@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { FormEvent } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -226,7 +227,7 @@ export default function PartnerDashboard() {
     updateLead.mutate({ leadId, status, notes });
   };
 
-  const handleInviteMember = async (event: React.FormEvent) => {
+  const handleInviteMember = async (event: FormEvent) => {
     event.preventDefault();
     if (!provider?.id) return;
     try {
