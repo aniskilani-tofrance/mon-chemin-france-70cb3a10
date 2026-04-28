@@ -1819,7 +1819,15 @@ export type Database = {
           }
     }
     Enums: {
-      app_role: "admin" | "provider" | "user" | "formateur" | "directeur"
+      app_role:
+        | "admin"
+        | "provider"
+        | "user"
+        | "formateur"
+        | "directeur"
+        | "benevole"
+        | "cip"
+        | "accueil"
       assignment_status: "a_faire" | "en_cours" | "termine" | "en_retard"
       audio_review_status: "pending" | "validated" | "rework"
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
@@ -1985,7 +1993,16 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "provider", "user", "formateur", "directeur"],
+      app_role: [
+        "admin",
+        "provider",
+        "user",
+        "formateur",
+        "directeur",
+        "benevole",
+        "cip",
+        "accueil",
+      ],
       assignment_status: ["a_faire", "en_cours", "termine", "en_retard"],
       audio_review_status: ["pending", "validated", "rework"],
       cecrl_level: ["alpha", "post_alpha", "a1", "a2", "b1"],
