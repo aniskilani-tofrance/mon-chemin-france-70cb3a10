@@ -6,6 +6,7 @@ import { FormateurContenus } from "@/components/Formateur/FormateurContenus";
 import { FormateurAssignations } from "@/components/Formateur/FormateurAssignations";
 import { FormateurEvaluations } from "@/components/Formateur/FormateurEvaluations";
 import { FormateurAFEST } from "@/components/Formateur/FormateurAFEST";
+import { FormateurDiagnosticPapier } from "@/components/Formateur/FormateurDiagnosticPapier";
 import { SEO } from "@/components/SEO";
 import { DemoBanner } from "@/components/DemoBanner";
 
@@ -28,6 +29,7 @@ export default function FormateurDashboard() {
               <Route path="assignations" element={<FormateurAssignations />} />
               <Route path="evaluations" element={<FormateurEvaluations />} />
               <Route path="afest" element={<FormateurAFEST />} />
+              <Route path="diagnostic-papier" element={<FormateurDiagnosticPapier />} />
             </Routes>
           </main>
         </div>
