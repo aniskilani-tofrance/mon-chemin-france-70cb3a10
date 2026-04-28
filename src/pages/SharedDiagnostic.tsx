@@ -395,12 +395,58 @@ const SharedDiagnostic = () => {
     );
   }
 
-  if (!question) return null;
+  if (!question && !showCompetenceStep) return null;
 
   const langMeta = SUPPORTED_LANGUAGES.find((l) => l.code === learnerLanguage);
   const isRTL = !!langMeta?.rtl;
   const bothValidated =
     !!currentAnswer?.validated_by_learner && !!currentAnswer?.validated_by_formateur;
+
+  if (showCompetenceStep && diagnosticId) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
+        <Header />
+        <main className="mx-auto max-w-7xl px-4 pt-20 pb-12 sm:pt-24">
+          <div className="mb-6">
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-3">
+                <Badge variant="outline" className="gap-1.5">
+                  <Sparkles className="h-3 w-3" />
+                  Diagnostic partagé
+                </Badge>
+                <span className="text-sm text-muted-foreground">Étape {DIAGNOSTIC_QUESTIONS.length + 1}/{total}</span>
+                <Badge variant="secondary" className="gap-1">
+                  <FileCheck2 className="h-3 w-3" />
+                  {validatedCount + (competenceStepCompleted ? 1 : 0)}/{total} validées
+                </Badge>
+              </div>
+              <Badge variant="outline" className="gap-1.5">
+                <Globe className="h-3 w-3" />
+                {langMeta?.flag} {langMeta?.label}
+              </Badge>
+            </div>
+            <Progress value={progressPercent} className="h-2" />
+          </div>
+          <SharedDiagnosticCompetenceStep
+            diagnosticId={diagnosticId}
+            completed={competenceStepCompleted}
+            onBack={() => setShowCompetenceStep(false)}
+            onDone={() => setCompetenceStepCompleted(true)}
+          />
+          <div className="mt-6 flex justify-end">
+            <Button
+              onClick={completeDiagnostic}
+              disabled={completing || validatedCount < DIAGNOSTIC_QUESTIONS.length || !competenceStepCompleted}
+              className="gap-2 bg-success text-success-foreground hover:bg-success/90"
+            >
+              {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
+              Terminer le diagnostic
+            </Button>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
