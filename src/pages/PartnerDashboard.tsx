@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { FormEvent } from "react";
 import { useSearchParams, Link } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -6,8 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Briefcase, Mail, UserPlus } from "lucide-react";
 import { AnimatedContainer, StaggerContainer, StaggerItem } from "@/components/AnimatedContainer";
 import {
   Users,
@@ -19,7 +23,7 @@ import {
   ShoppingCart,
   Download,
 } from "lucide-react";
-import { useProviderProfile, useProviderLeads, useUpdateLeadStatus, useProviderTrainings } from "@/hooks/useProviderData";
+import { useProviderProfile, useProviderLeads, useUpdateLeadStatus, useProviderTrainings, useProviderMembers, useInviteProviderMember } from "@/hooks/useProviderData";
 import { useRequireAuth } from "@/hooks/useAuth";
 import type { Lead } from "@/hooks/useProviderData";
 import { Constants } from "@/integrations/supabase/types";
@@ -40,14 +44,24 @@ Constants.public.Enums.lead_status.forEach((s) => {
   STATUS_LABELS[s] = map[s] || s;
 });
 
+const TEAM_ROLE_LABELS: Record<string, string> = {
+  benevole: "Bénévole",
+  cip: "CIP",
+  accueil: "Accueil",
+  formateur: "Formateur",
+};
+
 export default function PartnerDashboard() {
   useRequireAuth("/login");
   const { data: provider, isLoading: providerLoading } = useProviderProfile();
   const { data: leads, isLoading: leadsLoading } = useProviderLeads();
   const { data: trainings } = useProviderTrainings();
+  const { data: members, isLoading: membersLoading } = useProviderMembers();
   const updateLead = useUpdateLeadStatus();
+  const inviteMember = useInviteProviderMember();
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [purchasingId, setPurchasingId] = useState<string | null>(null);
+  const [memberForm, setMemberForm] = useState({ full_name: "", email: "", phone: "", role: "benevole" as "benevole" | "cip" | "accueil" | "formateur" });
   const [searchParams, setSearchParams] = useSearchParams();
   const qc = useQueryClient();
 
@@ -213,6 +227,24 @@ export default function PartnerDashboard() {
     updateLead.mutate({ leadId, status, notes });
   };
 
+  const handleInviteMember = async (event: FormEvent) => {
+    event.preventDefault();
+    if (!provider?.id) return;
+    try {
+      await inviteMember.mutateAsync({
+        provider_id: provider.id,
+        email: memberForm.email,
+        role: memberForm.role,
+        full_name: memberForm.full_name || undefined,
+        phone: memberForm.phone || undefined,
+      });
+      toast.success("Membre affilié à la structure");
+      setMemberForm({ full_name: "", email: "", phone: "", role: "benevole" });
+    } catch (e: any) {
+      toast.error(e.message || "Impossible d'affilier ce membre");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -276,65 +308,86 @@ export default function PartnerDashboard() {
             </div>
           </AnimatedContainer>
 
-          {/* Leads */}
           <AnimatedContainer delay={0.2}>
-            <Card>
-              <CardHeader>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <CardTitle className="text-lg">Leads reçus</CardTitle>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={exportLeadsCSV}
-                      disabled={!leads?.some((l: any) => l.purchased_at)}
-                    >
-                      <Download className="mr-1 h-4 w-4" />
-                      Export CSV
-                    </Button>
-                    <Select value={statusFilter} onValueChange={setStatusFilter}>
-                      <SelectTrigger className="w-48">
-                        <SelectValue placeholder="Filtrer par statut" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Tous les statuts</SelectItem>
-                        {Constants.public.Enums.lead_status.map((s) => (
-                          <SelectItem key={s} value={s}>
-                            {STATUS_LABELS[s] || s}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+            <Tabs defaultValue="leads" className="space-y-4">
+              <TabsList className="grid w-full grid-cols-2 sm:w-auto">
+                <TabsTrigger value="leads">Leads</TabsTrigger>
+                <TabsTrigger value="team">Équipe</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="leads">
+                <Card>
+                  <CardHeader>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                      <CardTitle className="text-lg">Leads reçus</CardTitle>
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Button variant="outline" size="sm" onClick={exportLeadsCSV} disabled={!leads?.some((l: any) => l.purchased_at)}>
+                          <Download className="mr-1 h-4 w-4" />
+                          Export CSV
+                        </Button>
+                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                          <SelectTrigger className="w-full sm:w-48"><SelectValue placeholder="Filtrer par statut" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Tous les statuts</SelectItem>
+                            {Constants.public.Enums.lead_status.map((s) => <SelectItem key={s} value={s}>{STATUS_LABELS[s] || s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {leadsLoading ? <div className="space-y-3">{[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full" />)}</div> : filteredLeads.length === 0 ? (
+                      <div className="py-12 text-center text-muted-foreground">
+                        <Users className="mx-auto h-10 w-10 mb-3 opacity-40" />
+                        <p>Aucun lead pour le moment.</p>
+                        <p className="text-sm">Les leads apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
+                      </div>
+                    ) : (
+                      <StaggerContainer className="space-y-3" staggerDelay={0.05}>
+                        {filteredLeads.map((lead) => <StaggerItem key={lead.id}><LeadCard lead={lead} onStatusChange={handleStatusChange} onPurchase={handlePurchase} purchasing={purchasingId === lead.id} /></StaggerItem>)}
+                      </StaggerContainer>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="team">
+                <div className="grid gap-4 lg:grid-cols-[360px_1fr]">
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg">Affilier un membre</CardTitle></CardHeader>
+                    <CardContent>
+                      <form onSubmit={handleInviteMember} className="space-y-4">
+                        <div className="space-y-2"><Label htmlFor="member-name">Nom</Label><Input id="member-name" value={memberForm.full_name} onChange={(e) => setMemberForm((f) => ({ ...f, full_name: e.target.value }))} placeholder="Nom du membre" /></div>
+                        <div className="space-y-2"><Label htmlFor="member-email">Email</Label><Input id="member-email" type="email" required value={memberForm.email} onChange={(e) => setMemberForm((f) => ({ ...f, email: e.target.value }))} placeholder="prenom@structure.fr" /></div>
+                        <div className="space-y-2"><Label htmlFor="member-phone">Téléphone</Label><Input id="member-phone" value={memberForm.phone} onChange={(e) => setMemberForm((f) => ({ ...f, phone: e.target.value }))} placeholder="06…" /></div>
+                        <div className="space-y-2">
+                          <Label>Rôle</Label>
+                          <Select value={memberForm.role} onValueChange={(role: any) => setMemberForm((f) => ({ ...f, role }))}>
+                            <SelectTrigger><SelectValue /></SelectTrigger>
+                            <SelectContent>{Object.entries(TEAM_ROLE_LABELS).map(([value, label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
+                          </Select>
+                        </div>
+                        <Button type="submit" className="w-full" disabled={inviteMember.isPending}><UserPlus className="mr-2 h-4 w-4" />Affilier</Button>
+                      </form>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader><CardTitle className="text-lg">Membres affiliés</CardTitle></CardHeader>
+                    <CardContent className="space-y-3">
+                      {membersLoading ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />) : !members?.length ? (
+                        <div className="py-10 text-center text-muted-foreground"><Mail className="mx-auto mb-3 h-9 w-9 opacity-40" /><p>Aucun membre affilié.</p></div>
+                      ) : members.map((member) => (
+                        <div key={member.id} className="flex flex-col gap-2 rounded-lg border border-border bg-card p-4 sm:flex-row sm:items-center sm:justify-between">
+                          <div><p className="font-medium text-foreground">{member.full_name || member.email}</p><p className="text-sm text-muted-foreground">{member.email}{member.phone ? ` · ${member.phone}` : ""}</p></div>
+                          <div className="flex items-center gap-2"><Badge variant="outline">{TEAM_ROLE_LABELS[member.role] || member.role}</Badge><Badge variant={member.status === "active" ? "default" : "secondary"}>{member.status === "active" ? "Actif" : member.status === "disabled" ? "Désactivé" : "Invité"}</Badge></div>
+                        </div>
+                      ))}
+                    </CardContent>
+                  </Card>
                 </div>
-              </CardHeader>
-              <CardContent>
-                {leadsLoading ? (
-                  <div className="space-y-3">
-                    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-20 w-full" />)}
-                  </div>
-                ) : filteredLeads.length === 0 ? (
-                  <div className="py-12 text-center text-muted-foreground">
-                    <Users className="mx-auto h-10 w-10 mb-3 opacity-40" />
-                    <p>Aucun lead pour le moment.</p>
-                    <p className="text-sm">Les leads apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
-                  </div>
-                ) : (
-                  <StaggerContainer className="space-y-3" staggerDelay={0.05}>
-                    {filteredLeads.map((lead) => (
-                      <StaggerItem key={lead.id}>
-                        <LeadCard
-                          lead={lead}
-                          onStatusChange={handleStatusChange}
-                          onPurchase={handlePurchase}
-                          purchasing={purchasingId === lead.id}
-                        />
-                      </StaggerItem>
-                    ))}
-                  </StaggerContainer>
-                )}
-              </CardContent>
-            </Card>
+              </TabsContent>
+            </Tabs>
           </AnimatedContainer>
         </div>
       </main>

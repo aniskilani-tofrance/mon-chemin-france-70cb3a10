@@ -12,13 +12,33 @@ export function useProviderProfile() {
     queryKey: ["provider-profile", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data, error } = await supabase
+      await supabase.functions.invoke("accept-provider-membership");
+
+      const { data: ownedProvider, error: ownedError } = await supabase
         .from("training_providers")
         .select("*")
         .eq("user_id", user!.id)
         .maybeSingle();
-      if (error) throw error;
-      return data;
+      if (ownedError) throw ownedError;
+      if (ownedProvider) return ownedProvider;
+
+      const { data: membership, error: membershipError } = await supabase
+        .from("provider_members")
+        .select("provider_id")
+        .neq("status", "disabled")
+        .or(`user_id.eq.${user!.id},email.eq.${user!.email?.toLowerCase()}`)
+        .limit(1)
+        .maybeSingle();
+      if (membershipError) throw membershipError;
+      if (!membership) return null;
+
+      const { data: provider, error: providerError } = await supabase
+        .from("training_providers")
+        .select("*")
+        .eq("id", membership.provider_id)
+        .maybeSingle();
+      if (providerError) throw providerError;
+      return provider;
     },
   });
 }
@@ -122,6 +142,49 @@ export function useDeleteTraining() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["provider-trainings"] });
+    },
+  });
+}
+
+export type ProviderMember = Tables<"provider_members">;
+
+export function useProviderMembers() {
+  const { data: provider } = useProviderProfile();
+
+  return useQuery({
+    queryKey: ["provider-members", provider?.id],
+    enabled: !!provider,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("provider_members")
+        .select("*")
+        .eq("provider_id", provider!.id)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+}
+
+export function useInviteProviderMember() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (member: {
+      provider_id: string;
+      email: string;
+      role: "benevole" | "cip" | "accueil" | "formateur";
+      full_name?: string;
+      phone?: string;
+    }) => {
+      const { data, error } = await supabase.functions.invoke("invite-provider-member", {
+        body: member,
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["provider-members"] });
     },
   });
 }
