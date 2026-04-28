@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ClipboardCheck, FileText, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -26,8 +27,10 @@ function LineField({ label, wide = false }: { label: string; wide?: boolean }) {
 }
 
 export function FormateurDiagnosticPapier() {
+  const [draftPrint, setDraftPrint] = useState(false);
+
   return (
-    <div className="diagnostic-paper-print mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
+    <div className={`diagnostic-paper-print mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0 ${draftPrint ? "diagnostic-paper-draft" : ""}`}>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Diagnostic partagé papier</h2>
@@ -35,10 +38,19 @@ export function FormateurDiagnosticPapier() {
             Version vierge à imprimer pour les apprenants non numérisés, puis à ressaisir dans le diagnostic partagé.
           </p>
         </div>
-        <Button onClick={() => window.print()} className="gap-2">
-          <Printer className="h-4 w-4" />
-          Imprimer
-        </Button>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            type="button"
+            variant={draftPrint ? "default" : "outline"}
+            onClick={() => setDraftPrint((value) => !value)}
+          >
+            Brouillon formateur {draftPrint ? "activé" : "désactivé"}
+          </Button>
+          <Button onClick={() => window.print()} className="gap-2">
+            <Printer className="h-4 w-4" />
+            Imprimer
+          </Button>
+        </div>
       </div>
 
       <Card className="print:border-0 print:shadow-none">
@@ -72,7 +84,7 @@ export function FormateurDiagnosticPapier() {
           {categoryOrder.map((category) => {
             const meta = CATEGORY_META[category];
             return (
-              <section key={category} className="print:break-inside-avoid">
+              <section key={category} className="diagnostic-paper-section print:break-inside-avoid">
                 <div className="mb-3 flex items-center gap-2 border-b pb-2">
                   <span className="text-xl print:text-[14pt]" aria-hidden="true">{meta.icon}</span>
                   <h3 className="text-lg font-bold print:text-[14pt]">{meta.label}</h3>
@@ -80,7 +92,7 @@ export function FormateurDiagnosticPapier() {
 
                 <div className="space-y-4">
                   {groupedQuestions[category].map((question, index) => (
-                    <article key={question.key} className="rounded-lg border p-4 print:break-inside-avoid print:rounded-none print:p-3">
+                    <article key={question.key} className="diagnostic-paper-question rounded-lg border p-4 print:break-inside-avoid print:rounded-none print:p-3">
                       <div className="mb-3 flex gap-2">
                         <span className="font-bold text-primary">{index + 1}.</span>
                         <div>
@@ -96,13 +108,13 @@ export function FormateurDiagnosticPapier() {
                           <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground print:text-[8pt]">
                             Réponse apprenant / langue d’origine
                           </div>
-                          <div className="mt-2 h-20 rounded-md border bg-background print:h-16 print:rounded-none" />
+                          <div className="diagnostic-paper-answer mt-2 h-20 rounded-md border bg-background print:h-16 print:rounded-none" />
                         </div>
                         <div>
                           <div className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground print:text-[8pt]">
                             Reformulation française / observation formateur
                           </div>
-                          <div className="mt-2 h-20 rounded-md border bg-background print:h-16 print:rounded-none" />
+                          <div className="diagnostic-paper-answer mt-2 h-20 rounded-md border bg-background print:h-16 print:rounded-none" />
                         </div>
                       </div>
                     </article>
