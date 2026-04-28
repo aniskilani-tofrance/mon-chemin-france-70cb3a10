@@ -1428,6 +1428,97 @@ export type Database = {
           },
         ]
       }
+      shared_diagnostic_competence_scores: {
+        Row: {
+          competence_key: string
+          competence_label: string
+          created_at: string
+          detected_from: string[]
+          diagnostic_id: string
+          domain: string
+          evidence: Json
+          id: string
+          level: string
+          score: number
+          updated_at: string
+        }
+        Insert: {
+          competence_key: string
+          competence_label: string
+          created_at?: string
+          detected_from?: string[]
+          diagnostic_id: string
+          domain: string
+          evidence?: Json
+          id?: string
+          level?: string
+          score?: number
+          updated_at?: string
+        }
+        Update: {
+          competence_key?: string
+          competence_label?: string
+          created_at?: string
+          detected_from?: string[]
+          diagnostic_id?: string
+          domain?: string
+          evidence?: Json
+          id?: string
+          level?: string
+          score?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_diagnostic_competence_scores_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "shared_diagnostics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shared_diagnostic_experiences: {
+        Row: {
+          activities: string[]
+          category: string
+          created_at: string
+          description: string
+          detected_competences: Json
+          diagnostic_id: string
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          activities?: string[]
+          category: string
+          created_at?: string
+          description?: string
+          detected_competences?: Json
+          diagnostic_id: string
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          activities?: string[]
+          category?: string
+          created_at?: string
+          description?: string
+          detected_competences?: Json
+          diagnostic_id?: string
+          id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shared_diagnostic_experiences_diagnostic_id_fkey"
+            columns: ["diagnostic_id"]
+            isOneToOne: false
+            referencedRelation: "shared_diagnostics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shared_diagnostics: {
         Row: {
           access_code: string | null
@@ -1861,6 +1952,10 @@ export type Database = {
       normalize_marianne_access_code: {
         Args: { _code: string }
         Returns: string
+      }
+      score_shared_diagnostic_competences: {
+        Args: { _diagnostic_id: string }
+        Returns: Json
       }
       validate_marianne_access_code:
         | { Args: { _code: string }; Returns: Json }
