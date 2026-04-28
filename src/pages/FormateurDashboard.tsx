@@ -15,14 +15,18 @@ export default function FormateurDashboard() {
     <SidebarProvider>
       <SEO title="Espace Formateur" description="Dashboard formateur ToFrance" path="/formateur" />
       <div className="min-h-screen flex w-full">
-        <FormateurSidebar />
+        <div className="print:hidden">
+          <FormateurSidebar />
+        </div>
         <div className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center border-b px-4">
+          <header className="h-14 flex items-center border-b px-4 print:hidden">
             <SidebarTrigger className="mr-4" />
             <h1 className="text-lg font-semibold">Espace Formateur</h1>
           </header>
-          <main className="flex-1 p-4 md:p-6 overflow-auto">
-            <DemoBanner />
+          <main className="flex-1 p-4 md:p-6 overflow-auto print:p-0 print:overflow-visible">
+            <div className="print:hidden">
+              <DemoBanner />
+            </div>
             <Routes>
               <Route index element={<FormateurApprenants />} />
               <Route path="contenus" element={<FormateurContenus />} />
