@@ -233,6 +233,11 @@
     size: A4 portrait;
   }
 
+  @page diagnostic-paper {
+    margin: 1cm;
+    size: A4 portrait;
+  }
+
   /* Global resets */
   * {
     animation: none !important;
@@ -459,6 +464,54 @@
   /* Score numbers */
   [class*="text-3xl"][class*="font-bold"][class*="text-primary"] {
     color: hsl(161, 93%, 30%) !important;
+  }
+
+  body:has(.diagnostic-paper-print) {
+    background: white !important;
+    font-size: 10pt !important;
+  }
+
+  body:has(.diagnostic-paper-print) header,
+  body:has(.diagnostic-paper-print) footer,
+  body:has(.diagnostic-paper-print) nav,
+  body:has(.diagnostic-paper-print) aside,
+  body:has(.diagnostic-paper-print) button,
+  body:has(.diagnostic-paper-print) [role="banner"],
+  body:has(.diagnostic-paper-print) [role="navigation"],
+  body:has(.diagnostic-paper-print) [data-sidebar="sidebar"],
+  body:has(.diagnostic-paper-print) [data-sidebar="trigger"],
+  body:has(.diagnostic-paper-print) [data-sonner-toaster],
+  body:has(.diagnostic-paper-print) .print\:hidden {
+    display: none !important;
+  }
+
+  body:has(.diagnostic-paper-print) main,
+  body:has(.diagnostic-paper-print) [data-sidebar="inset"],
+  body:has(.diagnostic-paper-print) .flex-1 {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .diagnostic-paper-print {
+    page: diagnostic-paper;
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+  }
+
+  .diagnostic-paper-print > [class*="border"],
+  .diagnostic-paper-print [class*="shadow"],
+  .diagnostic-paper-print [class*="rounded"] {
+    box-shadow: none !important;
+  }
+
+  .diagnostic-paper-print [class*="bg-background"],
+  .diagnostic-paper-print [class*="bg-card"] {
+    background: white !important;
   }
 }
 

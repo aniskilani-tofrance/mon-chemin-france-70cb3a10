@@ -27,7 +27,7 @@ function LineField({ label, wide = false }: { label: string; wide?: boolean }) {
 
 export function FormateurDiagnosticPapier() {
   return (
-    <div className="mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
+    <div className="diagnostic-paper-print mx-auto max-w-5xl space-y-4 print:max-w-none print:space-y-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between print:hidden">
         <div>
           <h2 className="text-2xl font-bold tracking-tight">Diagnostic partagé papier</h2>
@@ -54,7 +54,7 @@ export function FormateurDiagnosticPapier() {
                 Entretien formateur / apprenant — remplir lisiblement, sans données sensibles inutiles.
               </p>
             </div>
-            <ClipboardCheck className="h-10 w-10 text-primary print:h-8 print:w-8" />
+            <ClipboardCheck className="h-10 w-10 text-primary print:hidden" />
           </div>
         </CardHeader>
 
