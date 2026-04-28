@@ -6,8 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Briefcase } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Briefcase, Mail, UserPlus } from "lucide-react";
 import { AnimatedContainer, StaggerContainer, StaggerItem } from "@/components/AnimatedContainer";
 import {
   Users,
@@ -19,7 +22,7 @@ import {
   ShoppingCart,
   Download,
 } from "lucide-react";
-import { useProviderProfile, useProviderLeads, useUpdateLeadStatus, useProviderTrainings } from "@/hooks/useProviderData";
+import { useProviderProfile, useProviderLeads, useUpdateLeadStatus, useProviderTrainings, useProviderMembers, useInviteProviderMember } from "@/hooks/useProviderData";
 import { useRequireAuth } from "@/hooks/useAuth";
 import type { Lead } from "@/hooks/useProviderData";
 import { Constants } from "@/integrations/supabase/types";
@@ -39,6 +42,13 @@ Constants.public.Enums.lead_status.forEach((s) => {
   };
   STATUS_LABELS[s] = map[s] || s;
 });
+
+const TEAM_ROLE_LABELS: Record<string, string> = {
+  benevole: "Bénévole",
+  cip: "CIP",
+  accueil: "Accueil",
+  formateur: "Formateur",
+};
 
 export default function PartnerDashboard() {
   useRequireAuth("/login");
