@@ -1,0 +1,72 @@
+[
+  {
+    "key": "organisation",
+    "label": "Organisation",
+    "domain": "Transversal",
+    "keywords": ["organiser", "organisation", "planning", "préparer", "preparer", "ranger", "gérer", "gerer", "budget", "documents", "administratif", "courses", "repas", "rendez-vous", "horaire"],
+    "examples": ["Planifier les journées", "Gérer des documents", "Préparer des repas ou des tâches"]
+  },
+  {
+    "key": "communication",
+    "label": "Communication",
+    "domain": "Relationnel",
+    "keywords": ["client", "accueil", "expliquer", "traduire", "telephone", "téléphone", "parler", "écouter", "ecouter", "négocier", "negocier", "informer", "conseiller", "vente"],
+    "examples": ["Accueillir", "Expliquer", "Conseiller"]
+  },
+  {
+    "key": "travail_equipe",
+    "label": "Travail en équipe",
+    "domain": "Relationnel",
+    "keywords": ["équipe", "equipe", "collègue", "collegue", "association", "famille", "entraide", "aider ensemble", "coopérer", "cooperer", "partager", "groupe"],
+    "examples": ["Coopérer", "Aider un groupe", "Partager les tâches"]
+  },
+  {
+    "key": "autonomie",
+    "label": "Autonomie",
+    "domain": "Transversal",
+    "keywords": ["seul", "seule", "autonome", "responsable", "initiative", "démarche", "demarche", "déplacement", "deplacement", "résoudre", "resoudre", "chercher", "débrouiller", "debrouiller"],
+    "examples": ["Faire des démarches", "Trouver une solution", "Se déplacer seul"]
+  },
+  {
+    "key": "gestion_stress",
+    "label": "Gestion des imprévus",
+    "domain": "Transversal",
+    "keywords": ["urgence", "problème", "probleme", "conflit", "pression", "stress", "malade", "retard", "imprévu", "imprevu", "solution", "calmer", "priorité", "priorite"],
+    "examples": ["Gérer une urgence", "Prioriser", "Calmer une situation"]
+  },
+  {
+    "key": "relation_aide",
+    "label": "Aide et accompagnement",
+    "domain": "Service aux personnes",
+    "keywords": ["aider", "accompagner", "soigner", "garder", "enfant", "enfants", "personne âgée", "personnes âgées", "malade", "handicap", "écouter", "ecouter", "soutenir"],
+    "examples": ["Garder des enfants", "Aider une personne", "Accompagner"]
+  },
+  {
+    "key": "technique_metier",
+    "label": "Gestes techniques métier",
+    "domain": "Métier",
+    "keywords": ["cuisine", "cuisiner", "ménage", "menage", "nettoyage", "bâtiment", "batiment", "chantier", "couture", "mécanique", "mecanique", "agriculture", "réparer", "reparer", "machine", "outil", "conduire"],
+    "examples": ["Utiliser des outils", "Nettoyer", "Réparer ou fabriquer"]
+  },
+  {
+    "key": "commerce_service",
+    "label": "Commerce et service client",
+    "domain": "Service client",
+    "keywords": ["vendre", "vente", "marché", "marche", "caisse", "prix", "client", "commande", "stock", "négocier", "negocier", "boutique", "restaurant", "service"],
+    "examples": ["Vendre", "Servir un client", "Gérer une commande"]
+  },
+  {
+    "key": "fiabilite",
+    "label": "Fiabilité",
+    "domain": "Comportement professionnel",
+    "keywords": ["ponctuel", "ponctuelle", "régulier", "regulier", "confiance", "responsable", "sérieux", "serieux", "présent", "present", "respecter", "engagement", "sécurité", "securite"],
+    "examples": ["Respecter les horaires", "Être régulier", "Tenir un engagement"]
+  },
+  {
+    "key": "apprentissage",
+    "label": "Capacité d’apprentissage",
+    "domain": "Apprendre à apprendre",
+    "keywords": ["apprendre", "formation", "école", "ecole", "cours", "langue", "diplôme", "diplome", "certificat", "lire", "écrire", "ecrire", "progresser"],
+    "examples": ["Apprendre une langue", "Suivre une formation", "Progresser"]
+  }
+]
