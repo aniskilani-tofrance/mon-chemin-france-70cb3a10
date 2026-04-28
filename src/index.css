@@ -606,6 +606,44 @@
     border: 0 !important;
     border-bottom: 1px solid #777 !important;
   }
+
+  .diagnostic-paper-compact {
+    font-size: 8.2pt !important;
+    line-height: 1.18 !important;
+  }
+
+  .diagnostic-paper-compact .diagnostic-paper-section,
+  .diagnostic-paper-compact .diagnostic-paper-question {
+    padding: 0.28rem !important;
+    margin-bottom: 0.22rem !important;
+  }
+
+  .diagnostic-paper-compact .diagnostic-paper-answer {
+    height: 2.05rem !important;
+  }
+}
+
+.diagnostic-paper-preview-shell {
+  display: flex;
+  justify-content: center;
+  overflow: auto;
+  padding: 1rem;
+  background: hsl(var(--muted) / 0.35);
+}
+
+.diagnostic-paper-preview-page {
+  width: 192mm;
+  min-height: 281mm;
+  max-height: 281mm;
+  overflow: hidden;
+  background: hsl(var(--background));
+  padding: 0;
+  box-shadow: 0 12px 34px hsl(var(--foreground) / 0.18);
+  transform-origin: top center;
+}
+
+.diagnostic-paper-preview-page .print\:hidden {
+  display: none !important;
 }
 
 /* ═══════════════════════════════════════════════════════════
