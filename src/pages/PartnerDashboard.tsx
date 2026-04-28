@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Briefcase, Mail, UserPlus } from "lucide-react";
+import { Briefcase, Mail, MailCheck, UserPlus } from "lucide-react";
 import { AnimatedContainer, StaggerContainer, StaggerItem } from "@/components/AnimatedContainer";
 import {
   Users,
@@ -373,7 +373,12 @@ export default function PartnerDashboard() {
                   </Card>
 
                   <Card>
-                    <CardHeader><CardTitle className="text-lg">Membres affiliés</CardTitle></CardHeader>
+                    <CardHeader>
+                      <div className="flex items-center justify-between gap-3">
+                        <CardTitle className="text-lg">Membres affiliés</CardTitle>
+                        <Button variant="outline" size="sm" asChild><Link to="/partner-invitations"><MailCheck className="mr-2 h-4 w-4" />Suivi</Link></Button>
+                      </div>
+                    </CardHeader>
                     <CardContent className="space-y-3">
                       {membersLoading ? [1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full" />) : !members?.length ? (
                         <div className="py-10 text-center text-muted-foreground"><Mail className="mx-auto mb-3 h-9 w-9 opacity-40" /><p>Aucun membre affilié.</p></div>
