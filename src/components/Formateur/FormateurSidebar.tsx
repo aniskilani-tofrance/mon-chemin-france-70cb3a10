@@ -1,4 +1,4 @@
-import { Users, BookOpen, ClipboardList, Headphones, FileText, LogOut, Sparkles } from "lucide-react";
+import { Users, BookOpen, ClipboardList, Headphones, FileText, LogOut, Sparkles, Printer } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 const tabs = [
   { title: "Apprenants", url: "/formateur", icon: Users },
   { title: "Diagnostic partagé", url: "/diagnostic-partage", icon: Sparkles },
+  { title: "Diagnostic papier", url: "/formateur/diagnostic-papier", icon: Printer },
   { title: "Contenus", url: "/formateur/contenus", icon: BookOpen },
   { title: "Assignations", url: "/formateur/assignations", icon: ClipboardList },
   { title: "Évaluations", url: "/formateur/evaluations", icon: Headphones },
