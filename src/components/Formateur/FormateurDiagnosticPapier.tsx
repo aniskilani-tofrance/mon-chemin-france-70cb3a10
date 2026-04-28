@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { ClipboardCheck, Eye, FileText, Printer } from "lucide-react";
+import { ClipboardCheck, Download, Eye, FileText, Loader2, Printer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { DIAGNOSTIC_QUESTIONS, CATEGORY_META, type DiagnosticCategory } from "@/lib/diagnosticQuestions";
+import { toast } from "sonner";
 
 const groupedQuestions = DIAGNOSTIC_QUESTIONS.reduce<Record<DiagnosticCategory, typeof DIAGNOSTIC_QUESTIONS>>(
   (acc, question) => {
@@ -117,7 +118,9 @@ export function FormateurDiagnosticPapier() {
   const [draftPrint, setDraftPrint] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [autoCompact, setAutoCompact] = useState(false);
+  const [exportingPdf, setExportingPdf] = useState(false);
   const previewRef = useRef<HTMLDivElement>(null);
+  const pdfRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!previewOpen) return;
@@ -142,6 +145,48 @@ export function FormateurDiagnosticPapier() {
     autoCompact ? "diagnostic-paper-compact" : "",
   ].filter(Boolean).join(" ");
 
+  const exportPdf = async () => {
+    const node = pdfRef.current;
+    if (!node) return;
+    setExportingPdf(true);
+    try {
+      const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
+        import("html2canvas"),
+        import("jspdf"),
+      ]);
+      const canvas = await html2canvas(node, {
+        scale: 2,
+        backgroundColor: "#ffffff",
+        useCORS: true,
+        windowWidth: node.scrollWidth,
+        windowHeight: node.scrollHeight,
+      });
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const imgWidth = pageWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgData = canvas.toDataURL("image/png");
+      let remainingHeight = imgHeight;
+      let y = 0;
+
+      pdf.addImage(imgData, "PNG", 0, y, imgWidth, imgHeight);
+      remainingHeight -= pageHeight;
+      while (remainingHeight > 0) {
+        y -= pageHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, y, imgWidth, imgHeight);
+        remainingHeight -= pageHeight;
+      }
+
+      pdf.save("diagnostic-partage-tofrance.pdf");
+    } catch (error) {
+      toast.error("Export PDF impossible pour le moment.");
+    } finally {
+      setExportingPdf(false);
+    }
+  };
+
   return (
     <>
       <div className={printClasses}>
@@ -164,6 +209,10 @@ export function FormateurDiagnosticPapier() {
               <Eye className="h-4 w-4" />
               Aperçu
             </Button>
+            <Button type="button" variant="outline" className="gap-2" onClick={exportPdf} disabled={exportingPdf}>
+              {exportingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              PDF
+            </Button>
             <Button onClick={() => window.print()} className="gap-2">
               <Printer className="h-4 w-4" />
               Imprimer
@@ -185,6 +234,10 @@ export function FormateurDiagnosticPapier() {
               <Printer className="h-4 w-4" />
               Imprimer
             </Button>
+            <Button type="button" size="sm" variant="outline" onClick={exportPdf} disabled={exportingPdf} className="gap-2">
+              {exportingPdf ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+              PDF
+            </Button>
           </div>
           <div className="diagnostic-paper-preview-shell">
             <div ref={previewRef} className={`diagnostic-paper-preview-page ${draftPrint ? "diagnostic-paper-draft" : ""} ${autoCompact ? "diagnostic-paper-compact" : ""}`}>
@@ -193,6 +246,12 @@ export function FormateurDiagnosticPapier() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <div className="diagnostic-paper-pdf-source" aria-hidden="true">
+        <div ref={pdfRef} className={`diagnostic-paper-print ${draftPrint ? "diagnostic-paper-draft" : ""} ${autoCompact ? "diagnostic-paper-compact" : ""}`}>
+          <DiagnosticPaperContent />
+        </div>
+      </div>
     </>
   );
 }
