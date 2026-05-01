@@ -540,7 +540,7 @@ const Onboarding = () => {
     return () => {
       mounted = false;
     };
-  }, [accessCode, leadSource.slug, isAdmin, adminLoading]);
+  }, [accessCode, leadSource.slug, isAdmin, adminLoading, user]);
 
   if (accessStatus !== "granted") {
     return (
