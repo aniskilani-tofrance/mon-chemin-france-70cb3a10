@@ -400,15 +400,7 @@ export default function PlacementTest() {
 
         {/* Navigation */}
         <div className="mt-6 flex items-center justify-between">
-          <Button
-            variant="outline"
-            onClick={handlePrev}
-            disabled={currentIndex === 0}
-            className="gap-1"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Précédent
-          </Button>
+          <div />
 
           <Button
             variant="ghost"
