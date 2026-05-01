@@ -99,6 +99,24 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<ProfileIdentity | null>(null);
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [launchingDemo, setLaunchingDemo] = useState(false);
+  const navigate = useNavigate();
+
+  const launchDemoDiagnostic = async () => {
+    setLaunchingDemo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("learner-demo-diagnostic", {
+        body: {},
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      toast.success(data.reused ? "Reprise du diagnostic en cours" : "Diagnostic démo créé !");
+      navigate(`/diagnostic-partage?id=${data.diagnostic_id}`);
+    } catch (err: any) {
+      toast.error(err.message || "Impossible de lancer la démo");
+    } finally {
+      setLaunchingDemo(false);
+    }
+  };
 
   // Also check legacy profiles columns as fallback for users who onboarded before the migration
   const [legacyOrientation, setLegacyOrientation] = useState<{
