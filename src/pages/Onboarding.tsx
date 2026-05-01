@@ -516,7 +516,7 @@ const Onboarding = () => {
   useEffect(() => {
     let mounted = true;
     if (adminLoading) return;
-    if (isAdmin) {
+    if (isAdmin || user) {
       setAccessStatus("granted");
       return;
     }
@@ -540,7 +540,7 @@ const Onboarding = () => {
     return () => {
       mounted = false;
     };
-  }, [accessCode, leadSource.slug, isAdmin, adminLoading]);
+  }, [accessCode, leadSource.slug, isAdmin, adminLoading, user]);
 
   if (accessStatus !== "granted") {
     return (
