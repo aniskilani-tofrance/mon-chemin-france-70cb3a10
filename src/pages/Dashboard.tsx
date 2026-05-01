@@ -26,8 +26,11 @@ import {
   FileText,
   AlertCircle,
   BookOpen,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import { FLEDashboardCard } from "@/components/FLE/FLEDashboardCard";
 
 import { DemoBanner } from "@/components/DemoBanner";
@@ -96,6 +99,24 @@ const Dashboard = () => {
   const [profile, setProfile] = useState<ProfileIdentity | null>(null);
   const [leads, setLeads] = useState<LeadData[]>([]);
   const [loading, setLoading] = useState(true);
+  const [launchingDemo, setLaunchingDemo] = useState(false);
+  const navigate = useNavigate();
+
+  const launchDemoDiagnostic = async () => {
+    setLaunchingDemo(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("learner-demo-diagnostic", {
+        body: {},
+      });
+      if (error || data?.error) throw new Error(data?.error || error?.message);
+      toast.success(data.reused ? "Reprise du diagnostic en cours" : "Diagnostic démo créé !");
+      navigate(`/diagnostic-partage?id=${data.diagnostic_id}`);
+    } catch (err: any) {
+      toast.error(err.message || "Impossible de lancer la démo");
+    } finally {
+      setLaunchingDemo(false);
+    }
+  };
 
   // Also check legacy profiles columns as fallback for users who onboarded before the migration
   const [legacyOrientation, setLegacyOrientation] = useState<{
@@ -251,6 +272,30 @@ const Dashboard = () => {
                   )}
                 </div>
               </div>
+            </Card>
+          </AnimatedContainer>
+
+          {/* Demo: launch a shared diagnostic */}
+          <AnimatedContainer delay={0.12} className="mb-6">
+            <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+              <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Tester le diagnostic partagé</p>
+                    <p className="text-sm text-muted-foreground">
+                      Lancez une session de démo pour découvrir le parcours complet
+                      (questions, compétences, synthèse).
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={launchDemoDiagnostic} disabled={launchingDemo} className="shrink-0">
+                  {launchingDemo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Lancer la démo
+                </Button>
+              </CardContent>
             </Card>
           </AnimatedContainer>
 
