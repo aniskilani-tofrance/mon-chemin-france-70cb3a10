@@ -275,6 +275,30 @@ const Dashboard = () => {
             </Card>
           </AnimatedContainer>
 
+          {/* Demo: launch a shared diagnostic */}
+          <AnimatedContainer delay={0.12} className="mb-6">
+            <Card className="border-dashed border-2 border-primary/30 bg-primary/5">
+              <CardContent className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="rounded-lg bg-primary/10 p-2">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-foreground">Tester le diagnostic partagé</p>
+                    <p className="text-sm text-muted-foreground">
+                      Lancez une session de démo pour découvrir le parcours complet
+                      (questions, compétences, synthèse).
+                    </p>
+                  </div>
+                </div>
+                <Button onClick={launchDemoDiagnostic} disabled={launchingDemo} className="shrink-0">
+                  {launchingDemo ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                  Lancer la démo
+                </Button>
+              </CardContent>
+            </Card>
+          </AnimatedContainer>
+
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Profile Summary */}
             <AnimatedContainer delay={0.15} className="lg:col-span-1">
