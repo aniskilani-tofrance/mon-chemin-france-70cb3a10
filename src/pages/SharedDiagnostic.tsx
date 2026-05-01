@@ -86,8 +86,10 @@ const SharedDiagnostic = () => {
   const question: DiagnosticQuestion | undefined = DIAGNOSTIC_QUESTIONS[currentIndex];
   const total = DIAGNOSTIC_QUESTIONS.length + 1;
   const currentAnswer = question ? answers[question.key] : undefined;
+  // Une réponse compte comme validée si l'apprenant OU le formateur l'a validée
+  // (en démo, l'apprenant est seul ; en réel, le double regard reste possible).
   const validatedCount = Object.values(answers).filter(
-    (a) => a.validated_by_learner && a.validated_by_formateur
+    (a) => a.validated_by_learner || a.validated_by_formateur
   ).length;
   const progressPercent = ((validatedCount + (competenceStepCompleted ? 1 : 0)) / total) * 100;
 
