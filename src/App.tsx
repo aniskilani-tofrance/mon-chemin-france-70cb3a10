@@ -47,6 +47,7 @@ const FLEReview = lazy(() => import("./pages/FLEReview"));
 const FormateurDashboard = lazy(() => import("./pages/FormateurDashboard"));
 const DirecteurDashboard = lazy(() => import("./pages/DirecteurDashboard"));
 const SharedDiagnostic = lazy(() => import("./pages/SharedDiagnostic"));
+const CIPDashboard = lazy(() => import("./pages/CIPDashboard"));
 
 const Landing = lazy(() => import("./pages/Landing"));
 const PlacementTestHome = lazy(() => import("./pages/PlacementTestHome"));
@@ -63,6 +64,7 @@ import { FormateurRoute } from "./components/FormateurRoute";
 import { DirecteurRoute } from "./components/DirecteurRoute";
 import { OAuthRedirectHandler } from "./components/OAuthRedirectHandler";
 import { FLEGatedRoute } from "./components/FLEGatedRoute";
+import { DemoSwitchBar } from "./components/DemoSwitchBar";
 
 const queryClient = new QueryClient();
 
@@ -76,6 +78,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <OAuthRedirectHandler />
+          <DemoSwitchBar />
           <FLEInstallPrompt />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
@@ -110,6 +113,7 @@ const App = () => (
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
               <Route path="/directeur" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
               <Route path="/diagnostic-partage" element={<SharedDiagnostic />} />
+              <Route path="/cip" element={<ProtectedRoute><CIPDashboard /></ProtectedRoute>} />
               <Route path="/fle" element={<FLEGatedRoute><FLEDashboard /></FLEGatedRoute>} />
               <Route path="/fle/exercise/:moduleId" element={<FLEGatedRoute><FLEExercise /></FLEGatedRoute>} />
               <Route path="/fle/dialogue" element={<FLEGatedRoute><FLEDialogue /></FLEGatedRoute>} />
