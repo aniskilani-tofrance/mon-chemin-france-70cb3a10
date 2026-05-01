@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2, User, FileText, Copy, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
+import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
 
 interface Learner {
   learner_id: string;
@@ -158,6 +159,7 @@ export function FormateurApprenants() {
               : <Sparkles className="mr-2 h-4 w-4" />}
             Diagnostic rapide (avec code)
           </Button>
+          <ImportFromSourceDialog onImported={fetchLearners} />
           <CreateLearnerDialog onCreated={fetchLearners} />
         </div>
       </CardHeader>
