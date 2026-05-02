@@ -158,6 +158,24 @@ export const PARCOURS_META: Record<
     description:
       "Avant toute formation ou emploi, il faut d'abord régulariser ta situation administrative. Un conseiller va t'aider.",
   },
+  LOGEMENT: {
+    emoji: "🏠",
+    label: "Domiciliation & logement prioritaire",
+    description:
+      "Sans domiciliation administrative, tu ne peux pas t'inscrire à France Travail ni ouvrir tes droits. On t'oriente vers un CCAS ou une association agréée.",
+  },
+  BPI: {
+    emoji: "🛡️",
+    label: "Parcours réfugié·e (AGIR / HOPE)",
+    description:
+      "En tant que bénéficiaire de la protection internationale, tu as accès à des dispositifs renforcés : AGIR (24 mois), HOPE (AFPA + OFII), Accelair. Reconnaissance facilitée des qualifications.",
+  },
+  OFII: {
+    emoji: "🇫🇷",
+    label: "Heures OFII gratuites en priorité",
+    description:
+      "Tu as encore des heures de français OFII non utilisées : c'est gratuit, déjà financé, et conditionne ta carte de séjour pluriannuelle. À utiliser avant tout autre dispositif payant.",
+  },
   INSERTION: {
     emoji: "💼",
     label: "Insertion rapide en emploi",
@@ -192,7 +210,7 @@ export const PARCOURS_META: Record<
     emoji: "👂",
     label: "Accompagnement global & besoins spécifiques",
     description:
-      "Tu as des besoins prioritaires au-delà de l'emploi ou la formation. On te met en relation avec les bons interlocuteurs.",
+      "Tu as des besoins prioritaires au-delà de l'emploi ou la formation (santé, social, santé mentale). On te met en relation avec les bons interlocuteurs (COMEDE, Primo Levi, PASS, CCAS).",
   },
   RECONNAISSANCE: {
     emoji: "🎖️",
@@ -209,6 +227,11 @@ export const ACTIONS_LABELS: Record<ActionId, string> = {
   DOSSIER_FORMATION: "Préparer le dossier de financement formation",
   MISE_EN_RELATION_OF: "Mise en relation avec un organisme de formation partenaire",
   CONTACT_SOCIAL: "Orientation vers un accompagnement social",
+  CONTACT_OFII: "Activer tes heures de français OFII (gratuit)",
+  CONTACT_DOMICILIATION: "Obtenir une domiciliation (CCAS ou association agréée)",
+  CONTACT_AGIR: "Intégrer le programme AGIR (accompagnement BPI 24 mois)",
+  CONTACT_SANTE_MENTALE: "Orientation vers un soutien psychologique (COMEDE, Primo Levi, PASS)",
+  CONTACT_ENIC_NARIC: "Démarche ENIC-NARIC pour reconnaissance de diplôme",
 };
 
 // ─── Scoring du lead (0–100) ──────────────────────────────────
