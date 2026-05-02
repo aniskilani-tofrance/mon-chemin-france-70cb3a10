@@ -1893,6 +1893,9 @@ export function determineRoute(answers: OnboardingAnswers): LeadRoute {
   // Route B: veut un emploi mais pas de droit de travail
   if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
 
+  // PRIORITÉ ABSOLUE — BPI (réfugié / protection subsidiaire) → parcours dédié AGIR/HOPE
+  if (answers.admin_status === "refugie") return "sas";
+
   // SAS: besoin d'aide / cas mixtes
   return "sas";
 }
