@@ -280,8 +280,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
   const actions: ActionId[] = [];
   const alertes: string[] = [];
 
-  // ── PRIORITÉ 1 : Blocage administratif ──
-  if (r.q2_droit_travailler !== "oui") {
+  // ── PRIORITÉ 0 : Logement / domiciliation absente — bloquant absolu ──
+  if (r.q_housing_blocking === true) {
+    parcoursId = "LOGEMENT";
+    actions.push("CONTACT_DOMICILIATION", "CONTACT_SOCIAL", "RDV_CONSEILLER");
+    alertes.push(
+      "🏠 Sans domiciliation administrative, l'inscription France Travail / CAF / banque est impossible. Orientation prioritaire vers un CCAS ou une association agréée."
+    );
+  }
+  // ── PRIORITÉ 1 : Blocage administratif (droit au travail) ──
+  else if (r.q2_droit_travailler !== "oui" && r.q_statut_admin !== "demandeur_asile") {
     parcoursId = "ADMIN";
     actions.push("RDV_CONSEILLER", "CONTACT_SOCIAL");
     alertes.push(
@@ -289,10 +297,22 @@ export function computeOrientation(r: UserResponses): OrientationResult {
         ? "⚠️ Droit de travail non établi — orientation administrative obligatoire avant toute démarche."
         : "⚠️ Droit de travail incertain — une vérification est nécessaire avant toute orientation."
     );
-  } else if (r.q_recognize_diploma) {
-    // ── PRIORITÉ 1bis : Reconnaissance de diplôme étranger ──
+  }
+  // ── PRIORITÉ 1bis : BPI (réfugié / protection subsidiaire) → AGIR / HOPE / Accelair ──
+  else if (r.q_statut_admin === "bpi_refugie" || r.q_statut_admin === "bpi_subsidiaire") {
+    parcoursId = "BPI";
+    actions.push("CONTACT_AGIR", "RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    alertes.push(
+      "🛡️ Statut BPI détecté : tu es éligible aux dispositifs renforcés AGIR (24 mois), HOPE (AFPA + OFII) et Accelair. Reconnaissance facilitée des qualifications via France Compétences."
+    );
+    if (r.q_recognize_diploma) {
+      actions.push("CONTACT_ENIC_NARIC");
+    }
+  }
+  // ── PRIORITÉ 1ter : Reconnaissance de diplôme étranger ──
+  else if (r.q_recognize_diploma) {
     parcoursId = "RECONNAISSANCE";
-    actions.push("RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    actions.push("CONTACT_ENIC_NARIC", "RDV_CONSEILLER", "MISE_EN_RELATION_OF");
     alertes.push(
       "🎖️ Reconnaissance de diplôme : démarche ENIC-NARIC à engager. En parallèle, des métiers en tension peuvent être accessibles via une formation courte."
     );
