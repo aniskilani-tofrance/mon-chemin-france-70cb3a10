@@ -28,6 +28,58 @@ const ROUTE_TO_CERT: Record<string, string> = {
   route_a: "language",  // FLE
   route_b: "tp",        // Formation qualifiante
   route_c: "tp",        // Emploi direct → TP/CQP
+
+// ── Helpers : dérivation des champs administratifs fins ──
+
+const ADMIN_STATUS_DETAILED_MAP: Record<string, string> = {
+  titre_sejour: "titre_sejour",
+  refugie: "bpi_refugie",
+  bpi_refugie: "bpi_refugie",
+  bpi_subsidiaire: "bpi_subsidiaire",
+  demandeur_asile: "demandeur_asile",
+  sans_papiers: "sans_papiers",
+  ue: "ue",
+};
+
+function deriveAdminStatusDetailed(answers: Record<string, unknown>): string | null {
+  const cir = answers.cir_status as string | undefined;
+  if (cir === "signed_hours_left" || cir === "signed_used") return "cir_signed";
+  if (cir === "in_progress") return "cir_in_progress";
+  const adminStatus = answers.admin_status as string | undefined;
+  if (adminStatus && ADMIN_STATUS_DETAILED_MAP[adminStatus]) return ADMIN_STATUS_DETAILED_MAP[adminStatus];
+  if (cir === "not_concerned") return "ue";
+  // Fallback via tags
+  const tags = (answers.tags as string[]) || [];
+  if (tags.includes("status_refugie")) return "bpi_refugie";
+  if (tags.includes("status_demandeur_asile")) return "demandeur_asile";
+  if (tags.includes("status_sans_papiers")) return "sans_papiers";
+  if (tags.includes("status_titre_sejour")) return "titre_sejour";
+  return null;
+}
+
+function deriveCirSigned(answers: Record<string, unknown>): boolean | null {
+  const cir = answers.cir_status as string | undefined;
+  if (!cir) return null;
+  if (cir === "signed_hours_left" || cir === "signed_used") return true;
+  if (cir === "not_signed" || cir === "in_progress" || cir === "not_concerned") return false;
+  return null;
+}
+
+function deriveOfiiHours(answers: Record<string, unknown>): number | null {
+  if (typeof answers.ofii_hours_remaining === "number") return answers.ofii_hours_remaining;
+  const cir = answers.cir_status as string | undefined;
+  if (cir === "signed_hours_left") return 200; // estimation conservative
+  if (cir === "signed_used") return 0;
+  return null;
+}
+
+function deriveDiplomaRecognition(answers: Record<string, unknown>): boolean | null {
+  const goal = answers.main_goal;
+  const goals = Array.isArray(goal) ? goal : typeof goal === "string" ? goal.split(",") : [];
+  if (goals.map((g: string) => g.trim()).includes("recognize_diploma")) return true;
+  return null;
+}
+
   sas: "language",      // Accompagnement → FLE by default
 };
 
