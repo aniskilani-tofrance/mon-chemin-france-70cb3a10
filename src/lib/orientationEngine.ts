@@ -358,8 +358,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
       );
     }
 
+    // Niveau Alpha : alphabétisation prioritaire (catégorie hors CECRL)
+    if (r.q4_niveau_francais === "Alpha") {
+      parcoursId = "FRANCAIS";
+      actions.unshift("TEST_FRANCAIS");
+      alertes.push(
+        "📚 Niveau Alpha détecté (alphabétisation) : un parcours dédié est indispensable AVANT tout FLE classique. Les cours FLE A1 ne sont pas adaptés aux personnes non lectrices dans leur langue d'origine."
+      );
+    }
     // Niveau A0/A1 : le français passe en priorité
-    if (r.q4_niveau_francais === "A0A1") {
+    else if (r.q4_niveau_francais === "A0A1") {
       if (!actions.includes("TEST_FRANCAIS")) actions.unshift("TEST_FRANCAIS");
       alertes.push(
         "📌 Niveau A0/A1 détecté : un parcours FLE/FOS est indispensable avant toute formation métier."
@@ -370,10 +378,52 @@ export function computeOrientation(r: UserResponses): OrientationResult {
       }
     }
 
+    // OFII : si heures restantes et besoin de français → priorité au gratuit
+    const ofiiAvailable =
+      (r.q_ofii_hours_remaining ?? 0) > 0 ||
+      r.q_statut_admin === "cir_signed" ||
+      r.q_statut_admin === "cir_in_progress";
+    const needsFrench =
+      r.q4_niveau_francais === "Alpha" ||
+      r.q4_niveau_francais === "A0A1" ||
+      r.q4_niveau_francais === "A2";
+    if (ofiiAvailable && needsFrench) {
+      actions.unshift("CONTACT_OFII");
+      alertes.push(
+        "🇫🇷 Heures OFII disponibles : à utiliser EN PRIORITÉ avant tout FLE payant CPF (gratuit, déjà financé, conditionne ta carte de séjour pluriannuelle)."
+      );
+      if (parcoursId === "FRANCAIS") {
+        parcoursId = "OFII";
+      }
+    }
+
+    // Santé mentale détectée → action dédiée
+    if (r.q9_besoins?.includes("sante_mentale")) {
+      actions.push("CONTACT_SANTE_MENTALE");
+      alertes.push(
+        "💚 Besoin de soutien psychologique signalé : orientation vers COMEDE / Primo Levi / PASS (gratuit, sans avance de frais)."
+      );
+    }
+
     // Contraintes multiples
     if (r.q7_contraintes.length >= 2 && !r.q7_contraintes.includes("aucune")) {
       alertes.push(
         "ℹ️ Contraintes multiples identifiées (mobilité, garde d'enfants…) — à prendre en compte lors de la mise en relation."
+      );
+    }
+
+    // Préférence formatrice femme
+    if (r.q_prefers_female_trainer) {
+      alertes.push(
+        "👩 Préférence formatrice femme indiquée — à respecter dans la mise en relation."
+      );
+    }
+
+    // Pas de garde d'enfants → frein majeur, surtout pour femmes
+    if (r.q_childcare === "none") {
+      actions.push("CONTACT_SOCIAL");
+      alertes.push(
+        "👶 Pas de mode de garde — frein majeur à la formation. Orientation vers crèches AVIP / haltes-garderies partenaires."
       );
     }
   }
