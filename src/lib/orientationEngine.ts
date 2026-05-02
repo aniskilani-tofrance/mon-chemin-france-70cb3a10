@@ -68,13 +68,23 @@ export interface UserResponses {
     | "entrepot" | "btp" | "accueil" | "engins" | "informatique"
     | "aucune" | "autre"
   >;
-  q9_besoins?: Array<"logement" | "admin" | "sante" | "autre">;
+  q9_besoins?: Array<"logement" | "admin" | "sante" | "sante_mentale" | "autre">;
   /** L'utilisateur souhaite faire reconnaître un diplôme étranger */
   q_recognize_diploma?: boolean;
   /** Niveau du diplôme d'origine (si q_recognize_diploma) */
   q_diploma_level?: "secondary" | "bac" | "bachelor" | "master" | "doctorate" | "no_diploma";
   /** Souhaite continuer dans son domaine de compétence ? */
   q_continue_field?: "yes" | "no" | "unsure";
+  /** Statut administratif détaillé (CIR, BPI, etc.) */
+  q_statut_admin?: StatutAdministratif;
+  /** Heures OFII de français gratuites restantes */
+  q_ofii_hours_remaining?: number;
+  /** Pas de domiciliation administrative — bloquant */
+  q_housing_blocking?: boolean;
+  /** Préfère une formatrice femme */
+  q_prefers_female_trainer?: boolean;
+  /** Mode de garde d'enfants */
+  q_childcare?: "none" | "informal" | "creche" | "school" | "not_needed";
 }
 
 export interface MetierMatch {
