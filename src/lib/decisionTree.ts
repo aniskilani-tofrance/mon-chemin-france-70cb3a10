@@ -1972,10 +1972,10 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
 }
 // Estimate total questions based on route
 export function estimateTotalQuestions(answers: OnboardingAnswers): number {
-  // Base: location, main_goal, contact_48h, literacy, french_level_cecrl, work_right, barriers = 7
+  // Base: location, main_goal, contact_48h, literacy, french_level_cecrl, admin_status, cir_status, work_right, barriers = 9
   // Contact: firstname, lastname, email = 3
-  // Total base = 10
-  let total = 10;
+  // Total base = 12
+  let total = 12;
 
   const route = determineRoute(answers);
 
