@@ -1834,6 +1834,12 @@ export interface OnboardingAnswers {
   french_level_cecrl?: string;
   real_comprehension_score?: string;
   admin_status?: string;
+  cir_status?: string;
+  ofii_hours_remaining?: number;
+  housing_blocking?: boolean;
+  prefers_female_trainer?: boolean;
+  childcare_status?: string;
+  needs_diploma_recognition?: boolean;
   work_right?: string;
   barriers?: string | string[];
   sector_satisfaction?: string;
