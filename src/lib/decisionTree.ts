@@ -785,8 +785,70 @@ export const ONBOARDING_TREE: DecisionTree = {
           tags: ["status_inconnu"],
         },
       ],
+      nextQuestion: "cir_status",
+    },
+
+    // Q5d: CIR / OFII — débloque 100/200/400/600h de FLE gratuit
+    cir_status: {
+      id: "cir_status",
+      type: "choice",
+      question: {
+        fr: "Avez-vous signé un Contrat d'Intégration Républicaine (CIR) avec l'OFII ?",
+        en: "Have you signed a Republican Integration Contract (CIR) with OFII?",
+        ar: "هل وقعت عقد الاندماج الجمهوري (CIR) مع OFII؟",
+        es: "¿Has firmado un Contrato de Integración Republicana (CIR) con la OFII?",
+        pt: "Você assinou um Contrato de Integração Republicana (CIR) com a OFII?",
+        ru: "Подписали ли вы Республиканский интеграционный контракт (CIR) с OFII?",
+      },
+      subtitle: {
+        fr: "Le CIR donne droit à des heures de français gratuites (jusqu'à 600h)",
+        en: "CIR gives access to free French classes (up to 600h)",
+        ar: "يمنح CIR الحق في ساعات فرنسية مجانية (حتى 600 ساعة)",
+        es: "El CIR da derecho a horas de francés gratuitas (hasta 600h)",
+        pt: "O CIR dá direito a horas de francês gratuitas (até 600h)",
+        ru: "CIR даёт право на бесплатные часы французского (до 600ч)",
+      },
+      choices: [
+        {
+          id: "signed_hours_left",
+          label: { fr: "Oui, signé — il me reste des heures", en: "Yes, signed — hours remaining", ar: "نعم، موقع — لا تزال لدي ساعات", es: "Sí, firmado — me quedan horas", pt: "Sim, assinado — tenho horas restantes", ru: "Да, подписан — часы остались" },
+          icon: "✅",
+          tags: ["cir_signed", "ofii_hours_available"],
+        },
+        {
+          id: "signed_used",
+          label: { fr: "Oui, signé — heures épuisées", en: "Yes, signed — hours used up", ar: "نعم، موقع — انتهت الساعات", es: "Sí, firmado — horas agotadas", pt: "Sim, assinado — horas esgotadas", ru: "Да, подписан — часы исчерпаны" },
+          icon: "🔒",
+          tags: ["cir_signed", "ofii_hours_used"],
+        },
+        {
+          id: "in_progress",
+          label: { fr: "En cours de signature", en: "In progress", ar: "قيد التوقيع", es: "En proceso", pt: "Em andamento", ru: "В процессе" },
+          icon: "⏳",
+          tags: ["cir_in_progress"],
+        },
+        {
+          id: "not_signed",
+          label: { fr: "Non, pas signé", en: "No, not signed", ar: "لا، غير موقع", es: "No, no firmado", pt: "Não, não assinado", ru: "Нет, не подписан" },
+          icon: "❌",
+          tags: ["cir_not_signed"],
+        },
+        {
+          id: "not_concerned",
+          label: { fr: "Pas concerné·e (UE, étudiant…)", en: "Not concerned (EU, student…)", ar: "لا يعنيني (الاتحاد الأوروبي، طالب...)", es: "No aplica (UE, estudiante…)", pt: "Não se aplica (UE, estudante…)", ru: "Не относится (ЕС, студент…)" },
+          icon: "🇪🇺",
+          tags: ["cir_not_applicable"],
+        },
+        {
+          id: "dont_know",
+          label: { fr: "Je ne sais pas", en: "I don't know", ar: "لا أعرف", es: "No sé", pt: "Não sei", ru: "Не знаю" },
+          icon: "❓",
+          tags: ["cir_unknown"],
+        },
+      ],
       nextQuestion: "work_right",
     },
+
     work_right: {
       id: "work_right",
       type: "choice",
@@ -1772,6 +1834,12 @@ export interface OnboardingAnswers {
   french_level_cecrl?: string;
   real_comprehension_score?: string;
   admin_status?: string;
+  cir_status?: string;
+  ofii_hours_remaining?: number;
+  housing_blocking?: boolean;
+  prefers_female_trainer?: boolean;
+  childcare_status?: string;
+  needs_diploma_recognition?: boolean;
   work_right?: string;
   barriers?: string | string[];
   sector_satisfaction?: string;
@@ -1830,6 +1898,9 @@ export function determineRoute(answers: OnboardingAnswers): LeadRoute {
 
   // Route B: veut un emploi mais pas de droit de travail
   if (mainGoal === "find_job" && workRight !== "yes" && (frenchLevel === "a2" || frenchLevel === "b1")) return "route_b";
+
+  // PRIORITÉ ABSOLUE — BPI (réfugié / protection subsidiaire) → parcours dédié AGIR/HOPE
+  if (answers.admin_status === "refugie") return "sas";
 
   // SAS: besoin d'aide / cas mixtes
   return "sas";
@@ -1901,10 +1972,10 @@ export function calculateLeadScore(answers: OnboardingAnswers): LeadScoreBreakdo
 }
 // Estimate total questions based on route
 export function estimateTotalQuestions(answers: OnboardingAnswers): number {
-  // Base: location, main_goal, contact_48h, literacy, french_level_cecrl, work_right, barriers = 7
+  // Base: location, main_goal, contact_48h, literacy, french_level_cecrl, admin_status, cir_status, work_right, barriers = 9
   // Contact: firstname, lastname, email = 3
-  // Total base = 10
-  let total = 10;
+  // Total base = 12
+  let total = 12;
 
   const route = determineRoute(answers);
 

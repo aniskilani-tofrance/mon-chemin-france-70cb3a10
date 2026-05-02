@@ -6,7 +6,7 @@ import { calculateUnifiedLeadScore } from "./leadScoring";
 
 // ─── Types ───────────────────────────────────────────────────
 
-export type NiveauFrancais = "A0A1" | "A2" | "B1plus";
+export type NiveauFrancais = "Alpha" | "A0A1" | "A2" | "B1plus";
 
 export type Secteur =
   | "logistique"
@@ -17,14 +17,29 @@ export type Secteur =
   | "btp"
   | "nsp";
 
+export type StatutAdministratif =
+  | "ue"                    // Citoyen UE / EEE / Suisse
+  | "cir_signed"            // CIR signé
+  | "cir_in_progress"       // CIR en cours
+  | "titre_sejour"          // Titre de séjour avec autorisation de travail
+  | "bpi_refugie"           // Statut de réfugié OFPRA
+  | "bpi_subsidiaire"       // Protection subsidiaire
+  | "demandeur_asile"       // En attente OFPRA / CNDA
+  | "sans_papiers"          // Sans titre
+  | "autre"
+  | "nsp";
+
 export type ParcoursId =
   | "ADMIN"          // Blocage — droit de travail non établi
+  | "LOGEMENT"       // Blocage — pas de domiciliation administrative
+  | "BPI"            // Réfugié / protection subsidiaire — AGIR/HOPE/Accelair
+  | "OFII"           // CIR signé avec heures restantes — FLE OFII gratuit prioritaire
   | "INSERTION"      // Travail rapide
   | "FORMATION"      // TP/CQP
   | "FRANCAIS"       // FLE/FOS pur
   | "MIXTE"          // Français + métier combinés
   | "ORIENTATION"    // Indécis — besoin d'un conseiller
-  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation)
+  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation) + santé mentale
   | "RECONNAISSANCE"; // Reconnaissance de diplôme étranger (ENIC-NARIC)
 
 export type ActionId =
@@ -33,7 +48,12 @@ export type ActionId =
   | "RDV_CONSEILLER"
   | "DOSSIER_FORMATION"
   | "MISE_EN_RELATION_OF"
-  | "CONTACT_SOCIAL";
+  | "CONTACT_SOCIAL"
+  | "CONTACT_OFII"          // Aller à l'OFII / activer heures gratuites
+  | "CONTACT_DOMICILIATION" // CCAS, asso agréée
+  | "CONTACT_AGIR"          // Programme AGIR pour BPI
+  | "CONTACT_SANTE_MENTALE" // COMEDE, Primo Levi, PASS
+  | "CONTACT_ENIC_NARIC";   // Reconnaissance diplôme
 
 export interface UserResponses {
   q1_interet: "travail" | "formation" | "francais" | "mixte" | "nsp" | "autre";
@@ -48,13 +68,23 @@ export interface UserResponses {
     | "entrepot" | "btp" | "accueil" | "engins" | "informatique"
     | "aucune" | "autre"
   >;
-  q9_besoins?: Array<"logement" | "admin" | "sante" | "autre">;
+  q9_besoins?: Array<"logement" | "admin" | "sante" | "sante_mentale" | "autre">;
   /** L'utilisateur souhaite faire reconnaître un diplôme étranger */
   q_recognize_diploma?: boolean;
   /** Niveau du diplôme d'origine (si q_recognize_diploma) */
   q_diploma_level?: "secondary" | "bac" | "bachelor" | "master" | "doctorate" | "no_diploma";
   /** Souhaite continuer dans son domaine de compétence ? */
   q_continue_field?: "yes" | "no" | "unsure";
+  /** Statut administratif détaillé (CIR, BPI, etc.) */
+  q_statut_admin?: StatutAdministratif;
+  /** Heures OFII de français gratuites restantes */
+  q_ofii_hours_remaining?: number;
+  /** Pas de domiciliation administrative — bloquant */
+  q_housing_blocking?: boolean;
+  /** Préfère une formatrice femme */
+  q_prefers_female_trainer?: boolean;
+  /** Mode de garde d'enfants */
+  q_childcare?: "none" | "informal" | "creche" | "school" | "not_needed";
 }
 
 export interface MetierMatch {
@@ -138,6 +168,24 @@ export const PARCOURS_META: Record<
     description:
       "Avant toute formation ou emploi, il faut d'abord régulariser ta situation administrative. Un conseiller va t'aider.",
   },
+  LOGEMENT: {
+    emoji: "🏠",
+    label: "Domiciliation & logement prioritaire",
+    description:
+      "Sans domiciliation administrative, tu ne peux pas t'inscrire à France Travail ni ouvrir tes droits. On t'oriente vers un CCAS ou une association agréée.",
+  },
+  BPI: {
+    emoji: "🛡️",
+    label: "Parcours réfugié·e (AGIR / HOPE)",
+    description:
+      "En tant que bénéficiaire de la protection internationale, tu as accès à des dispositifs renforcés : AGIR (24 mois), HOPE (AFPA + OFII), Accelair. Reconnaissance facilitée des qualifications.",
+  },
+  OFII: {
+    emoji: "🇫🇷",
+    label: "Heures OFII gratuites en priorité",
+    description:
+      "Tu as encore des heures de français OFII non utilisées : c'est gratuit, déjà financé, et conditionne ta carte de séjour pluriannuelle. À utiliser avant tout autre dispositif payant.",
+  },
   INSERTION: {
     emoji: "💼",
     label: "Insertion rapide en emploi",
@@ -172,7 +220,7 @@ export const PARCOURS_META: Record<
     emoji: "👂",
     label: "Accompagnement global & besoins spécifiques",
     description:
-      "Tu as des besoins prioritaires au-delà de l'emploi ou la formation. On te met en relation avec les bons interlocuteurs.",
+      "Tu as des besoins prioritaires au-delà de l'emploi ou la formation (santé, social, santé mentale). On te met en relation avec les bons interlocuteurs (COMEDE, Primo Levi, PASS, CCAS).",
   },
   RECONNAISSANCE: {
     emoji: "🎖️",
@@ -189,6 +237,11 @@ export const ACTIONS_LABELS: Record<ActionId, string> = {
   DOSSIER_FORMATION: "Préparer le dossier de financement formation",
   MISE_EN_RELATION_OF: "Mise en relation avec un organisme de formation partenaire",
   CONTACT_SOCIAL: "Orientation vers un accompagnement social",
+  CONTACT_OFII: "Activer tes heures de français OFII (gratuit)",
+  CONTACT_DOMICILIATION: "Obtenir une domiciliation (CCAS ou association agréée)",
+  CONTACT_AGIR: "Intégrer le programme AGIR (accompagnement BPI 24 mois)",
+  CONTACT_SANTE_MENTALE: "Orientation vers un soutien psychologique (COMEDE, Primo Levi, PASS)",
+  CONTACT_ENIC_NARIC: "Démarche ENIC-NARIC pour reconnaissance de diplôme",
 };
 
 // ─── Scoring du lead (0–100) ──────────────────────────────────
@@ -227,8 +280,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
   const actions: ActionId[] = [];
   const alertes: string[] = [];
 
-  // ── PRIORITÉ 1 : Blocage administratif ──
-  if (r.q2_droit_travailler !== "oui") {
+  // ── PRIORITÉ 0 : Logement / domiciliation absente — bloquant absolu ──
+  if (r.q_housing_blocking === true) {
+    parcoursId = "LOGEMENT";
+    actions.push("CONTACT_DOMICILIATION", "CONTACT_SOCIAL", "RDV_CONSEILLER");
+    alertes.push(
+      "🏠 Sans domiciliation administrative, l'inscription France Travail / CAF / banque est impossible. Orientation prioritaire vers un CCAS ou une association agréée."
+    );
+  }
+  // ── PRIORITÉ 1 : Blocage administratif (droit au travail) ──
+  else if (r.q2_droit_travailler !== "oui" && r.q_statut_admin !== "demandeur_asile") {
     parcoursId = "ADMIN";
     actions.push("RDV_CONSEILLER", "CONTACT_SOCIAL");
     alertes.push(
@@ -236,10 +297,22 @@ export function computeOrientation(r: UserResponses): OrientationResult {
         ? "⚠️ Droit de travail non établi — orientation administrative obligatoire avant toute démarche."
         : "⚠️ Droit de travail incertain — une vérification est nécessaire avant toute orientation."
     );
-  } else if (r.q_recognize_diploma) {
-    // ── PRIORITÉ 1bis : Reconnaissance de diplôme étranger ──
+  }
+  // ── PRIORITÉ 1bis : BPI (réfugié / protection subsidiaire) → AGIR / HOPE / Accelair ──
+  else if (r.q_statut_admin === "bpi_refugie" || r.q_statut_admin === "bpi_subsidiaire") {
+    parcoursId = "BPI";
+    actions.push("CONTACT_AGIR", "RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    alertes.push(
+      "🛡️ Statut BPI détecté : tu es éligible aux dispositifs renforcés AGIR (24 mois), HOPE (AFPA + OFII) et Accelair. Reconnaissance facilitée des qualifications via France Compétences."
+    );
+    if (r.q_recognize_diploma) {
+      actions.push("CONTACT_ENIC_NARIC");
+    }
+  }
+  // ── PRIORITÉ 1ter : Reconnaissance de diplôme étranger ──
+  else if (r.q_recognize_diploma) {
     parcoursId = "RECONNAISSANCE";
-    actions.push("RDV_CONSEILLER", "MISE_EN_RELATION_OF");
+    actions.push("CONTACT_ENIC_NARIC", "RDV_CONSEILLER", "MISE_EN_RELATION_OF");
     alertes.push(
       "🎖️ Reconnaissance de diplôme : démarche ENIC-NARIC à engager. En parallèle, des métiers en tension peuvent être accessibles via une formation courte."
     );
@@ -285,8 +358,16 @@ export function computeOrientation(r: UserResponses): OrientationResult {
       );
     }
 
+    // Niveau Alpha : alphabétisation prioritaire (catégorie hors CECRL)
+    if (r.q4_niveau_francais === "Alpha") {
+      parcoursId = "FRANCAIS";
+      actions.unshift("TEST_FRANCAIS");
+      alertes.push(
+        "📚 Niveau Alpha détecté (alphabétisation) : un parcours dédié est indispensable AVANT tout FLE classique. Les cours FLE A1 ne sont pas adaptés aux personnes non lectrices dans leur langue d'origine."
+      );
+    }
     // Niveau A0/A1 : le français passe en priorité
-    if (r.q4_niveau_francais === "A0A1") {
+    else if (r.q4_niveau_francais === "A0A1") {
       if (!actions.includes("TEST_FRANCAIS")) actions.unshift("TEST_FRANCAIS");
       alertes.push(
         "📌 Niveau A0/A1 détecté : un parcours FLE/FOS est indispensable avant toute formation métier."
@@ -297,10 +378,52 @@ export function computeOrientation(r: UserResponses): OrientationResult {
       }
     }
 
+    // OFII : si heures restantes et besoin de français → priorité au gratuit
+    const ofiiAvailable =
+      (r.q_ofii_hours_remaining ?? 0) > 0 ||
+      r.q_statut_admin === "cir_signed" ||
+      r.q_statut_admin === "cir_in_progress";
+    const needsFrench =
+      r.q4_niveau_francais === "Alpha" ||
+      r.q4_niveau_francais === "A0A1" ||
+      r.q4_niveau_francais === "A2";
+    if (ofiiAvailable && needsFrench) {
+      actions.unshift("CONTACT_OFII");
+      alertes.push(
+        "🇫🇷 Heures OFII disponibles : à utiliser EN PRIORITÉ avant tout FLE payant CPF (gratuit, déjà financé, conditionne ta carte de séjour pluriannuelle)."
+      );
+      if (parcoursId === "FRANCAIS") {
+        parcoursId = "OFII";
+      }
+    }
+
+    // Santé mentale détectée → action dédiée
+    if (r.q9_besoins?.includes("sante_mentale")) {
+      actions.push("CONTACT_SANTE_MENTALE");
+      alertes.push(
+        "💚 Besoin de soutien psychologique signalé : orientation vers COMEDE / Primo Levi / PASS (gratuit, sans avance de frais)."
+      );
+    }
+
     // Contraintes multiples
     if (r.q7_contraintes.length >= 2 && !r.q7_contraintes.includes("aucune")) {
       alertes.push(
         "ℹ️ Contraintes multiples identifiées (mobilité, garde d'enfants…) — à prendre en compte lors de la mise en relation."
+      );
+    }
+
+    // Préférence formatrice femme
+    if (r.q_prefers_female_trainer) {
+      alertes.push(
+        "👩 Préférence formatrice femme indiquée — à respecter dans la mise en relation."
+      );
+    }
+
+    // Pas de garde d'enfants → frein majeur, surtout pour femmes
+    if (r.q_childcare === "none") {
+      actions.push("CONTACT_SOCIAL");
+      alertes.push(
+        "👶 Pas de mode de garde — frein majeur à la formation. Orientation vers crèches AVIP / haltes-garderies partenaires."
       );
     }
   }

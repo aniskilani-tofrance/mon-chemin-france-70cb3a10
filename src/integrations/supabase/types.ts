@@ -1192,7 +1192,11 @@ export type Database = {
       profiles: {
         Row: {
           admin_status: string | null
+          admin_status_detailed: string | null
           barriers: string[] | null
+          childcare_status: string | null
+          cir_signed: boolean | null
+          cir_signed_at: string | null
           city: string | null
           contact_48h: boolean | null
           created_at: string
@@ -1205,6 +1209,7 @@ export type Database = {
           french_level_cecrl: string | null
           full_name: string | null
           funding_status: string | null
+          housing_blocking: boolean | null
           hubspot_contact_id: string | null
           hubspot_deal_id: string | null
           id: string
@@ -1216,9 +1221,12 @@ export type Database = {
           main_goal: string | null
           mobility: string | null
           mobility_km: string | null
+          needs_diploma_recognition: boolean | null
+          ofii_hours_remaining: number | null
           origin_country: string | null
           phone: string | null
           postal_code: string | null
+          prefers_female_trainer: boolean | null
           previous_job: string | null
           real_comprehension_score: string | null
           skills: string[] | null
@@ -1239,7 +1247,11 @@ export type Database = {
         }
         Insert: {
           admin_status?: string | null
+          admin_status_detailed?: string | null
           barriers?: string[] | null
+          childcare_status?: string | null
+          cir_signed?: boolean | null
+          cir_signed_at?: string | null
           city?: string | null
           contact_48h?: boolean | null
           created_at?: string
@@ -1252,6 +1264,7 @@ export type Database = {
           french_level_cecrl?: string | null
           full_name?: string | null
           funding_status?: string | null
+          housing_blocking?: boolean | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
           id?: string
@@ -1263,9 +1276,12 @@ export type Database = {
           main_goal?: string | null
           mobility?: string | null
           mobility_km?: string | null
+          needs_diploma_recognition?: boolean | null
+          ofii_hours_remaining?: number | null
           origin_country?: string | null
           phone?: string | null
           postal_code?: string | null
+          prefers_female_trainer?: boolean | null
           previous_job?: string | null
           real_comprehension_score?: string | null
           skills?: string[] | null
@@ -1286,7 +1302,11 @@ export type Database = {
         }
         Update: {
           admin_status?: string | null
+          admin_status_detailed?: string | null
           barriers?: string[] | null
+          childcare_status?: string | null
+          cir_signed?: boolean | null
+          cir_signed_at?: string | null
           city?: string | null
           contact_48h?: boolean | null
           created_at?: string
@@ -1299,6 +1319,7 @@ export type Database = {
           french_level_cecrl?: string | null
           full_name?: string | null
           funding_status?: string | null
+          housing_blocking?: boolean | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
           id?: string
@@ -1310,9 +1331,12 @@ export type Database = {
           main_goal?: string | null
           mobility?: string | null
           mobility_km?: string | null
+          needs_diploma_recognition?: boolean | null
+          ofii_hours_remaining?: number | null
           origin_country?: string | null
           phone?: string | null
           postal_code?: string | null
+          prefers_female_trainer?: boolean | null
           previous_job?: string | null
           real_comprehension_score?: string | null
           skills?: string[] | null
