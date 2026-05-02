@@ -6,7 +6,7 @@ import { calculateUnifiedLeadScore } from "./leadScoring";
 
 // ─── Types ───────────────────────────────────────────────────
 
-export type NiveauFrancais = "A0A1" | "A2" | "B1plus";
+export type NiveauFrancais = "Alpha" | "A0A1" | "A2" | "B1plus";
 
 export type Secteur =
   | "logistique"
@@ -17,14 +17,29 @@ export type Secteur =
   | "btp"
   | "nsp";
 
+export type StatutAdministratif =
+  | "ue"                    // Citoyen UE / EEE / Suisse
+  | "cir_signed"            // CIR signé
+  | "cir_in_progress"       // CIR en cours
+  | "titre_sejour"          // Titre de séjour avec autorisation de travail
+  | "bpi_refugie"           // Statut de réfugié OFPRA
+  | "bpi_subsidiaire"       // Protection subsidiaire
+  | "demandeur_asile"       // En attente OFPRA / CNDA
+  | "sans_papiers"          // Sans titre
+  | "autre"
+  | "nsp";
+
 export type ParcoursId =
   | "ADMIN"          // Blocage — droit de travail non établi
+  | "LOGEMENT"       // Blocage — pas de domiciliation administrative
+  | "BPI"            // Réfugié / protection subsidiaire — AGIR/HOPE/Accelair
+  | "OFII"           // CIR signé avec heures restantes — FLE OFII gratuit prioritaire
   | "INSERTION"      // Travail rapide
   | "FORMATION"      // TP/CQP
   | "FRANCAIS"       // FLE/FOS pur
   | "MIXTE"          // Français + métier combinés
   | "ORIENTATION"    // Indécis — besoin d'un conseiller
-  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation)
+  | "ECOUTE"         // Besoins spécifiques (hors emploi/formation) + santé mentale
   | "RECONNAISSANCE"; // Reconnaissance de diplôme étranger (ENIC-NARIC)
 
 export type ActionId =
@@ -33,7 +48,12 @@ export type ActionId =
   | "RDV_CONSEILLER"
   | "DOSSIER_FORMATION"
   | "MISE_EN_RELATION_OF"
-  | "CONTACT_SOCIAL";
+  | "CONTACT_SOCIAL"
+  | "CONTACT_OFII"          // Aller à l'OFII / activer heures gratuites
+  | "CONTACT_DOMICILIATION" // CCAS, asso agréée
+  | "CONTACT_AGIR"          // Programme AGIR pour BPI
+  | "CONTACT_SANTE_MENTALE" // COMEDE, Primo Levi, PASS
+  | "CONTACT_ENIC_NARIC";   // Reconnaissance diplôme
 
 export interface UserResponses {
   q1_interet: "travail" | "formation" | "francais" | "mixte" | "nsp" | "autre";
