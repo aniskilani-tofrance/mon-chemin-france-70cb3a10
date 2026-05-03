@@ -133,6 +133,46 @@ export default function AdminTTSDiagnostic() {
         <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Latence moy.</p><p className="text-2xl font-bold">{stats.avgLatency}ms</p></CardContent></Card>
       </div>
 
+      {/* Voice test */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Play className="h-4 w-4" /> Tester la voix Marianne (FR)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground italic">"{TEST_TEXT_FR}"</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runVoiceTest} disabled={testing}>
+              {testing ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Génération…</>
+              ) : (
+                <><Play className="h-4 w-4 mr-2" /> Lancer le test</>
+              )}
+            </Button>
+            {testResult && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={testResult.provider === "elevenlabs" ? "default" : testResult.provider === "openai" ? "secondary" : "destructive"}>
+                  Provider : {testResult.provider}
+                </Badge>
+                <Badge variant="outline">{testResult.latency_ms}ms (round-trip)</Badge>
+                {testResult.request_id && (
+                  <Badge variant="outline" className="font-mono text-xs">
+                    req: {testResult.request_id.slice(0, 8)}
+                  </Badge>
+                )}
+                {testResult.provider === "elevenlabs" && (
+                  <span className="text-xs text-green-600">✓ Voix native Charlotte</span>
+                )}
+                {testResult.provider === "openai" && (
+                  <span className="text-xs text-amber-600">⚠ Fallback OpenAI actif</span>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Filters */}
       <Card>
         <CardHeader><CardTitle className="text-base">Filtres</CardTitle></CardHeader>
