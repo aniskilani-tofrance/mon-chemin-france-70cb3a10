@@ -12,6 +12,7 @@ const DEMO_ACCOUNTS = [
   { key: "formateur", email: "demo.formateur@tofrance.fr", full_name: "Marc Petit (démo)", role: "formateur", redirect: "/formateur" },
   { key: "directeur", email: "demo.directeur@tofrance.fr", full_name: "Sophie Lambert (démo)", role: "directeur", redirect: "/directeur" },
   { key: "cip", email: "demo.cip@tofrance.fr", full_name: "Karim Benali (démo CIP)", role: "cip", redirect: "/cip" },
+  { key: "benevole", email: "demo.benevole@tofrance.fr", full_name: "Claire Moreau (démo bénévole)", role: "benevole", redirect: "/partner-dashboard" },
 ];
 
 const EXTRA_LEARNERS = [
