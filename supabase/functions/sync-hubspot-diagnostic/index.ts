@@ -448,7 +448,7 @@ function hubspotProperties(payload: HubSpotPayload) {
     lecture_ecriture_francais: mapTo(payload.lecture_ecriture_francais, LITERACY_MAP),
     besoin_principal: mapMulti(payload.besoin_principal, BESOIN_MAP),
     route_orientation: mapTo(payload.route_orientation, ROUTE_MAP),
-    secteur_metier: payload.secteur_metier,
+    secteur_metier: mapTo(payload.secteur_metier, SECTEUR_MAP),
     freins_identifies: mapMulti(payload.freins_identifies, FREINS_MAP),
     disponibilite: mapTo(payload.disponibilite, DISPO_MAP),
     mobilite: mapTo(payload.mobilite, MOBILITE_MAP),
