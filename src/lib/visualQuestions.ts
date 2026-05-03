@@ -85,6 +85,22 @@ import barNone from "@/assets/onboarding/barrier_none.jpg";
 import contactYes from "@/assets/onboarding/contact_yes.jpg";
 import contactNo from "@/assets/onboarding/contact_no.jpg";
 
+// Statut administratif
+import adminTitre from "@/assets/onboarding/admin_titre_sejour.jpg";
+import adminBpiRefugie from "@/assets/onboarding/admin_bpi_refugie.jpg";
+import adminBpiSubs from "@/assets/onboarding/admin_bpi_subsidiaire.jpg";
+import adminDemandeur from "@/assets/onboarding/admin_demandeur_asile.jpg";
+import adminSansPapiers from "@/assets/onboarding/admin_sans_papiers.jpg";
+import adminDontKnow from "@/assets/onboarding/admin_dont_know.jpg";
+
+// CIR / OFII
+import cirSignedLeft from "@/assets/onboarding/cir_signed_hours_left.jpg";
+import cirSignedUsed from "@/assets/onboarding/cir_signed_used.jpg";
+import cirInProgress from "@/assets/onboarding/cir_in_progress.jpg";
+import cirNotSigned from "@/assets/onboarding/cir_not_signed.jpg";
+import cirNotConcerned from "@/assets/onboarding/cir_not_concerned.jpg";
+import cirDontKnow from "@/assets/onboarding/cir_dont_know.jpg";
+
 export type VisualQuestionType = "single" | "multi" | "info";
 
 export interface VisualOption {
@@ -267,7 +283,43 @@ export const VISUAL_QUESTIONS: VisualQuestion[] = [
     ],
   },
 
-  // 7 — Secteur visé
+  // 6.a — Statut administratif (NOUVEAU — parité avec parcours Marianne)
+  {
+    id: "admin_status",
+    titleKey: "questionnaire.admin_status.question",
+    subtitleKey: "questionnaire.admin_status.subtitle",
+    type: "single",
+    columns: 3,
+    options: [
+      { id: "titre_sejour", labelKey: "questionnaire.admin_status.choices.titre_sejour", icon: "🪪", illustration: adminTitre },
+      { id: "bpi_refugie", labelKey: "questionnaire.admin_status.choices.bpi_refugie", icon: "🛡️", illustration: adminBpiRefugie },
+      { id: "bpi_subsidiaire", labelKey: "questionnaire.admin_status.choices.bpi_subsidiaire", icon: "🕊️", illustration: adminBpiSubs },
+      { id: "demandeur_asile", labelKey: "questionnaire.admin_status.choices.demandeur_asile", icon: "📋", illustration: adminDemandeur },
+      { id: "sans_papiers", labelKey: "questionnaire.admin_status.choices.sans_papiers", icon: "⚠️", illustration: adminSansPapiers },
+      { id: "dont_know", labelKey: "questionnaire.admin_status.choices.dont_know", icon: "❓", illustration: adminDontKnow },
+    ],
+  },
+
+  // 6.b — CIR / OFII (NOUVEAU — affiché si non-UE et statut connu)
+  {
+    id: "cir_status",
+    titleKey: "questionnaire.cir_status.question",
+    subtitleKey: "questionnaire.cir_status.subtitle",
+    type: "single",
+    columns: 3,
+    options: [
+      { id: "signed_hours_left", labelKey: "questionnaire.cir_status.choices.signed_hours_left", icon: "✅", illustration: cirSignedLeft },
+      { id: "signed_used", labelKey: "questionnaire.cir_status.choices.signed_used", icon: "⏳", illustration: cirSignedUsed },
+      { id: "in_progress", labelKey: "questionnaire.cir_status.choices.in_progress", icon: "🕒", illustration: cirInProgress },
+      { id: "not_signed", labelKey: "questionnaire.cir_status.choices.not_signed", icon: "❌", illustration: cirNotSigned },
+      { id: "not_concerned", labelKey: "questionnaire.cir_status.choices.not_concerned", icon: "🇪🇺", illustration: cirNotConcerned },
+      { id: "dont_know", labelKey: "questionnaire.cir_status.choices.dont_know", icon: "❓", illustration: cirDontKnow },
+    ],
+    showIf: (a) => {
+      const s = a.admin_status;
+      return s !== undefined && s !== "sans_papiers";
+    },
+  },
   {
     id: "target_sector",
     titleKey: "onboardingVisual.target_sector.question",

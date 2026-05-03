@@ -225,6 +225,30 @@
         "student": "Estudiante o en formación",
         "inactive": "Sin actividad actualmente"
       }
+    },
+    "admin_status": {
+      "question": "¿Cuál es su situación administrativa?",
+      "subtitle": "Elija lo que más se parezca",
+      "choices": {
+        "titre_sejour": "Permiso de residencia",
+        "bpi_refugie": "Refugiado OFPRA (BPI)",
+        "bpi_subsidiaire": "Protección subsidiaria",
+        "demandeur_asile": "Solicitante de asilo",
+        "sans_papiers": "Sin papeles",
+        "dont_know": "No lo sé"
+      }
+    },
+    "cir_status": {
+      "question": "¿Ha firmado el CIR con la OFII?",
+      "subtitle": "El CIR da derecho a horas gratuitas de francés",
+      "choices": {
+        "signed_hours_left": "Firmado, horas restantes",
+        "signed_used": "Firmado, horas usadas",
+        "in_progress": "En curso",
+        "not_signed": "No firmado",
+        "not_concerned": "No concernido (UE)",
+        "dont_know": "No lo sé"
+      }
     }
   },
   "completion": {
