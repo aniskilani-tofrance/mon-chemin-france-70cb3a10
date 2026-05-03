@@ -217,7 +217,7 @@ export function DemoSwitchBar() {
           <div className="p-3 space-y-3">
             {/* Persona switcher */}
             {!allReady && !loading && (
-              <Button size="sm" className="w-full" onClick={provision} disabled={provisioning}>
+              <Button size="sm" className="w-full" onClick={() => provision()} disabled={provisioning}>
                 {provisioning && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
                 Initialiser les comptes démo
               </Button>
@@ -298,7 +298,7 @@ export function DemoSwitchBar() {
                   Copier identifiants
                 </button>
                 <button
-                  onClick={provision}
+                  onClick={() => provision()}
                   disabled={provisioning}
                   className="flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground disabled:opacity-60"
                 >
