@@ -236,13 +236,49 @@ async function buildSharedPayload(supabaseAdmin: any, diagnosticId: string): Pro
   };
 }
 
-// Properties not yet created in the HubSpot portal — skip to avoid PROPERTY_DOESNT_EXIST 400s.
-const HUBSPOT_UNSUPPORTED_PROPERTIES = new Set<string>([
-  "whatsapp",
-  "source_location",
-  "source_campaign",
-  "disponibilite",
-]);
+// Cache of valid property names per HubSpot object type, to filter out
+// any property missing in the portal and avoid 400 PROPERTY_DOESNT_EXIST.
+const HUBSPOT_PROPERTY_CACHE = new Map<string, { names: Set<string>; fetchedAt: number }>();
+const HUBSPOT_PROPERTY_TTL_MS = 5 * 60 * 1000;
+
+async function getValidHubSpotProperties(objectType: string): Promise<Set<string> | null> {
+  const cached = HUBSPOT_PROPERTY_CACHE.get(objectType);
+  if (cached && Date.now() - cached.fetchedAt < HUBSPOT_PROPERTY_TTL_MS) {
+    return cached.names;
+  }
+  try {
+    const data = await hubspot(`/crm/v3/properties/${objectType}`);
+    const names = new Set<string>(
+      (data?.results || [])
+        .map((p: any) => p?.name)
+        .filter((n: unknown): n is string => typeof n === "string"),
+    );
+    if (names.size === 0) return null;
+    HUBSPOT_PROPERTY_CACHE.set(objectType, { names, fetchedAt: Date.now() });
+    return names;
+  } catch (err) {
+    console.warn(`[hubspot] could not fetch ${objectType} properties:`, (err as Error).message);
+    return null;
+  }
+}
+
+async function filterValidProperties(
+  objectType: string,
+  properties: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const valid = await getValidHubSpotProperties(objectType);
+  if (!valid) return properties; // fail-open if schema fetch fails
+  const out: Record<string, unknown> = {};
+  const dropped: string[] = [];
+  for (const [key, value] of Object.entries(properties)) {
+    if (valid.has(key)) out[key] = value;
+    else dropped.push(key);
+  }
+  if (dropped.length) {
+    console.warn(`[hubspot] dropped unknown ${objectType} properties:`, dropped.join(", "));
+  }
+  return out;
+}
 
 function hubspotProperties(payload: HubSpotPayload) {
   return Object.fromEntries(Object.entries({
@@ -272,7 +308,7 @@ function hubspotProperties(payload: HubSpotPayload) {
     date_diagnostic: payload.date_diagnostic,
     statut_lead: payload.statut_lead,
     score_qualification: payload.score_qualification,
-  }).filter(([key, value]) => !HUBSPOT_UNSUPPORTED_PROPERTIES.has(key) && value !== null && value !== undefined && value !== ""));
+  }).filter(([, value]) => value !== null && value !== undefined && value !== ""));
 }
 
 async function searchObject(objectType: string, propertyName: string, value: string, properties: string[] = []) {
