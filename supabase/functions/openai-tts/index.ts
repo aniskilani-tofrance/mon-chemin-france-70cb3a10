@@ -219,27 +219,28 @@ Deno.serve(async (req) => {
     const selectedSpeed = speed || 0.95;
 
     const circuitOpen = isCircuitOpen();
-    console.log(`[tts] lang=${lang} chars=${text.length} elevenlabs_key=${!!elevenKey} circuit_open=${circuitOpen}`);
+    const requestId = crypto.randomUUID();
+    console.log(`[tts] req=${requestId} lang=${lang} chars=${text.length} elevenlabs_key=${!!elevenKey} circuit_open=${circuitOpen}`);
 
     // 1) ElevenLabs (sauf si circuit ouvert ou clé absente)
     if (elevenKey && !circuitOpen) {
       const elVoiceId = ELEVENLABS_VOICE_MAP[lang] || ELEVENLABS_VOICE_MAP.fr;
-      const result = await tryElevenLabs(elevenKey, truncatedText, elVoiceId, lang);
+      const result = await tryElevenLabs(elevenKey, truncatedText, elVoiceId, lang, requestId);
       if (result.ok) {
-        return new Response(JSON.stringify({ audio_base64: result.base64, provider: 'elevenlabs' }), {
+        return new Response(JSON.stringify({ audio_base64: result.base64, provider: 'elevenlabs', request_id: requestId }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (result.fatal) {
         openCircuit(result.reason);
       }
-      // sinon → fallback OpenAI ci-dessous
     } else if (circuitOpen) {
-      console.log(`[tts] Skipping ElevenLabs (circuit open: ${elevenlabsCircuitReason}) → OpenAI direct`);
+      console.log(`[tts] req=${requestId} Skipping ElevenLabs (circuit open: ${elevenlabsCircuitReason}) → OpenAI direct`);
     }
 
     // 2) Fallback OpenAI TTS
     if (!apiKey) {
+      logTTS({ request_id: requestId, provider: 'none', language: lang, success: false, error_message: 'No TTS provider available', text_chars: text.length, circuit_open: circuitOpen });
       return new Response(JSON.stringify({ error: 'No TTS provider available' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -247,6 +248,7 @@ Deno.serve(async (req) => {
     }
 
     const selectedVoice = voice || OPENAI_VOICE_MAP[lang] || 'nova';
+    const tOpen = Date.now();
     let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
 
     if (!response.ok && response.status >= 500) {
