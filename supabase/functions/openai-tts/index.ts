@@ -257,10 +257,12 @@ Deno.serve(async (req) => {
       response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
     }
 
+    const openaiLatency = Date.now() - tOpen;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[tts] OpenAI error:', response.status, errorText);
-      return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
+      logTTS({ request_id: requestId, provider: 'openai', language: lang, voice_id: selectedVoice, status_code: response.status, success: false, latency_ms: openaiLatency, error_message: errorText.slice(0, 500), text_chars: text.length, circuit_open: circuitOpen });
+      return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText, request_id: requestId }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -268,8 +270,9 @@ Deno.serve(async (req) => {
 
     const audioBuffer = await response.arrayBuffer();
     const base64 = base64Encode(audioBuffer);
+    logTTS({ request_id: requestId, provider: 'openai', language: lang, voice_id: selectedVoice, status_code: 200, success: true, latency_ms: openaiLatency, text_chars: text.length, circuit_open: circuitOpen });
 
-    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai' }), {
+    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai', request_id: requestId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
