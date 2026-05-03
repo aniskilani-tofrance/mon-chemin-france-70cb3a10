@@ -71,6 +71,7 @@ export default function AdminHubSpotLeads() {
   const [owners, setOwners] = useState<HubSpotOwner[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [taskOpen, setTaskOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<HubSpotLead | null>(null);
