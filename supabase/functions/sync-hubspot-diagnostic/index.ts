@@ -363,11 +363,18 @@ function hubspotProperties(payload: HubSpotPayload) {
 }
 
 async function searchObject(objectType: string, propertyName: string, value: string, properties: string[] = []) {
+  // Skip search if the filter property is unknown in HubSpot — avoids a 400.
+  const valid = await getValidHubSpotProperties(objectType);
+  if (valid && !valid.has(propertyName)) {
+    console.warn(`[hubspot] skip ${objectType} search: property "${propertyName}" missing in portal`);
+    return null;
+  }
+  const validProps = valid ? properties.filter((p) => valid.has(p)) : properties;
   const data = await hubspot(`/crm/v3/objects/${objectType}/search`, {
     method: "POST",
     body: JSON.stringify({
       filterGroups: [{ filters: [{ propertyName, operator: "EQ", value }] }],
-      properties,
+      properties: validProps,
       limit: 1,
     }),
   });
