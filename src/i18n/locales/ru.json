@@ -225,6 +225,30 @@
         "student": "Учусь или прохожу обучение",
         "inactive": "Без занятости в настоящее время"
       }
+    },
+    "admin_status": {
+      "question": "Каков ваш административный статус?",
+      "subtitle": "Выберите подходящий вариант",
+      "choices": {
+        "titre_sejour": "Вид на жительство",
+        "bpi_refugie": "Беженец OFPRA (BPI)",
+        "bpi_subsidiaire": "Дополнительная защита",
+        "demandeur_asile": "Проситель убежища",
+        "sans_papiers": "Без документов",
+        "dont_know": "Не знаю"
+      }
+    },
+    "cir_status": {
+      "question": "Подписали ли вы CIR с OFII?",
+      "subtitle": "CIR даёт право на бесплатные часы французского",
+      "choices": {
+        "signed_hours_left": "Подписан, часы остались",
+        "signed_used": "Подписан, часы использованы",
+        "in_progress": "В процессе",
+        "not_signed": "Не подписан",
+        "not_concerned": "Не касается (ЕС)",
+        "dont_know": "Не знаю"
+      }
     }
   },
   "completion": {

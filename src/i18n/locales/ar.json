@@ -225,6 +225,30 @@
         "student": "طالب أو في تكوين",
         "inactive": "بدون نشاط حالياً"
       }
+    },
+    "admin_status": {
+      "question": "ما هي وضعيتك الإدارية؟",
+      "subtitle": "اختر الأقرب",
+      "choices": {
+        "titre_sejour": "بطاقة الإقامة",
+        "bpi_refugie": "لاجئ OFPRA",
+        "bpi_subsidiaire": "حماية ثانوية",
+        "demandeur_asile": "طالب لجوء",
+        "sans_papiers": "بدون أوراق",
+        "dont_know": "لا أعرف"
+      }
+    },
+    "cir_status": {
+      "question": "هل وقعت عقد CIR مع OFII؟",
+      "subtitle": "CIR يمنح ساعات فرنسية مجانية",
+      "choices": {
+        "signed_hours_left": "موقع، ساعات متبقية",
+        "signed_used": "موقع، الساعات منتهية",
+        "in_progress": "قيد التنفيذ",
+        "not_signed": "غير موقع",
+        "not_concerned": "غير معني (الاتحاد الأوروبي)",
+        "dont_know": "لا أعرف"
+      }
     }
   },
   "completion": {
