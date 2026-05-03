@@ -236,6 +236,14 @@ async function buildSharedPayload(supabaseAdmin: any, diagnosticId: string): Pro
   };
 }
 
+// Properties not yet created in the HubSpot portal — skip to avoid PROPERTY_DOESNT_EXIST 400s.
+const HUBSPOT_UNSUPPORTED_PROPERTIES = new Set<string>([
+  "whatsapp",
+  "source_location",
+  "source_campaign",
+  "disponibilite",
+]);
+
 function hubspotProperties(payload: HubSpotPayload) {
   return Object.fromEntries(Object.entries({
     firstname: payload.firstname,
@@ -264,7 +272,7 @@ function hubspotProperties(payload: HubSpotPayload) {
     date_diagnostic: payload.date_diagnostic,
     statut_lead: payload.statut_lead,
     score_qualification: payload.score_qualification,
-  }).filter(([, value]) => value !== null && value !== undefined && value !== ""));
+  }).filter(([key, value]) => !HUBSPOT_UNSUPPORTED_PROPERTIES.has(key) && value !== null && value !== undefined && value !== ""));
 }
 
 async function searchObject(objectType: string, propertyName: string, value: string, properties: string[] = []) {
