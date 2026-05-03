@@ -185,7 +185,7 @@ export function DemoSwitchBar() {
   const allReady = accounts.length > 0 && accounts.every((a) => a.exists);
 
   return (
-    <div className="fixed bottom-4 right-4 z-[60] w-[min(360px,calc(100vw-2rem))]">
+    <div data-tour="demo-bar" className="fixed bottom-4 right-4 z-[60] w-[min(360px,calc(100vw-2rem))]">
       <div className="rounded-xl border border-border bg-card/95 backdrop-blur shadow-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-primary/90 to-primary text-primary-foreground">
