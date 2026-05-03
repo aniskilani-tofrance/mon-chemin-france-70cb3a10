@@ -85,6 +85,22 @@ import barNone from "@/assets/onboarding/barrier_none.jpg";
 import contactYes from "@/assets/onboarding/contact_yes.jpg";
 import contactNo from "@/assets/onboarding/contact_no.jpg";
 
+// Statut administratif
+import adminTitre from "@/assets/onboarding/admin_titre_sejour.jpg";
+import adminBpiRefugie from "@/assets/onboarding/admin_bpi_refugie.jpg";
+import adminBpiSubs from "@/assets/onboarding/admin_bpi_subsidiaire.jpg";
+import adminDemandeur from "@/assets/onboarding/admin_demandeur_asile.jpg";
+import adminSansPapiers from "@/assets/onboarding/admin_sans_papiers.jpg";
+import adminDontKnow from "@/assets/onboarding/admin_dont_know.jpg";
+
+// CIR / OFII
+import cirSignedLeft from "@/assets/onboarding/cir_signed_hours_left.jpg";
+import cirSignedUsed from "@/assets/onboarding/cir_signed_used.jpg";
+import cirInProgress from "@/assets/onboarding/cir_in_progress.jpg";
+import cirNotSigned from "@/assets/onboarding/cir_not_signed.jpg";
+import cirNotConcerned from "@/assets/onboarding/cir_not_concerned.jpg";
+import cirDontKnow from "@/assets/onboarding/cir_dont_know.jpg";
+
 export type VisualQuestionType = "single" | "multi" | "info";
 
 export interface VisualOption {
