@@ -765,23 +765,38 @@ serve(async (req) => {
       }
     }
     const companyResult = await findOrCreateCompanyBySlug(payload);
-    const companyId = companyResult?.id || null;
-    const companyAutoCreated = companyResult?.created || false;
-    if (companyId) await associateContactToCompany(contactId, companyId);
+    const companyId = companyResult.id;
+    const companyAutoCreated = companyResult.created;
+    const associations: AssociationResult[] = [];
+    if (companyId) {
+      associations.push(await associateContactToCompany(contactId, companyId));
+    }
     const dealId = await createDeal(payload, contactId, companyId);
+    if (companyId) {
+      // createDeal includes the deal→company association in the POST; verify + log idempotently.
+      associations.push(await ensureAssociation("deals", dealId, "companies", companyId, 5));
+    }
     await rememberHubSpotStatus(supabaseAdmin, diagnosticType, diagnosticId, contactId, dealId, payload.statut_lead);
 
     let status: SyncStatus = "success";
     let errorMessage: string | null = null;
     if (!companyId) {
       status = "warning";
-      errorMessage = `Entreprise source introuvable pour source_slug=${payload.source_slug || "—"}`;
+      errorMessage = `Entreprise source introuvable pour source_slug=${payload.source_slug || "—"} (raison: ${companyResult.reason}${companyResult.error ? ` — ${companyResult.error}` : ""})`;
       try {
         await createMissingCompanyNote(payload, contactId, dealId);
       } catch (noteErr) {
         errorMessage += `; note HubSpot non créée: ${(noteErr as Error).message}`;
       }
       await notifyMissingCompany(payload);
+    }
+    const failedAssociations = associations.filter((a) => a.status === "failed" || a.status === "check_failed");
+    if (failedAssociations.length) {
+      if (status === "success") status = "warning";
+      const detail = failedAssociations
+        .map((a) => `${a.fromType}#${a.fromId}→${a.toType}#${a.toId}: ${a.status}${a.error ? ` (${a.error})` : ""}`)
+        .join(" | ");
+      errorMessage = errorMessage ? `${errorMessage}; assoc échouée(s): ${detail}` : `Association(s) HubSpot échouée(s): ${detail}`;
     }
 
     await logSync(supabaseAdmin, {
@@ -800,7 +815,18 @@ serve(async (req) => {
         source_slug: payload.source_slug,
         route_orientation: payload.route_orientation,
         dealstage: payload.score_qualification >= 70 ? "À rappeler" : "Nouveau diagnostic",
-        company_auto_created: companyAutoCreated,
+        company: {
+          auto_created: companyAutoCreated,
+          reason: companyResult.reason,
+          error: companyResult.error || null,
+          properties_sent: companyResult.properties_sent || null,
+        },
+        associations: associations.map((a) => ({
+          from: `${a.fromType}#${a.fromId}`,
+          to: `${a.toType}#${a.toId}`,
+          status: a.status,
+          error: a.error || null,
+        })),
       },
     });
 
