@@ -280,19 +280,22 @@ const SharedDiagnostic = () => {
   };
 
   // ─── Save answer ──────────────────────────────────────────────
-  const saveCurrent = useCallback(async () => {
+  // Accepts an optional `override` so callers (toggle handlers) can pass the
+  // new state without waiting for React's async re-render.
+  const saveCurrent = useCallback(async (override?: Partial<typeof currentAnswer>) => {
     if (!diagnosticId || !question || !currentAnswer) return false;
+    const merged = { ...currentAnswer, ...(override || {}) };
     setSavingAnswer(true);
     try {
       const payload = {
         diagnostic_id: diagnosticId,
         question_key: question.key,
-        answer_fr: currentAnswer.answer_fr || "",
-        answer_native: currentAnswer.answer_native || "",
-        validated_by_learner: currentAnswer.validated_by_learner,
-        validated_by_formateur: currentAnswer.validated_by_formateur,
+        answer_fr: merged.answer_fr || "",
+        answer_native: merged.answer_native || "",
+        validated_by_learner: merged.validated_by_learner,
+        validated_by_formateur: merged.validated_by_formateur,
         validated_at:
-          currentAnswer.validated_by_learner && currentAnswer.validated_by_formateur
+          merged.validated_by_learner && merged.validated_by_formateur
             ? new Date().toISOString()
             : null,
       };
@@ -314,12 +317,14 @@ const SharedDiagnostic = () => {
   }, [diagnosticId, question, currentAnswer]);
 
   const validateLearner = async () => {
-    updateAnswer({ validated_by_learner: !currentAnswer?.validated_by_learner });
-    setTimeout(() => { saveCurrent(); }, 50);
+    const next = !currentAnswer?.validated_by_learner;
+    updateAnswer({ validated_by_learner: next });
+    await saveCurrent({ validated_by_learner: next });
   };
   const validateFormateur = async () => {
-    updateAnswer({ validated_by_formateur: !currentAnswer?.validated_by_formateur });
-    setTimeout(() => { saveCurrent(); }, 50);
+    const next = !currentAnswer?.validated_by_formateur;
+    updateAnswer({ validated_by_formateur: next });
+    await saveCurrent({ validated_by_formateur: next });
   };
 
   const goPrev = () => {
