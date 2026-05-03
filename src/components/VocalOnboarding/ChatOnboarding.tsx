@@ -583,6 +583,78 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     }
   }, [currentQuestionId, currentQuestion, answers, isProcessing, isComplete, isDirectText, isEmail, language, speak, buildSummary, onComplete]);
 
+  // Direct choice click — bypasses AI parsing
+  const handleChoiceClick = useCallback(async (choiceIds: string[]) => {
+    if (isProcessing || isComplete || !currentQuestion?.choices) return;
+    const isMulti = currentQuestion.type === "multiChoice";
+    const matchedAnswer = isMulti ? choiceIds.join(",") : choiceIds[0];
+    const allTags: string[] = [];
+    const labels: string[] = [];
+    choiceIds.forEach(id => {
+      const c = currentQuestion.choices?.find(ch => ch.id === id);
+      if (c?.tags) allTags.push(...c.tags);
+      if (c) labels.push(getTranslatedText(c.label as any, "text", language));
+    });
+
+    const userMsg: ChatMessage = { role: "user", content: labels.join(" · ") };
+    setMessages(prev => [...prev, userMsg]);
+    setMultiSelected([]);
+    setIsProcessing(true);
+
+    try {
+      const newAnswers: OnboardingAnswers = {
+        ...answers,
+        [currentQuestionId]: matchedAnswer,
+        tags: allTags.length > 0 ? [...answers.tags, ...allTags] : answers.tags,
+      };
+      setAnswers(newAnswers);
+
+      const nextQId = getNextQuestion(currentQuestionId, matchedAnswer, newAnswers);
+      const nextQ = nextQId ? ONBOARDING_TREE.questions[nextQId] : null;
+
+      let marianneText = "";
+      try {
+        const response = await callOnboardingChat({
+          action: "onboarding_chat",
+          phase: "parse",
+          question: currentQuestion,
+          user_answer: labels.join(", "),
+          next_question: nextQ,
+          language,
+          conversation_summary: buildSummary(),
+        });
+        marianneText = response.marianne_message;
+      } catch {
+        marianneText = nextQ ? getTranslatedText(nextQ as any, "text", language) : "Merci !";
+      }
+
+      const marianneMsg: ChatMessage = { role: "marianne", content: marianneText };
+      setMessages(prev => [...prev, marianneMsg]);
+      speakAndListen(marianneText);
+
+      if (nextQId) {
+        setQuestionHistory(prev => [...prev, currentQuestionId]);
+        setCurrentQuestionId(nextQId);
+        if (currentQuestionId === CHECKPOINT_AFTER_QUESTION && !user && !checkpointDismissed) {
+          setShowSignupCheckpoint(true);
+        }
+      } else {
+        setIsComplete(true);
+        markCheckpointComplete();
+        setTimeout(() => onComplete(newAnswers), 1500);
+      }
+    } catch (err) {
+      console.error("Choice click error:", err);
+      toast.error("Erreur");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [currentQuestion, currentQuestionId, answers, isProcessing, isComplete, language, buildSummary, speakAndListen, user, checkpointDismissed, markCheckpointComplete, onComplete]);
+
+  const toggleMulti = (id: string) => {
+    setMultiSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
