@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,10 +8,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AccessCodeSection() {
   const navigate = useNavigate();
   const { isAdmin } = useAdminCheck();
+  const { user } = useAuth();
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [pilotCode, setPilotCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("marianne_access_codes")
+        .select("code")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.code) setPilotCode(data.code);
+    })();
+  }, [isAdmin]);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
 
