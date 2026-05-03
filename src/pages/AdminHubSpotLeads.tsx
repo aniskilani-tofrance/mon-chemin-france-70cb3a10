@@ -175,21 +175,21 @@ export default function AdminHubSpotLeads() {
   };
 
   const exportCsv = () => {
-    const headers = ["Prénom", "Téléphone", "Email", "Lieu source", "Route orientation", "Statut lead", "Score qualification", "Date diagnostic", "Diagnostic ID"];
+    const headers = ["Prénom", "Téléphone", "Email", "Lieu source", "Route orientation", "Statut profil", "Score qualification", "Date diagnostic", "Diagnostic ID"];
     const rows = filteredLeads.map((lead) => [lead.firstname, lead.phone, lead.email, lead.source_location, lead.route_orientation, lead.statut_lead, lead.score_qualification ?? "", lead.date_diagnostic, lead.diagnostic_id]);
     const csv = [headers, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
     const blob = new Blob([`\uFEFF${csv}`], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = `leads-hubspot-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.download = `profils-hubspot-${new Date().toISOString().slice(0, 10)}.csv`;
     link.click();
     URL.revokeObjectURL(url);
   };
 
   return (
     <div className="min-h-screen bg-background">
-      <SEO title="Admin leads HubSpot — ToFrance" description="Gestion des leads HubSpot ToFrance" path="/admin/leads" />
+      <SEO title="Admin profils HubSpot — ToFrance" description="Gestion des profils HubSpot ToFrance" path="/admin/leads" />
       <Header />
 
       <main className="container mx-auto px-4 py-24">
@@ -197,9 +197,9 @@ export default function AdminHubSpotLeads() {
           <div>
             <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground">
               <Users className="h-8 w-8 text-primary" />
-              Leads HubSpot
+              Profils HubSpot
             </h1>
-            <p className="mt-1 text-muted-foreground">{filteredLeads.length} lead{filteredLeads.length > 1 ? "s" : ""} affiché{filteredLeads.length > 1 ? "s" : ""}</p>
+            <p className="mt-1 text-muted-foreground">{filteredLeads.length} profil{filteredLeads.length > 1 ? "s" : ""} affiché{filteredLeads.length > 1 ? "s" : ""}</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button variant="outline" asChild>
@@ -239,7 +239,7 @@ export default function AdminHubSpotLeads() {
                 </SelectContent>
               </Select>
               <Select value={filters.status} onValueChange={(status) => setFilters((current) => ({ ...current, status }))}>
-                <SelectTrigger><SelectValue placeholder="Statut lead" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Statut profil" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Tous les statuts</SelectItem>
                   {LEAD_STATUSES.map((status) => <SelectItem key={status} value={status}>{status}</SelectItem>)}
@@ -265,7 +265,7 @@ export default function AdminHubSpotLeads() {
                 {loading ? (
                   <TableRow><TableCell colSpan={7} className="py-10 text-center"><Loader2 className="mx-auto h-6 w-6 animate-spin text-primary" /></TableCell></TableRow>
                 ) : filteredLeads.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Aucun lead HubSpot trouvé</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={7} className="py-10 text-center text-muted-foreground">Aucun profil HubSpot trouvé</TableCell></TableRow>
                 ) : filteredLeads.map((lead) => (
                   <TableRow key={lead.id}>
                     <TableCell className="font-medium">{lead.firstname || "—"}</TableCell>

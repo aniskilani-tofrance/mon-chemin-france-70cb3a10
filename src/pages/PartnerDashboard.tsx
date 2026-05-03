@@ -68,7 +68,7 @@ export default function PartnerDashboard() {
   const exportLeadsCSV = () => {
     const purchased = leads?.filter((l: any) => l.purchased_at) || [];
     if (purchased.length === 0) {
-      toast.info("Aucun lead acheté à exporter.");
+      toast.info("Aucun profil acheté à exporter.");
       return;
     }
     const headers = ["Date", "Nom", "Email", "Téléphone", "Ville", "Secteur", "Niveau FR", "Score", "Statut"];
@@ -91,10 +91,10 @@ export default function PartnerDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-tofrance-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `profils-tofrance-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`${purchased.length} lead(s) exporté(s)`);
+    toast.success(`${purchased.length} profil(s) exporté(s)`);
   };
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function PartnerDashboard() {
           });
           if (error) throw error;
           if (data?.success) {
-            toast.success("Lead débloqué avec succès !");
+            toast.success("Profil débloqué avec succès !");
             qc.invalidateQueries({ queryKey: ["provider-leads"] });
           } else {
             toast.error(data?.error || "Erreur de vérification du paiement");
@@ -144,8 +144,8 @@ export default function PartnerDashboard() {
         (payload) => {
           const score = payload.new.match_score;
           const tier = (score ?? 50) >= 80 ? "🌟 Premium" : (score ?? 50) >= 50 ? "✅ Standard" : "📋 Éco";
-          toast.success(`Nouveau lead ${tier}`, {
-            description: `Score de match : ${score ?? "—"}% — Consultez vos leads pour plus de détails.`,
+          toast.success(`Nouveau profil ${tier}`, {
+            description: `Score de match : ${score ?? "—"}% — Consultez vos profils pour plus de détails.`,
             duration: 8000,
           });
           // Refresh leads data
@@ -287,7 +287,7 @@ export default function PartnerDashboard() {
           <AnimatedContainer delay={0.1} className="mb-8">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-5">
               {[
-                { label: "Leads total", value: totalLeads, icon: Users, bg: "bg-primary/10", color: "text-primary" },
+                { label: "Profils total", value: totalLeads, icon: Users, bg: "bg-primary/10", color: "text-primary" },
                 { label: "Achetés", value: purchasedLeads, icon: ShoppingCart, bg: "bg-accent", color: "text-accent-foreground" },
                 { label: "Contactés", value: contactedLeads, icon: Phone, bg: "bg-secondary/10", color: "text-secondary" },
                 { label: "Convertis", value: convertedLeads, icon: CheckCircle2, bg: "bg-success/15", color: "text-success" },
@@ -311,7 +311,7 @@ export default function PartnerDashboard() {
           <AnimatedContainer delay={0.2}>
             <Tabs defaultValue="leads" className="space-y-4">
               <TabsList className="grid w-full grid-cols-2 sm:w-auto">
-                <TabsTrigger value="leads">Leads</TabsTrigger>
+                <TabsTrigger value="leads">Profils</TabsTrigger>
                 <TabsTrigger value="team">Équipe</TabsTrigger>
               </TabsList>
 
@@ -319,7 +319,7 @@ export default function PartnerDashboard() {
                 <Card>
                   <CardHeader>
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <CardTitle className="text-lg">Leads reçus</CardTitle>
+                      <CardTitle className="text-lg">Profils reçus</CardTitle>
                       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                         <Button variant="outline" size="sm" onClick={exportLeadsCSV} disabled={!leads?.some((l: any) => l.purchased_at)}>
                           <Download className="mr-1 h-4 w-4" />
@@ -340,7 +340,7 @@ export default function PartnerDashboard() {
                       <div className="py-12 text-center text-muted-foreground">
                         <Users className="mx-auto h-10 w-10 mb-3 opacity-40" />
                         <p>Aucun lead pour le moment.</p>
-                        <p className="text-sm">Les leads apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
+                        <p className="text-sm">Les profils apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
                       </div>
                     ) : (
                       <StaggerContainer className="space-y-3" staggerDelay={0.05}>

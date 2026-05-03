@@ -21,13 +21,13 @@ import { PartnerLeadForm } from "@/components/PartnerLeadForm";
 const BENEFITS = [
   {
     icon: Users,
-    title: "Leads qualifiés & scorés",
+    title: "Profils qualifiés & scorés",
     description: "Profils vérifiés correspondant à vos critères, scorés par notre IA d'orientation.",
   },
   {
     icon: BarChart3,
     title: "Dashboard de gestion",
-    description: "Suivi des leads, gestion des sessions et mesure de performance dans un espace dédié.",
+    description: "Suivi des profils, gestion des sessions et mesure de performance dans un espace dédié.",
   },
   {
     icon: Zap,
@@ -51,7 +51,7 @@ export default function PartnersInfo() {
   return (
     <div className="min-h-screen bg-background">
       <SEO
-        title="Devenez partenaire ToFrance — Recevez des leads qualifiés"
+        title="Devenez partenaire ToFrance — Recevez des profils qualifiés"
         description="Rejoignez le réseau ToFrance : organismes de formation, employeurs et associations. Recevez des profils vérifiés et scorés. Inscription en 1 minute, réponse sous 24h."
         path="/devenir-partenaire"
       />

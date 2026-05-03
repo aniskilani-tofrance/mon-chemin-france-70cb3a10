@@ -162,7 +162,7 @@ function PartnerEmailPreview({ providerName, matchScore }: { providerName: strin
   return (
     <div style={emailBase}>
       <div style={cardBase}>
-        <EmailHeader subtitle="Nouveau lead disponible" />
+        <EmailHeader subtitle="Nouveau profil disponible" />
         <div style={bodyStyle}>
           <p style={{ fontSize: 18, color: "#1e293b", margin: "0 0 8px", fontWeight: 600 }}>
             Bonjour {providerName} 👋
@@ -173,7 +173,7 @@ function PartnerEmailPreview({ providerName, matchScore }: { providerName: strin
 
           <div style={{ background: "#f8fafc", borderRadius: 12, padding: 24, margin: "0 0 24px", border: "1px solid #e2e8f0" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <span style={{ fontSize: 13, color: "#64748b", textTransform: "uppercase" as const, letterSpacing: "0.06em", fontWeight: 700 }}>Qualité du lead</span>
+              <span style={{ fontSize: 13, color: "#64748b", textTransform: "uppercase" as const, letterSpacing: "0.06em", fontWeight: 700 }}>Qualité du profil</span>
               <span style={{
                 background: tierColor,
                 color: "white",

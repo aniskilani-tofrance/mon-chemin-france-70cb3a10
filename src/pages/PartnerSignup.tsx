@@ -125,7 +125,7 @@ export default function PartnerSignup() {
     <div className="min-h-screen bg-background">
       <SEO
         title="Devenir partenaire — ToFrance"
-        description="Rejoignez le réseau ToFrance en tant qu'organisme de formation ou employeur. Recevez des leads qualifiés."
+        description="Rejoignez le réseau ToFrance en tant qu'organisme de formation ou employeur. Recevez des profils qualifiés."
         path="/partner-signup"
       />
       <Header />

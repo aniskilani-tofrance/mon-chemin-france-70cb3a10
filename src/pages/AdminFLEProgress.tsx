@@ -927,7 +927,7 @@ export default function AdminFLEProgress() {
                                 <span className="font-medium">{selectedEnriched.onboarding.work_right || "—"}</span>
                               </div>
                               <div>
-                                <span className="text-muted-foreground">Score lead : </span>
+                                <span className="text-muted-foreground">Score profil : </span>
                                 <span className="font-medium">{selectedEnriched.onboarding.lead_score ?? "—"}/100</span>
                               </div>
                             </div>

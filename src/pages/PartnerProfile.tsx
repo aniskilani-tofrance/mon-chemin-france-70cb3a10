@@ -530,7 +530,7 @@ export default function PartnerProfile() {
                           <th className="pb-2 font-medium text-muted-foreground">Date</th>
                           <th className="pb-2 font-medium text-muted-foreground">Montant</th>
                           <th className="pb-2 font-medium text-muted-foreground">Statut</th>
-                          <th className="pb-2 font-medium text-muted-foreground">Lead</th>
+                          <th className="pb-2 font-medium text-muted-foreground">Profil</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-border">

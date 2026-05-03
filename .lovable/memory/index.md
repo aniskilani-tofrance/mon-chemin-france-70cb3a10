@@ -13,6 +13,7 @@ Vocabulaire : "profil" (jamais "lead") côté UI publique apprenant + accompagne
 - [Options contact onboarding](mem://features/onboarding/options-contact) — Choix détaillés de disponibilité de contact
 - [Logique objectifs onboarding](mem://features/onboarding/logique-objectifs) — Sélection multi-objectifs dans l'onboarding
 - [Statut admin fin](mem://features/orientation/admin-status-fin) — CIR/OFII/BPI/logement bloquant/Alpha dans DB + orientation engine
+- [Renommage UI lead→profil](mem://features/ui-renaming-lead-profil) — UI dit "profil" partout (apprenant, CIP, partenaire). "lead" reste en code/DB/edge functions.
 - [Module FLE vision](mem://features/fle-module/vision) — Module d'apprentissage FLE innovant (Alpha à B1), oral-first
 - [FLE tech stack](mem://features/fle-module/tech-stack) — OpenAI mini pour feedback, OpenAI TTS pour synthèse vocale
 - [FLE personnalisation](mem://features/fle-module/personalization) — Adaptation automatique au profil de l'apprenant
