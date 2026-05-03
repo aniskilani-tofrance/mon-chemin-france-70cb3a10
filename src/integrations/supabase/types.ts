@@ -1869,6 +1869,54 @@ export type Database = {
           },
         ]
       }
+      tts_logs: {
+        Row: {
+          attempt: number | null
+          circuit_open: boolean | null
+          created_at: string
+          error_message: string | null
+          id: string
+          language: string | null
+          latency_ms: number | null
+          provider: string
+          request_id: string | null
+          status_code: number | null
+          success: boolean
+          text_chars: number | null
+          voice_id: string | null
+        }
+        Insert: {
+          attempt?: number | null
+          circuit_open?: boolean | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          latency_ms?: number | null
+          provider: string
+          request_id?: string | null
+          status_code?: number | null
+          success?: boolean
+          text_chars?: number | null
+          voice_id?: string | null
+        }
+        Update: {
+          attempt?: number | null
+          circuit_open?: boolean | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          language?: string | null
+          latency_ms?: number | null
+          provider?: string
+          request_id?: string | null
+          status_code?: number | null
+          success?: boolean
+          text_chars?: number | null
+          voice_id?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

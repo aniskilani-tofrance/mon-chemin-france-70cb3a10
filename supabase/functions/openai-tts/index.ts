@@ -1,4 +1,34 @@
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const adminClient = SUPABASE_URL && SERVICE_ROLE
+  ? createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } })
+  : null;
+
+interface TTSLogEntry {
+  request_id?: string;
+  provider: string;
+  language?: string;
+  voice_id?: string;
+  status_code?: number;
+  success: boolean;
+  latency_ms?: number;
+  attempt?: number;
+  error_message?: string;
+  text_chars?: number;
+  circuit_open?: boolean;
+}
+
+async function logTTS(entry: TTSLogEntry) {
+  if (!adminClient) return;
+  try {
+    await adminClient.from("tts_logs").insert(entry);
+  } catch (e) {
+    console.warn("[tts] failed to log:", (e as Error)?.message);
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -126,6 +156,7 @@ async function tryElevenLabs(
   text: string,
   voiceId: string,
   lang: string,
+  requestId: string,
 ): Promise<{ ok: true; base64: string } | { ok: false; fatal: boolean; reason: string }> {
   for (let attempt = 1; attempt <= ELEVENLABS_MAX_ATTEMPTS; attempt++) {
     const t0 = Date.now();
@@ -136,24 +167,27 @@ async function tryElevenLabs(
       if (resp.ok) {
         const buf = await resp.arrayBuffer();
         console.log(`[tts] ElevenLabs OK lang=${lang} voice=${voiceId} attempt=${attempt} ${latency}ms`);
+        logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, status_code: 200, success: true, latency_ms: latency, attempt, text_chars: text.length });
         return { ok: true, base64: base64Encode(buf) };
       }
 
       const errText = await resp.text();
       const fatal = isFatalElevenLabsStatus(resp.status);
       console.warn(`[tts] ElevenLabs ${resp.status} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms): ${errText.slice(0, 200)}`);
+      logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, status_code: resp.status, success: false, latency_ms: latency, attempt, error_message: errText.slice(0, 500), text_chars: text.length });
 
       if (fatal) {
         return { ok: false, fatal: true, reason: `status ${resp.status}` };
       }
-      // 5xx / 429 → retry une fois avec petit backoff
       if (attempt < ELEVENLABS_MAX_ATTEMPTS) {
         await new Promise(r => setTimeout(r, 300));
       }
     } catch (err) {
       const latency = Date.now() - t0;
       const isAbort = (err as Error)?.name === 'AbortError';
-      console.warn(`[tts] ElevenLabs ${isAbort ? 'TIMEOUT' : 'threw'} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms):`, (err as Error)?.message);
+      const msg = (err as Error)?.message ?? 'unknown';
+      console.warn(`[tts] ElevenLabs ${isAbort ? 'TIMEOUT' : 'threw'} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms):`, msg);
+      logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, success: false, latency_ms: latency, attempt, error_message: isAbort ? `TIMEOUT ${ELEVENLABS_TIMEOUT_MS}ms` : msg, text_chars: text.length });
       if (attempt < ELEVENLABS_MAX_ATTEMPTS) {
         await new Promise(r => setTimeout(r, 200));
       }
@@ -185,27 +219,28 @@ Deno.serve(async (req) => {
     const selectedSpeed = speed || 0.95;
 
     const circuitOpen = isCircuitOpen();
-    console.log(`[tts] lang=${lang} chars=${text.length} elevenlabs_key=${!!elevenKey} circuit_open=${circuitOpen}`);
+    const requestId = crypto.randomUUID();
+    console.log(`[tts] req=${requestId} lang=${lang} chars=${text.length} elevenlabs_key=${!!elevenKey} circuit_open=${circuitOpen}`);
 
     // 1) ElevenLabs (sauf si circuit ouvert ou clé absente)
     if (elevenKey && !circuitOpen) {
       const elVoiceId = ELEVENLABS_VOICE_MAP[lang] || ELEVENLABS_VOICE_MAP.fr;
-      const result = await tryElevenLabs(elevenKey, truncatedText, elVoiceId, lang);
+      const result = await tryElevenLabs(elevenKey, truncatedText, elVoiceId, lang, requestId);
       if (result.ok) {
-        return new Response(JSON.stringify({ audio_base64: result.base64, provider: 'elevenlabs' }), {
+        return new Response(JSON.stringify({ audio_base64: result.base64, provider: 'elevenlabs', request_id: requestId }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
       if (result.fatal) {
         openCircuit(result.reason);
       }
-      // sinon → fallback OpenAI ci-dessous
     } else if (circuitOpen) {
-      console.log(`[tts] Skipping ElevenLabs (circuit open: ${elevenlabsCircuitReason}) → OpenAI direct`);
+      console.log(`[tts] req=${requestId} Skipping ElevenLabs (circuit open: ${elevenlabsCircuitReason}) → OpenAI direct`);
     }
 
     // 2) Fallback OpenAI TTS
     if (!apiKey) {
+      logTTS({ request_id: requestId, provider: 'none', language: lang, success: false, error_message: 'No TTS provider available', text_chars: text.length, circuit_open: circuitOpen });
       return new Response(JSON.stringify({ error: 'No TTS provider available' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -213,6 +248,7 @@ Deno.serve(async (req) => {
     }
 
     const selectedVoice = voice || OPENAI_VOICE_MAP[lang] || 'nova';
+    const tOpen = Date.now();
     let response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
 
     if (!response.ok && response.status >= 500) {
@@ -221,10 +257,12 @@ Deno.serve(async (req) => {
       response = await callOpenAITTS(apiKey, truncatedText, selectedVoice, selectedSpeed);
     }
 
+    const openaiLatency = Date.now() - tOpen;
     if (!response.ok) {
       const errorText = await response.text();
       console.error('[tts] OpenAI error:', response.status, errorText);
-      return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText }), {
+      logTTS({ request_id: requestId, provider: 'openai', language: lang, voice_id: selectedVoice, status_code: response.status, success: false, latency_ms: openaiLatency, error_message: errorText.slice(0, 500), text_chars: text.length, circuit_open: circuitOpen });
+      return new Response(JSON.stringify({ error: 'TTS generation failed', details: errorText, request_id: requestId }), {
         status: response.status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -232,8 +270,9 @@ Deno.serve(async (req) => {
 
     const audioBuffer = await response.arrayBuffer();
     const base64 = base64Encode(audioBuffer);
+    logTTS({ request_id: requestId, provider: 'openai', language: lang, voice_id: selectedVoice, status_code: 200, success: true, latency_ms: openaiLatency, text_chars: text.length, circuit_open: circuitOpen });
 
-    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai' }), {
+    return new Response(JSON.stringify({ audio_base64: base64, provider: 'openai', request_id: requestId }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (error) {
