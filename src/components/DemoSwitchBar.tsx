@@ -95,7 +95,16 @@ export function DemoSwitchBar() {
     try {
       const { data, error } = await supabase.functions.invoke("admin-demo-accounts", { body: { action: "list" } });
       if (error || data?.error) throw new Error(data?.error || error?.message);
-      setAccounts(data.accounts || []);
+      const list: DemoAccount[] = data.accounts || [];
+      setAccounts(list);
+
+      // Auto-provision on first admin connection if any account is missing
+      const allExist = list.length > 0 && list.every((a) => a.exists);
+      const autoKey = `demo_auto_provisioned_${user?.id || "anon"}`;
+      if (!allExist && !provisioning && !localStorage.getItem(autoKey)) {
+        localStorage.setItem(autoKey, "1");
+        await provision(true);
+      }
     } catch (err: any) {
       console.error(err);
     } finally {
