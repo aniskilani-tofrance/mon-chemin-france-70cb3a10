@@ -272,6 +272,30 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     // Contact preferences
     if (answers.contact_48h) parts.push(`Joignable sous 48h : ${answers.contact_48h}`);
 
+    // Statut administratif & CIR/OFII (déclenche la règle d'or "OFII first")
+    if (answers.admin_status) {
+      const adminLabels: Record<string, string> = {
+        titre_sejour: "titre de séjour",
+        bpi_refugie: "réfugié OFPRA (BPI)",
+        bpi_subsidiaire: "protection subsidiaire (BPI)",
+        demandeur_asile: "demandeur d'asile",
+        sans_papiers: "sans papiers",
+        ne_sait_pas: "statut administratif inconnu",
+      };
+      parts.push(`Statut administratif : ${adminLabels[answers.admin_status as string] || answers.admin_status}`);
+    }
+    if (answers.cir_status) {
+      const cirLabels: Record<string, string> = {
+        signed_hours_left: "CIR signé — IL LUI RESTE DES HEURES OFII GRATUITES (priorité absolue : activer ces heures avant tout FLE payant)",
+        signed_used: "CIR signé mais heures OFII épuisées",
+        in_progress: "CIR en cours de signature",
+        not_signed: "CIR non signé",
+        not_concerned: "Non concerné par le CIR (UE, étudiant…)",
+        dont_know: "ne sait pas pour le CIR",
+      };
+      parts.push(`CIR / OFII : ${cirLabels[answers.cir_status as string] || answers.cir_status}`);
+    }
+
     if (parts.length === 0) return "";
 
     return `PROFIL DE L'UTILISATEUR (utilise ces infos pour personnaliser tes réactions et faire des liens pertinents entre les réponses) :\n${parts.join("\n")}`;
