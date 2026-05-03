@@ -81,6 +81,7 @@ const App = () => (
         <BrowserRouter>
           <OAuthRedirectHandler />
           <DemoSwitchBar />
+          <DemoTour />
           <FLEInstallPrompt />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
