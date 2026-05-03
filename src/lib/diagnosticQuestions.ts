@@ -70,14 +70,30 @@ export const DIAGNOSTIC_QUESTIONS: DiagnosticQuestion[] = [
     category: "situation",
     icon: "📜",
     question: {
-      fr: "Quelle est votre situation administrative ? (titre de séjour, demande en cours…)",
-      ar: "ما هو وضعك الإداري؟ (تصريح الإقامة، طلب قيد المعالجة…)",
-      en: "What is your administrative status? (residence permit, pending application…)",
-      es: "¿Cuál es su situación administrativa? (permiso de residencia, solicitud en curso…)",
-      pt: "Qual é a sua situação administrativa? (autorização de residência, pedido em curso…)",
-      ru: "Какой у вас административный статус? (вид на жительство, заявление на рассмотрении…)",
+      fr: "Quelle est votre situation administrative aujourd'hui ?",
+      ar: "ما هي وضعيتك الإدارية اليوم؟",
+      en: "What is your administrative status today?",
+      es: "¿Cuál es su situación administrativa hoy?",
+      pt: "Qual é a sua situação administrativa hoje?",
+      ru: "Каков ваш административный статус сегодня?",
     },
-    helper_fr: "Ne pas demander le numéro AGDREF — juste le type de titre et la durée.",
+    helper_fr:
+      "Choisir/préciser : 🪪 Titre de séjour · 🛡️ Réfugié OFPRA (BPI) · 🕊️ Protection subsidiaire (BPI) · 📋 Demandeur d'asile · ⚠️ Sans papiers · ❓ Ne sait pas. Ne pas demander le numéro AGDREF.",
+  },
+  {
+    key: "cir_status",
+    category: "situation",
+    icon: "🇫🇷",
+    question: {
+      fr: "Avez-vous signé un Contrat d'Intégration Républicaine (CIR) avec l'OFII ?",
+      ar: "هل وقعت عقد الاندماج الجمهوري (CIR) مع OFII؟",
+      en: "Have you signed a Republican Integration Contract (CIR) with OFII?",
+      es: "¿Ha firmado un Contrato de Integración Republicana (CIR) con la OFII?",
+      pt: "Assinou um Contrato de Integração Republicana (CIR) com a OFII?",
+      ru: "Подписали ли вы Республиканский интеграционный контракт (CIR) с OFII?",
+    },
+    helper_fr:
+      "Le CIR donne droit à des heures de français OFII gratuites (100/200/400/600h). Préciser : signé avec heures restantes · signé heures consommées · en cours · pas signé · non concerné · ne sait pas.",
   },
   {
     key: "work_right",
