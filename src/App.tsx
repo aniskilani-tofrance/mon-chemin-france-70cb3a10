@@ -36,6 +36,7 @@ const AdminUsers = lazy(() => import("./pages/AdminUsers"));
 const AdminFLEProgress = lazy(() => import("./pages/AdminFLEProgress"));
 const AdminHubSpotLeads = lazy(() => import("./pages/AdminHubSpotLeads"));
 const AdminPilotes = lazy(() => import("./pages/AdminPilotes"));
+const AdminTTSDiagnostic = lazy(() => import("./pages/AdminTTSDiagnostic"));
 const ToSourceRedirect = lazy(() => import("./pages/ToSourceRedirect"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Heberger = lazy(() => import("./pages/Heberger"));
