@@ -1,4 +1,34 @@
 import { encode as base64Encode } from "https://deno.land/std@0.168.0/encoding/base64.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
+const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
+const SERVICE_ROLE = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const adminClient = SUPABASE_URL && SERVICE_ROLE
+  ? createClient(SUPABASE_URL, SERVICE_ROLE, { auth: { persistSession: false } })
+  : null;
+
+interface TTSLogEntry {
+  request_id?: string;
+  provider: string;
+  language?: string;
+  voice_id?: string;
+  status_code?: number;
+  success: boolean;
+  latency_ms?: number;
+  attempt?: number;
+  error_message?: string;
+  text_chars?: number;
+  circuit_open?: boolean;
+}
+
+async function logTTS(entry: TTSLogEntry) {
+  if (!adminClient) return;
+  try {
+    await adminClient.from("tts_logs").insert(entry);
+  } catch (e) {
+    console.warn("[tts] failed to log:", (e as Error)?.message);
+  }
+}
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
