@@ -75,6 +75,17 @@ async function hubspot(path: string, init: RequestInit = {}) {
   const bodyText = await response.text();
   const data = bodyText ? JSON.parse(bodyText) : null;
   if (!response.ok) {
+    const reqBodyPreview = (() => {
+      try {
+        const parsed = init.body ? JSON.parse(String(init.body)) : null;
+        if (parsed?.properties) parsed.properties = previewPayload(parsed.properties);
+        return JSON.stringify(parsed).slice(0, 1500);
+      } catch { return String(init.body ?? "").slice(0, 500); }
+    })();
+    console.error(`[hubspot] ${init.method || "GET"} ${path} failed [${response.status}]`, {
+      response: bodyText.slice(0, 1500),
+      request_preview: reqBodyPreview,
+    });
     throw new Error(`HubSpot API call failed [${response.status}]: ${bodyText.slice(0, 1000)}`);
   }
   return data;
