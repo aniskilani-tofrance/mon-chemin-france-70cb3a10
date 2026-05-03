@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +8,29 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AccessCodeSection() {
   const navigate = useNavigate();
   const { isAdmin } = useAdminCheck();
+  const { user } = useAuth();
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [pilotCode, setPilotCode] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("marianne_access_codes")
+        .select("code")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data?.code) setPilotCode(data.code);
+    })();
+  }, [isAdmin]);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,11 +76,21 @@ export function AccessCodeSection() {
         {/* Code input */}
         <Card className="mx-auto mb-10 max-w-xl border-primary/20 bg-card">
           <CardContent className="p-6">
-            {isAdmin && (
+            {(isAdmin || user) && (
               <Button type="button" size="lg" className="mb-4 w-full" onClick={() => navigate("/onboarding") }>
-                Démarrer Marianne en admin
+                Démarrer Marianne directement {isAdmin ? "(admin)" : ""}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+            )}
+            {isAdmin && pilotCode && (
+              <button
+                type="button"
+                onClick={() => setCode(pilotCode)}
+                className="mb-3 w-full rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors"
+                title="Cliquer pour pré-remplir"
+              >
+                Code pilote actif (démo) : <span className="font-mono font-semibold tracking-wider">{pilotCode}</span> — cliquer pour pré-remplir
+              </button>
             )}
             <form onSubmit={handleJoin} className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="flex-1">
