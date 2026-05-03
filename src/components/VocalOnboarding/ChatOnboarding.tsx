@@ -955,6 +955,45 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
           )}
 
+          {/* Choice buttons (visible options for choice/multiChoice questions) */}
+          {currentQuestion?.choices && (currentQuestion.type === "choice" || currentQuestion.type === "multiChoice") && !isWidget && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {currentQuestion.choices.map((choice) => {
+                  const label = getTranslatedText(choice.label as any, "text", language);
+                  const isMulti = currentQuestion.type === "multiChoice";
+                  const selected = isMulti && multiSelected.includes(choice.id);
+                  return (
+                    <button
+                      key={choice.id}
+                      type="button"
+                      disabled={isProcessing}
+                      onClick={() => isMulti ? toggleMulti(choice.id) : handleChoiceClick([choice.id])}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card hover:border-primary hover:bg-primary/5"
+                      } disabled:opacity-50`}
+                    >
+                      {choice.icon && <span>{choice.icon}</span>}
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {currentQuestion.type === "multiChoice" && multiSelected.length > 0 && (
+                <Button
+                  size="sm"
+                  onClick={() => handleChoiceClick(multiSelected)}
+                  disabled={isProcessing}
+                  className="w-full"
+                >
+                  {language === "ar" ? "تأكيد" : language === "en" ? "Confirm" : "Confirmer"} ({multiSelected.length})
+                </Button>
+              )}
+            </div>
+          )}
+
           {/* Vocal-first: mic button + always-visible text input */}
           {vocalMode && sttSupported && !isEmail && !isPhone && !isPostalCode && currentQuestionId !== "location" && currentQuestionId !== "contact_firstname" && currentQuestionId !== "contact_lastname" && (
             <div className="flex flex-col items-center gap-3">
