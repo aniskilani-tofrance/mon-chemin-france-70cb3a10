@@ -338,6 +338,98 @@ async function filterValidProperties(
   return out;
 }
 
+// Mappings from internal codes to HubSpot dropdown labels.
+const LANGUE_MAP: Record<string, string> = {
+  fr: "Français", en: "Anglais", ar: "Arabe", es: "Espagnol", pt: "Portugais", ru: "Russe",
+};
+const NIVEAU_MAP: Record<string, string> = {
+  alpha: "Alpha", a0: "Alpha", a0a1: "Alpha",
+  a1: "A1", a2: "A2", b1: "B1", b1plus: "B1", b2: "B2", c1: "C1+", c2: "C1+",
+};
+const BESOIN_MAP: Record<string, string> = {
+  learn_french: "FLE", fle: "FLE",
+  find_job: "Emploi", emploi: "Emploi", job: "Emploi",
+  job_training: "Formation", formation: "Formation", training: "Formation",
+  certification: "Certification",
+  numerique: "Numérique", digital: "Numérique",
+  orientation: "Orientation", need_help: "Orientation", nsp: "Orientation",
+};
+const DISPO_MAP: Record<string, string> = {
+  morning: "Matin", matin: "Matin",
+  afternoon: "Après-midi", "apres-midi": "Après-midi", "après-midi": "Après-midi",
+  evening: "Soir", soir: "Soir",
+  weekend: "Week-end", "week-end": "Week-end",
+  flexible: "Flexible", yes: "Flexible", oui: "Flexible", true: "Flexible",
+};
+const MOBILITE_MAP: Record<string, string> = {
+  walk: "Piéton", pieton: "Piéton", "piéton": "Piéton",
+  transit: "Transports", transport: "Transports", transports: "Transports", public: "Transports",
+  car: "Véhicule", vehicule: "Véhicule", "véhicule": "Véhicule", driving: "Véhicule",
+  limited: "Mobilité limitée", reduced: "Mobilité limitée",
+};
+const LITERACY_MAP: Record<string, string> = {
+  yes: "Oui", oui: "Oui", true: "Oui",
+  partial: "Partiellement", partially: "Partiellement", partiellement: "Partiellement",
+  no: "Non", non: "Non", false: "Non",
+};
+const SOURCE_TYPE_MAP: Record<string, string> = {
+  association: "Association",
+  centre_social: "Centre social", "centre social": "Centre social",
+  mission_locale: "Mission locale", "mission locale": "Mission locale",
+  of: "OF", organisme_formation: "OF",
+  emmaus: "Emmaüs Connect", "emmaus connect": "Emmaüs Connect", "emmaüs connect": "Emmaüs Connect",
+  maison_quartier: "Maison de quartier", "maison de quartier": "Maison de quartier",
+  centre_examen: "Centre d'examen", "centre d'examen": "Centre d'examen",
+  formateur: "Autre", direct: "Autre", lieu_partenaire: "Association",
+  autre: "Autre", other: "Autre",
+};
+const FREINS_MAP: Record<string, string> = {
+  language: "Langue", langue: "Langue", french: "Langue",
+  housing: "Logement", logement: "Logement",
+  health: "Santé", sante: "Santé", "santé": "Santé",
+  childcare: "Garde d’enfants", "garde_enfants": "Garde d’enfants", "garde d'enfants": "Garde d’enfants", "garde d’enfants": "Garde d’enfants",
+  mobility: "Mobilité", mobilite: "Mobilité", "mobilité": "Mobilité", transport: "Mobilité",
+  admin: "Administratif", administratif: "Administratif", papers: "Administratif",
+  digital: "Numérique", numerique: "Numérique", "numérique": "Numérique",
+  job: "Emploi", emploi: "Emploi", work: "Emploi",
+  schedule: "Mobilité", time: "Mobilité",
+};
+const ROUTE_MAP: Record<string, string> = {
+  fle: "FLE", francais: "FLE", "français": "FLE",
+  fos: "FOS",
+  tp: "TP", titre_pro: "TP",
+  cqp: "CQP",
+  emploi_direct: "Emploi direct", "emploi direct": "Emploi direct", emploi: "Emploi direct", job: "Emploi direct",
+  accompagnement_social: "Accompagnement social", "accompagnement social": "Accompagnement social", social: "Accompagnement social",
+  certification: "Certification",
+  orientation_externe: "Orientation externe", "orientation externe": "Orientation externe", orientation: "Orientation externe", external: "Orientation externe",
+};
+const SECTEUR_MAP: Record<string, string> = {
+  restauration: "Restauration", food: "Restauration", hospitality: "Restauration", hotel: "Restauration", cuisine: "Restauration",
+  logistique: "Logistique", logistics: "Logistique", warehouse: "Logistique", transport: "Logistique",
+  proprete: "Propreté", "propreté": "Propreté", cleaning: "Propreté", nettoyage: "Propreté",
+  aide_personne: "Aide à la personne", "aide à la personne": "Aide à la personne", care: "Aide à la personne", health: "Aide à la personne", sante: "Aide à la personne",
+  commerce: "Commerce", retail: "Commerce", vente: "Commerce", sales: "Commerce",
+  numerique: "Numérique", "numérique": "Numérique", digital: "Numérique", tech: "Numérique", it: "Numérique",
+  btp: "BTP", construction: "BTP", batiment: "BTP", "bâtiment": "BTP",
+  industrie: "Industrie", industry: "Industrie", manufacturing: "Industrie",
+  autre: "Autre", other: "Autre",
+};
+function mapTo(value: unknown, map: Record<string, string>): string | null {
+  if (value == null) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const key = raw.toLowerCase();
+  return map[key] || map[raw] || null;
+}
+function mapMulti(value: unknown, map: Record<string, string>): string | null {
+  if (value == null) return null;
+  const items = Array.isArray(value) ? value : String(value).split(/[,;]/);
+  const mapped = items.map((v) => mapTo(v, map)).filter((v): v is string => !!v);
+  // HubSpot multi-checkbox uses ";" as separator
+  return mapped.length ? Array.from(new Set(mapped)).join(";") : null;
+}
+
 function hubspotProperties(payload: HubSpotPayload) {
   return Object.fromEntries(Object.entries({
     firstname: payload.firstname,
@@ -349,17 +441,17 @@ function hubspotProperties(payload: HubSpotPayload) {
     source_slug: payload.source_slug,
     source_location_id: payload.source_location_id,
     source_name: payload.source_name,
-    source_type: payload.source_type,
+    source_type: mapTo(payload.source_type, SOURCE_TYPE_MAP),
     source_campaign: payload.source_campaign,
-    langue_diagnostic: payload.langue_diagnostic,
-    niveau_francais: payload.niveau_francais,
-    lecture_ecriture_francais: payload.lecture_ecriture_francais,
-    besoin_principal: payload.besoin_principal,
-    route_orientation: payload.route_orientation,
-    secteur_metier: payload.secteur_metier,
-    freins_identifies: payload.freins_identifies,
-    disponibilite: payload.disponibilite,
-    mobilite: payload.mobilite,
+    langue_diagnostic: mapTo(payload.langue_diagnostic, LANGUE_MAP),
+    niveau_francais: mapTo(payload.niveau_francais, NIVEAU_MAP),
+    lecture_ecriture_francais: mapTo(payload.lecture_ecriture_francais, LITERACY_MAP),
+    besoin_principal: mapMulti(payload.besoin_principal, BESOIN_MAP),
+    route_orientation: mapTo(payload.route_orientation, ROUTE_MAP),
+    secteur_metier: mapTo(payload.secteur_metier, SECTEUR_MAP),
+    freins_identifies: mapMulti(payload.freins_identifies, FREINS_MAP),
+    disponibilite: mapTo(payload.disponibilite, DISPO_MAP),
+    mobilite: mapTo(payload.mobilite, MOBILITE_MAP),
     whatsapp: payload.whatsapp,
     consentement_rappel: payload.consentement_rappel,
     consentement_transmission: payload.consentement_transmission,
