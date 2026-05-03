@@ -588,6 +588,52 @@ async function createDeal(payload: HubSpotPayload, contactId: string, companyId?
   return created.id as string;
 }
 
+async function findOrCreateCompanyBySlug(payload: HubSpotPayload): Promise<{ id: string; created: boolean } | null> {
+  if (!payload.source_slug) return null;
+  const existing = await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]);
+  if (existing?.id) return { id: existing.id, created: false };
+
+  const rawProps: Record<string, unknown> = {
+    name: payload.source_name || payload.source_location || payload.source_slug,
+    source_slug: payload.source_slug,
+    source_type: mapTo(payload.source_type, SOURCE_TYPE_MAP),
+    source_campaign: payload.source_campaign,
+    source_location_id: payload.source_location_id,
+  };
+  const cleaned = Object.fromEntries(Object.entries(rawProps).filter(([, v]) => v != null && v !== ""));
+  const properties = await filterValidProperties("companies", cleaned, {
+    diagnostic_id: payload.diagnostic_id,
+    operation: "create-company",
+  });
+
+  try {
+    const created = await hubspot("/crm/v3/objects/companies", {
+      method: "POST",
+      body: JSON.stringify({ properties }),
+    });
+    console.log(`[hubspot] auto-created company`, { id: created?.id, source_slug: payload.source_slug });
+    return { id: created.id as string, created: true };
+  } catch (err) {
+    console.warn(`[hubspot] failed to auto-create company`, {
+      source_slug: payload.source_slug,
+      error: (err as Error).message,
+    });
+    return null;
+  }
+}
+
+async function associateContactToCompany(contactId: string, companyId: string) {
+  try {
+    await hubspot(`/crm/v3/objects/contacts/${contactId}/associations/companies/${companyId}/279`, {
+      method: "PUT",
+    });
+  } catch (err) {
+    console.warn(`[hubspot] contact→company association failed`, {
+      contactId, companyId, error: (err as Error).message,
+    });
+  }
+}
+
 async function createMissingCompanyNote(payload: HubSpotPayload, contactId: string, dealId?: string | null) {
   const body = `Entreprise source introuvable pour source_slug=${payload.source_slug || "—"}. Diagnostic ${payload.diagnostic_id}.`;
   const associations: any[] = [{
@@ -666,8 +712,10 @@ serve(async (req) => {
         console.warn("Slack diagnostic notification failed:", (slackErr as Error).message);
       }
     }
-    const company = payload.source_slug ? await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]) : null;
-    const companyId = company?.id || null;
+    const companyResult = await findOrCreateCompanyBySlug(payload);
+    const companyId = companyResult?.id || null;
+    const companyAutoCreated = companyResult?.created || false;
+    if (companyId) await associateContactToCompany(contactId, companyId);
     const dealId = await createDeal(payload, contactId, companyId);
     await rememberHubSpotStatus(supabaseAdmin, diagnosticType, diagnosticId, contactId, dealId, payload.statut_lead);
 
@@ -700,6 +748,7 @@ serve(async (req) => {
         source_slug: payload.source_slug,
         route_orientation: payload.route_orientation,
         dealstage: payload.score_qualification >= 70 ? "À rappeler" : "Nouveau diagnostic",
+        company_auto_created: companyAutoCreated,
       },
     });
 
