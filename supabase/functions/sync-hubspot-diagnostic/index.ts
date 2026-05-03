@@ -622,17 +622,53 @@ async function findOrCreateCompanyBySlug(payload: HubSpotPayload): Promise<{ id:
   }
 }
 
-async function associateContactToCompany(contactId: string, companyId: string) {
+async function hasAssociation(fromType: string, fromId: string, toType: string, toId: string): Promise<boolean> {
   try {
-    await hubspot(`/crm/v3/objects/contacts/${contactId}/associations/companies/${companyId}/279`, {
-      method: "PUT",
-    });
+    const data = await hubspot(`/crm/v4/objects/${fromType}/${fromId}/associations/${toType}?limit=500`);
+    const results = data?.results || [];
+    return results.some((r: any) => String(r.toObjectId ?? r.id) === String(toId));
   } catch (err) {
-    console.warn(`[hubspot] contact→company association failed`, {
-      contactId, companyId, error: (err as Error).message,
+    console.warn(`[hubspot] hasAssociation check failed`, {
+      fromType, fromId, toType, toId, error: (err as Error).message,
     });
+    return false;
   }
 }
+
+async function ensureAssociation(
+  fromType: string, fromId: string, toType: string, toId: string, associationTypeId: number,
+): Promise<{ created: boolean; skipped: boolean }> {
+  if (await hasAssociation(fromType, fromId, toType, toId)) {
+    console.log(`[hubspot] association already exists, skipping`, { fromType, fromId, toType, toId });
+    return { created: false, skipped: true };
+  }
+  try {
+    await hubspot(
+      `/crm/v4/objects/${fromType}/${fromId}/associations/${toType}/${toId}`,
+      {
+        method: "PUT",
+        body: JSON.stringify([{ associationCategory: "HUBSPOT_DEFINED", associationTypeId }]),
+      },
+    );
+    return { created: true, skipped: false };
+  } catch (err) {
+    console.warn(`[hubspot] association PUT failed`, {
+      fromType, fromId, toType, toId, error: (err as Error).message,
+    });
+    return { created: false, skipped: false };
+  }
+}
+
+async function associateContactToCompany(contactId: string, companyId: string) {
+  // associationTypeId 279 = primary contact→company
+  await ensureAssociation("contacts", contactId, "companies", companyId, 279);
+}
+
+async function associateDealToCompany(dealId: string, companyId: string) {
+  // associationTypeId 5 = deal→company
+  await ensureAssociation("deals", dealId, "companies", companyId, 5);
+}
+
 
 async function createMissingCompanyNote(payload: HubSpotPayload, contactId: string, dealId?: string | null) {
   const body = `Entreprise source introuvable pour source_slug=${payload.source_slug || "—"}. Diagnostic ${payload.diagnostic_id}.`;
