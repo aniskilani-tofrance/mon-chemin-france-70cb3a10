@@ -68,7 +68,7 @@ export default function PartnerDashboard() {
   const exportLeadsCSV = () => {
     const purchased = leads?.filter((l: any) => l.purchased_at) || [];
     if (purchased.length === 0) {
-      toast.info("Aucun lead acheté à exporter.");
+      toast.info("Aucun profil acheté à exporter.");
       return;
     }
     const headers = ["Date", "Nom", "Email", "Téléphone", "Ville", "Secteur", "Niveau FR", "Score", "Statut"];
@@ -91,10 +91,10 @@ export default function PartnerDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `leads-tofrance-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.download = `profils-tofrance-${new Date().toISOString().slice(0, 10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(`${purchased.length} lead(s) exporté(s)`);
+    toast.success(`${purchased.length} profil(s) exporté(s)`);
   };
 
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function PartnerDashboard() {
           });
           if (error) throw error;
           if (data?.success) {
-            toast.success("Lead débloqué avec succès !");
+            toast.success("Profil débloqué avec succès !");
             qc.invalidateQueries({ queryKey: ["provider-leads"] });
           } else {
             toast.error(data?.error || "Erreur de vérification du paiement");

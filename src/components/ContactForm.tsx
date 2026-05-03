@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { Send } from "lucide-react";
 
 const REQUEST_TYPES = [
-  { value: "partner", label: "Devenir partenaire (recevoir des leads)" },
+  { value: "partner", label: "Devenir partenaire (recevoir des profils)" },
   { value: "host", label: "Héberger la plateforme dans ma structure" },
 ] as const;
 
