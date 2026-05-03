@@ -244,6 +244,25 @@ export const ACTIONS_LABELS: Record<ActionId, string> = {
   CONTACT_ENIC_NARIC: "Démarche ENIC-NARIC pour reconnaissance de diplôme",
 };
 
+// Liens officiels associés à chaque action (affichés dans le récap orientation)
+export const ACTIONS_LINKS: Record<ActionId, string> = {
+  AIDE_FRANCE_TRAVAIL: "https://www.francetravail.fr/accueil/",
+  TEST_FRANCAIS: "https://www.france-education-international.fr/test-tcf",
+  RDV_CONSEILLER: "https://www.tofrance.life/contact",
+  DOSSIER_FORMATION: "https://www.moncompteformation.gouv.fr/",
+  MISE_EN_RELATION_OF: "https://www.tofrance.life/partners",
+  CONTACT_SOCIAL: "https://annuaire.action-sociale.org/",
+  CONTACT_OFII: "https://www.ofii.fr/procedure/contrat-dintegration-republicaine/",
+  CONTACT_DOMICILIATION: "https://www.service-public.fr/particuliers/vosdroits/F18030",
+  CONTACT_AGIR: "https://www.interieur.gouv.fr/actualites/communiques/programme-agir",
+  CONTACT_SANTE_MENTALE: "https://www.comede.org/",
+  CONTACT_ENIC_NARIC: "https://www.france-education-international.fr/enic-naric-france",
+};
+
+export function getActionContact(action: ActionId): { label: string; url: string } {
+  return { label: ACTIONS_LABELS[action], url: ACTIONS_LINKS[action] };
+}
+
 // ─── Scoring du lead (0–100) ──────────────────────────────────
 //
 //  Critère                     | Points max
