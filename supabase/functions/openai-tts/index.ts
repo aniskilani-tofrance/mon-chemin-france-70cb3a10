@@ -156,6 +156,7 @@ async function tryElevenLabs(
   text: string,
   voiceId: string,
   lang: string,
+  requestId: string,
 ): Promise<{ ok: true; base64: string } | { ok: false; fatal: boolean; reason: string }> {
   for (let attempt = 1; attempt <= ELEVENLABS_MAX_ATTEMPTS; attempt++) {
     const t0 = Date.now();
@@ -166,24 +167,27 @@ async function tryElevenLabs(
       if (resp.ok) {
         const buf = await resp.arrayBuffer();
         console.log(`[tts] ElevenLabs OK lang=${lang} voice=${voiceId} attempt=${attempt} ${latency}ms`);
+        logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, status_code: 200, success: true, latency_ms: latency, attempt, text_chars: text.length });
         return { ok: true, base64: base64Encode(buf) };
       }
 
       const errText = await resp.text();
       const fatal = isFatalElevenLabsStatus(resp.status);
       console.warn(`[tts] ElevenLabs ${resp.status} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms): ${errText.slice(0, 200)}`);
+      logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, status_code: resp.status, success: false, latency_ms: latency, attempt, error_message: errText.slice(0, 500), text_chars: text.length });
 
       if (fatal) {
         return { ok: false, fatal: true, reason: `status ${resp.status}` };
       }
-      // 5xx / 429 → retry une fois avec petit backoff
       if (attempt < ELEVENLABS_MAX_ATTEMPTS) {
         await new Promise(r => setTimeout(r, 300));
       }
     } catch (err) {
       const latency = Date.now() - t0;
       const isAbort = (err as Error)?.name === 'AbortError';
-      console.warn(`[tts] ElevenLabs ${isAbort ? 'TIMEOUT' : 'threw'} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms):`, (err as Error)?.message);
+      const msg = (err as Error)?.message ?? 'unknown';
+      console.warn(`[tts] ElevenLabs ${isAbort ? 'TIMEOUT' : 'threw'} (attempt ${attempt}/${ELEVENLABS_MAX_ATTEMPTS}, ${latency}ms):`, msg);
+      logTTS({ request_id: requestId, provider: 'elevenlabs', language: lang, voice_id: voiceId, success: false, latency_ms: latency, attempt, error_message: isAbort ? `TIMEOUT ${ELEVENLABS_TIMEOUT_MS}ms` : msg, text_chars: text.length });
       if (attempt < ELEVENLABS_MAX_ATTEMPTS) {
         await new Promise(r => setTimeout(r, 200));
       }
