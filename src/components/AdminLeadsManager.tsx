@@ -201,7 +201,7 @@ export function AdminLeadsManager() {
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="flex items-center gap-2 text-lg">
               <Users className="h-5 w-5 text-primary" />
-              Gestion des leads
+              Gestion des profils
               <Badge variant="secondary">{leads.length}</Badge>
             </CardTitle>
             <div className="flex gap-2">
@@ -227,7 +227,7 @@ export function AdminLeadsManager() {
                   }}
                 >
                   <UserPlus className="h-4 w-4" />
-                  Attribuer un lead
+                  Attribuer un profil
                 </Button>
               )}
             </div>
@@ -353,7 +353,7 @@ export function AdminLeadsManager() {
       <Dialog open={assignOpen} onOpenChange={setAssignOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Attribuer un lead à un partenaire</DialogTitle>
+            <DialogTitle>Attribuer un profil à un partenaire</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
             {!assigningProfileId && (
