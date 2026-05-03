@@ -404,6 +404,17 @@ const ROUTE_MAP: Record<string, string> = {
   certification: "Certification",
   orientation_externe: "Orientation externe", "orientation externe": "Orientation externe", orientation: "Orientation externe", external: "Orientation externe",
 };
+const SECTEUR_MAP: Record<string, string> = {
+  restauration: "Restauration", food: "Restauration", hospitality: "Restauration", hotel: "Restauration", cuisine: "Restauration",
+  logistique: "Logistique", logistics: "Logistique", warehouse: "Logistique", transport: "Logistique",
+  proprete: "Propreté", "propreté": "Propreté", cleaning: "Propreté", nettoyage: "Propreté",
+  aide_personne: "Aide à la personne", "aide à la personne": "Aide à la personne", care: "Aide à la personne", health: "Aide à la personne", sante: "Aide à la personne",
+  commerce: "Commerce", retail: "Commerce", vente: "Commerce", sales: "Commerce",
+  numerique: "Numérique", "numérique": "Numérique", digital: "Numérique", tech: "Numérique", it: "Numérique",
+  btp: "BTP", construction: "BTP", batiment: "BTP", "bâtiment": "BTP",
+  industrie: "Industrie", industry: "Industrie", manufacturing: "Industrie",
+  autre: "Autre", other: "Autre",
+};
 function mapTo(value: unknown, map: Record<string, string>): string | null {
   if (value == null) return null;
   const raw = String(value).trim();
