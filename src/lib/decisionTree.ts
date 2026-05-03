@@ -761,10 +761,16 @@ export const ONBOARDING_TREE: DecisionTree = {
           tags: ["status_titre_sejour"],
         },
         {
-          id: "refugie",
-          label: { fr: "Réfugié / Protection subsidiaire", en: "Refugee / Subsidiary protection", ar: "لاجئ / حماية فرعية", es: "Refugiado / Protección subsidiaria", pt: "Refugiado / Proteção subsidiária", ru: "Беженец / Дополнительная защита" },
+          id: "bpi_refugie",
+          label: { fr: "Réfugié (statut OFPRA)", en: "Refugee (OFPRA status)", ar: "لاجئ (وضع OFPRA)", es: "Refugiado (estatus OFPRA)", pt: "Refugiado (estatuto OFPRA)", ru: "Беженец (статус OFPRA)" },
           icon: "🛡️",
-          tags: ["status_refugie"],
+          tags: ["status_refugie", "bpi"],
+        },
+        {
+          id: "bpi_subsidiaire",
+          label: { fr: "Protection subsidiaire", en: "Subsidiary protection", ar: "حماية فرعية", es: "Protección subsidiaria", pt: "Proteção subsidiária", ru: "Дополнительная защита" },
+          icon: "🕊️",
+          tags: ["status_subsidiaire", "bpi"],
         },
         {
           id: "demandeur_asile",

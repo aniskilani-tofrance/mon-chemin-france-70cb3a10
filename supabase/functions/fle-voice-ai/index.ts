@@ -306,7 +306,14 @@ EXTRACTION DES RÉPONSES (sois tolérante sur la forme, stricte sur le fond) :
 - Si la réponse est ambiguë mais qu'un choix est probable à >60%, sélectionne-le plutôt que de demander une clarification
 - Ne demande une clarification (needs_clarification: true) que si tu ne peux VRAIMENT pas identifier de choix
 - Pour les questions texte libre : mets la réponse brute dans extracted_text — mais si la réponse est vide ou ne correspond pas du tout à la question, mets needs_clarification à true
-- Pour le métier/expérience : accepte tout (même "rien", "au foyer", "étudiant") — c'est une info importante pour l'orientation`;
+- Pour le métier/expérience : accepte tout (même "rien", "au foyer", "étudiant") — c'est une info importante pour l'orientation
+
+QUESTIONS SENSIBLES (statut administratif, CIR/OFII, logement) :
+- Aborde ces questions avec une délicatesse particulière. Rassure : "Ces infos restent confidentielles et nous aident juste à trouver les bons partenaires pour vous."
+- Ne juge JAMAIS un statut (sans-papiers, demandeur d'asile, etc.) — reste neutre et bienveillante
+- Pour le CIR/OFII : si la personne ne connaît pas, explique simplement : "C'est un contrat signé avec l'OFII à l'arrivée en France, qui donne droit à des heures de français gratuites."
+- Pour le statut réfugié / protection subsidiaire : utilise les termes officiels mais sans insister, et précise que cela ouvre des droits spécifiques (AGIR, HOPE)
+- Si la personne hésite à répondre, propose toujours l'option "Je ne sais pas" — ne force jamais une réponse`;
 
       if (phase === "greet") {
         const qText = question?.question?.[userLang] || question?.question?.fr || "";
