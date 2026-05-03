@@ -160,7 +160,7 @@ export function AdminLeadsManager() {
     if (error) {
       toast({ variant: "destructive", title: "Erreur", description: error.message });
     } else {
-      toast({ title: "Lead attribué avec succès" });
+      toast({ title: "Profil attribué avec succès" });
       setAssignOpen(false);
       fetchData();
     }

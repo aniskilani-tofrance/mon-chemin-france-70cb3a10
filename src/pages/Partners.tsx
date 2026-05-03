@@ -50,7 +50,7 @@ export default function Partners() {
                     <div className="flex items-center gap-3 rounded-lg bg-background/60 p-4">
                       <Users className="h-8 w-8 shrink-0 text-primary" />
                       <div>
-                        <p className="font-semibold text-foreground">Leads qualifiés</p>
+                        <p className="font-semibold text-foreground">Profils qualifiés</p>
                         <p className="text-sm text-muted-foreground">Profils vérifiés et scorés</p>
                       </div>
                     </div>
@@ -65,7 +65,7 @@ export default function Partners() {
                       <Building2 className="h-8 w-8 shrink-0 text-primary" />
                       <div>
                         <p className="font-semibold text-foreground">Dashboard dédié</p>
-                        <p className="text-sm text-muted-foreground">Gestion de vos leads</p>
+                        <p className="text-sm text-muted-foreground">Gestion de vos profils</p>
                       </div>
                     </div>
                   </div>

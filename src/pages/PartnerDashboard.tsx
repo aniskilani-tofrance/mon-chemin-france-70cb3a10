@@ -340,7 +340,7 @@ export default function PartnerDashboard() {
                       <div className="py-12 text-center text-muted-foreground">
                         <Users className="mx-auto h-10 w-10 mb-3 opacity-40" />
                         <p>Aucun lead pour le moment.</p>
-                        <p className="text-sm">Les leads apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
+                        <p className="text-sm">Les profils apparaîtront ici dès qu'un candidat correspondra à vos formations.</p>
                       </div>
                     ) : (
                       <StaggerContainer className="space-y-3" staggerDelay={0.05}>
