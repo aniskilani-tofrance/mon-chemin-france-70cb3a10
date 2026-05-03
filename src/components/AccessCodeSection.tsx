@@ -31,8 +31,6 @@ export function AccessCodeSection() {
       if (data?.code) setPilotCode(data.code);
     })();
   }, [isAdmin]);
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
 
   const handleJoin = async (e: React.FormEvent) => {
     e.preventDefault();
