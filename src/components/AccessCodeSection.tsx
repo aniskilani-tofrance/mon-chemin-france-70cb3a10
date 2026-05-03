@@ -76,11 +76,21 @@ export function AccessCodeSection() {
         {/* Code input */}
         <Card className="mx-auto mb-10 max-w-xl border-primary/20 bg-card">
           <CardContent className="p-6">
-            {isAdmin && (
+            {(isAdmin || user) && (
               <Button type="button" size="lg" className="mb-4 w-full" onClick={() => navigate("/onboarding") }>
-                Démarrer Marianne en admin
+                Démarrer Marianne directement {isAdmin ? "(admin)" : ""}
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
+            )}
+            {isAdmin && pilotCode && (
+              <button
+                type="button"
+                onClick={() => setCode(pilotCode)}
+                className="mb-3 w-full rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors"
+                title="Cliquer pour pré-remplir"
+              >
+                Code pilote actif (démo) : <span className="font-mono font-semibold tracking-wider">{pilotCode}</span> — cliquer pour pré-remplir
+              </button>
             )}
             <form onSubmit={handleJoin} className="flex flex-col gap-4 sm:flex-row sm:items-end">
               <div className="flex-1">
