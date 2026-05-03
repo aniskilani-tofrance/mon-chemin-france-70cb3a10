@@ -302,6 +302,7 @@ serve(async (req) => {
 
     if (parsed.data.action === "list") return json(await listContacts(parsed.data.after));
     if (parsed.data.action === "owners") return json(await listOwners());
+    if (parsed.data.action === "syncFromHubspot") return json(await syncFromHubspot());
     if (parsed.data.action === "updateStatus") return json(await updateStatus(parsed.data.contactId, parsed.data.dealId, parsed.data.diagnosticId, parsed.data.status));
     return json(await createTask(parsed.data));
   } catch (error) {
