@@ -272,7 +272,7 @@ function hubspotProperties(payload: HubSpotPayload) {
     date_diagnostic: payload.date_diagnostic,
     statut_lead: payload.statut_lead,
     score_qualification: payload.score_qualification,
-  }).filter(([, value]) => value !== null && value !== undefined && value !== ""));
+  }).filter(([key, value]) => !HUBSPOT_UNSUPPORTED_PROPERTIES.has(key) && value !== null && value !== undefined && value !== ""));
 }
 
 async function searchObject(objectType: string, propertyName: string, value: string, properties: string[] = []) {
