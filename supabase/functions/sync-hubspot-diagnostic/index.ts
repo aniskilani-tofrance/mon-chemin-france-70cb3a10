@@ -338,6 +338,66 @@ async function filterValidProperties(
   return out;
 }
 
+// Mappings from internal codes to HubSpot dropdown labels.
+const LANGUE_MAP: Record<string, string> = {
+  fr: "Français", en: "Anglais", ar: "Arabe", es: "Espagnol", pt: "Portugais", ru: "Russe",
+};
+const NIVEAU_MAP: Record<string, string> = {
+  alpha: "Alpha", a0: "Alpha", a0a1: "Alpha",
+  a1: "A1", a2: "A2", b1: "B1", b1plus: "B1", b2: "B2", c1: "C1+", c2: "C1+",
+};
+const BESOIN_MAP: Record<string, string> = {
+  learn_french: "FLE", fle: "FLE",
+  find_job: "Emploi", emploi: "Emploi", job: "Emploi",
+  job_training: "Formation", formation: "Formation", training: "Formation",
+  certification: "Certification",
+  numerique: "Numérique", digital: "Numérique",
+  orientation: "Orientation", need_help: "Orientation", nsp: "Orientation",
+};
+const DISPO_MAP: Record<string, string> = {
+  morning: "Matin", matin: "Matin",
+  afternoon: "Après-midi", "apres-midi": "Après-midi", "après-midi": "Après-midi",
+  evening: "Soir", soir: "Soir",
+  weekend: "Week-end", "week-end": "Week-end",
+  flexible: "Flexible", yes: "Flexible", oui: "Flexible", true: "Flexible",
+};
+const MOBILITE_MAP: Record<string, string> = {
+  walk: "Piéton", pieton: "Piéton", "piéton": "Piéton",
+  transit: "Transports", transport: "Transports", transports: "Transports", public: "Transports",
+  car: "Véhicule", vehicule: "Véhicule", "véhicule": "Véhicule", driving: "Véhicule",
+  limited: "Mobilité limitée", reduced: "Mobilité limitée",
+};
+const LITERACY_MAP: Record<string, string> = {
+  yes: "Oui", oui: "Oui", true: "Oui",
+  partial: "Partiellement", partially: "Partiellement", partiellement: "Partiellement",
+  no: "Non", non: "Non", false: "Non",
+};
+const SOURCE_TYPE_MAP: Record<string, string> = {
+  association: "Association",
+  centre_social: "Centre social", "centre social": "Centre social",
+  mission_locale: "Mission locale", "mission locale": "Mission locale",
+  of: "OF", organisme_formation: "OF",
+  emmaus: "Emmaüs Connect", "emmaus connect": "Emmaüs Connect", "emmaüs connect": "Emmaüs Connect",
+  maison_quartier: "Maison de quartier", "maison de quartier": "Maison de quartier",
+  centre_examen: "Centre d'examen", "centre d'examen": "Centre d'examen",
+  formateur: "Autre", direct: "Autre", lieu_partenaire: "Association",
+  autre: "Autre", other: "Autre",
+};
+function mapTo(value: unknown, map: Record<string, string>): string | null {
+  if (value == null) return null;
+  const raw = String(value).trim();
+  if (!raw) return null;
+  const key = raw.toLowerCase();
+  return map[key] || map[raw] || null;
+}
+function mapMulti(value: unknown, map: Record<string, string>): string | null {
+  if (value == null) return null;
+  const items = Array.isArray(value) ? value : String(value).split(/[,;]/);
+  const mapped = items.map((v) => mapTo(v, map)).filter((v): v is string => !!v);
+  // HubSpot multi-checkbox uses ";" as separator
+  return mapped.length ? Array.from(new Set(mapped)).join(";") : null;
+}
+
 function hubspotProperties(payload: HubSpotPayload) {
   return Object.fromEntries(Object.entries({
     firstname: payload.firstname,
