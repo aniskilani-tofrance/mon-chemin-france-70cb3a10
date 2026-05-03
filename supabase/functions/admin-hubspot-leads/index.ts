@@ -33,6 +33,7 @@ const CONTACT_PROPERTIES = [
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list"), after: z.string().optional() }),
   z.object({ action: z.literal("owners") }),
+  z.object({ action: z.literal("syncFromHubspot") }),
   z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), diagnosticId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
   z.object({
     action: z.literal("createTask"),
