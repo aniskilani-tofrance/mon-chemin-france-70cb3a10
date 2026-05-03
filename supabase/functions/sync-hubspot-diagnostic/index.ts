@@ -383,6 +383,27 @@ const SOURCE_TYPE_MAP: Record<string, string> = {
   formateur: "Autre", direct: "Autre", lieu_partenaire: "Association",
   autre: "Autre", other: "Autre",
 };
+const FREINS_MAP: Record<string, string> = {
+  language: "Langue", langue: "Langue", french: "Langue",
+  housing: "Logement", logement: "Logement",
+  health: "Santé", sante: "Santé", "santé": "Santé",
+  childcare: "Garde d’enfants", "garde_enfants": "Garde d’enfants", "garde d'enfants": "Garde d’enfants", "garde d’enfants": "Garde d’enfants",
+  mobility: "Mobilité", mobilite: "Mobilité", "mobilité": "Mobilité", transport: "Mobilité",
+  admin: "Administratif", administratif: "Administratif", papers: "Administratif",
+  digital: "Numérique", numerique: "Numérique", "numérique": "Numérique",
+  job: "Emploi", emploi: "Emploi", work: "Emploi",
+  schedule: "Mobilité", time: "Mobilité",
+};
+const ROUTE_MAP: Record<string, string> = {
+  fle: "FLE", francais: "FLE", "français": "FLE",
+  fos: "FOS",
+  tp: "TP", titre_pro: "TP",
+  cqp: "CQP",
+  emploi_direct: "Emploi direct", "emploi direct": "Emploi direct", emploi: "Emploi direct", job: "Emploi direct",
+  accompagnement_social: "Accompagnement social", "accompagnement social": "Accompagnement social", social: "Accompagnement social",
+  certification: "Certification",
+  orientation_externe: "Orientation externe", "orientation externe": "Orientation externe", orientation: "Orientation externe", external: "Orientation externe",
+};
 function mapTo(value: unknown, map: Record<string, string>): string | null {
   if (value == null) return null;
   const raw = String(value).trim();
