@@ -295,19 +295,26 @@ function previewPayload(properties: Record<string, unknown>): Record<string, unk
   return out;
 }
 
+// Safe fallback: HubSpot built-in properties always present on each object.
+const HUBSPOT_BUILTIN_PROPERTIES: Record<string, Set<string>> = {
+  contacts: new Set(["firstname", "lastname", "email", "phone", "city", "country", "address", "zip", "company", "website", "jobtitle"]),
+  companies: new Set(["name", "domain", "city", "country", "phone", "website"]),
+  deals: new Set(["dealname", "pipeline", "dealstage", "amount", "closedate"]),
+};
+
 async function filterValidProperties(
   objectType: string,
   properties: Record<string, unknown>,
   context: { diagnostic_id?: string; operation?: string } = {},
 ): Promise<Record<string, unknown>> {
-  const valid = await getValidHubSpotProperties(objectType);
+  const valid = (await getValidHubSpotProperties(objectType)) ?? HUBSPOT_BUILTIN_PROPERTIES[objectType] ?? null;
   if (!valid) {
-    console.warn(`[hubspot] schema unavailable for ${objectType} — sending payload as-is`, {
+    console.warn(`[hubspot] no schema and no fallback for ${objectType} — sending payload as-is`, {
       operation: context.operation,
       diagnostic_id: context.diagnostic_id,
       keys: Object.keys(properties),
     });
-    return properties; // fail-open
+    return properties;
   }
   const out: Record<string, unknown> = {};
   const dropped: Array<{ key: string; value: unknown }> = [];
