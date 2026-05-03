@@ -1,14 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RefreshCw, AlertCircle, CheckCircle2, Volume2 } from "lucide-react";
+import { RefreshCw, AlertCircle, CheckCircle2, Volume2, Play, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "sonner";
+
+const TEST_TEXT_FR = "Bonjour, je suis Marianne, votre conseillère ToFrance. Je peux vous accompagner dans vos démarches d'orientation, votre formation en français, et l'accès à vos heures OFII gratuites.";
 
 interface TTSLog {
   id: string;
