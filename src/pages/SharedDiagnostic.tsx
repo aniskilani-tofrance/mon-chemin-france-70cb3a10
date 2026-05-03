@@ -441,14 +441,21 @@ const SharedDiagnostic = () => {
             onDone={() => setCompetenceStepCompleted(true)}
           />
           <div className="mt-6 flex justify-end">
-            <Button
-              onClick={completeDiagnostic}
-              disabled={completing || validatedCount < DIAGNOSTIC_QUESTIONS.length || !competenceStepCompleted}
-              className="gap-2 bg-success text-success-foreground hover:bg-success/90"
-            >
-              {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
-              Terminer le diagnostic
-            </Button>
+            <div className="flex flex-col items-end gap-2">
+              {validatedCount < DIAGNOSTIC_QUESTIONS.length && (
+                <p className="text-xs text-muted-foreground">
+                  {validatedCount}/{DIAGNOSTIC_QUESTIONS.length} questions validées — vous pouvez quand même terminer.
+                </p>
+              )}
+              <Button
+                onClick={completeDiagnostic}
+                disabled={completing || !competenceStepCompleted}
+                className="gap-2 bg-success text-success-foreground hover:bg-success/90"
+              >
+                {completing ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileCheck2 className="h-4 w-4" />}
+                Terminer le diagnostic
+              </Button>
+            </div>
           </div>
         </main>
       </div>
