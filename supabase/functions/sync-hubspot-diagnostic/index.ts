@@ -748,6 +748,7 @@ serve(async (req) => {
         source_slug: payload.source_slug,
         route_orientation: payload.route_orientation,
         dealstage: payload.score_qualification >= 70 ? "À rappeler" : "Nouveau diagnostic",
+        company_auto_created: companyAutoCreated,
       },
     });
 
