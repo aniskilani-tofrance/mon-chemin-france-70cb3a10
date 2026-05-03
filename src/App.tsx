@@ -66,6 +66,7 @@ import { DirecteurRoute } from "./components/DirecteurRoute";
 import { OAuthRedirectHandler } from "./components/OAuthRedirectHandler";
 import { FLEGatedRoute } from "./components/FLEGatedRoute";
 import { DemoSwitchBar } from "./components/DemoSwitchBar";
+import { DemoTour } from "./components/DemoTour";
 
 const queryClient = new QueryClient();
 
