@@ -236,6 +236,14 @@ async function buildSharedPayload(supabaseAdmin: any, diagnosticId: string): Pro
   };
 }
 
+// Properties not yet created in the HubSpot portal — skip to avoid PROPERTY_DOESNT_EXIST 400s.
+const HUBSPOT_UNSUPPORTED_PROPERTIES = new Set<string>([
+  "whatsapp",
+  "source_location",
+  "source_campaign",
+  "disponibilite",
+]);
+
 function hubspotProperties(payload: HubSpotPayload) {
   return Object.fromEntries(Object.entries({
     firstname: payload.firstname,
