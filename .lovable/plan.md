@@ -1,34 +1,53 @@
-## Plan
+## Objectif
 
-1. Corriger le garde d’accès de `/onboarding`
-- Stabiliser la logique d’autorisation pour qu’un administrateur connecté puisse toujours entrer dans Marianne sans code.
-- Éviter les états transitoires où la page reste bloquée alors que le rôle admin a déjà été confirmé.
-- Conserver l’accès automatique pour les routes préconfigurées via `?source=` et `/to/:sourceSlug`.
+Garantir que chaque Deal HubSpot créé par `sync-hubspot-diagnostic` est associé à la bonne Company en se basant sur `source_slug`, en auto-créant la Company si elle n'existe pas encore côté HubSpot, et en associant aussi le Contact à cette Company.
 
-2. Rendre le démarrage admin explicite dans l’interface
-- Ajouter un point d’entrée clair depuis la home pour les administrateurs connectés afin de lancer Marianne sans passer par “Accès pilote”.
-- Garder le flux par code pour les pilotes non-admins.
+## État actuel
 
-3. Afficher un message clair pour les non-autorisés
-- Remplacer le blocage actuel par un message explicite : accès encore en phase de test, réservé aux pilotes.
-- Ajouter un libellé cohérent entre la home, le header et la page bloquée pour éviter toute ambiguïté.
+Dans `supabase/functions/sync-hubspot-diagnostic/index.ts` :
+- Une recherche est déjà faite : `searchObject("companies", "source_slug", payload.source_slug, …)` (ligne 669).
+- Si la Company existe → le Deal est associé via `associationTypeId: 5` (deal→company).
+- Si elle n'existe pas → log warning + note HubSpot + email admin, mais **le Deal n'a aucune Company**.
+- Le Contact n'est jamais associé à la Company.
 
-4. Vérifier les cas d’usage critiques
-- Admin connecté sans code → accès direct à l’onboarding.
-- Utilisateur avec code valide → accès maintenu.
-- Utilisateur sans code et sans rôle autorisé → message de phase de test.
-- Source partenaire (`/onboarding?source=...`) → préremplissage conservé.
+## Changements
 
-## Ce que j’ai identifié
-- Le backend confirme bien le rôle admin (`has_role = true`) dans les requêtes récentes.
-- Le vrai problème est côté front : l’entrée principale de la home renvoie encore vers le bloc “Accès pilote”, ce qui donne l’impression que Marianne ne démarre pas, même pour un admin.
-- La logique d’accès doit aussi être rendue plus robuste autour de la session auth réactive.
+### 1. Nouvelle fonction `findOrCreateCompanyBySlug(payload)`
 
-## Détails techniques
-- Fichiers ciblés :
-  - `src/pages/Onboarding.tsx`
-  - `src/hooks/useAdminCheck.tsx`
-  - `src/components/AccessCodeSection.tsx`
-  - potentiellement `src/components/Header.tsx` ou une CTA d’accueil si nécessaire
-- Aucune migration backend n’est nécessaire pour cette correction.
-- Après implémentation, je ferai une vérification de build et je validerai les chemins d’accès clés côté app.
+- Cherche la Company via `source_slug` (existant).
+- Si trouvée → retourne `{ id, created: false }`.
+- Si non trouvée et `payload.source_slug` présent → crée une Company avec :
+  - `name` = `payload.source_name || payload.source_location || payload.source_slug`
+  - `source_slug` = `payload.source_slug`
+  - `source_type` = mappé via `SOURCE_TYPE_MAP` si dispo
+  - `source_campaign`, `source_location_id` si présents
+  - Propriétés filtrées via `filterValidProperties("companies", …)` pour rester safe.
+- Retourne `{ id, created: true }`.
+- Si pas de `source_slug` → retourne `null` (comportement actuel : warning + note).
+
+### 2. Association Contact ↔ Company
+
+Après upsert du Contact et résolution de la Company :
+- Appel `PUT /crm/v3/objects/contacts/{contactId}/associations/companies/{companyId}/279` (type primaire contact→company).
+- Idempotent côté HubSpot, no-op si déjà associé.
+
+### 3. Création du Deal
+
+`createDeal` continue d'inclure l'association deal→company (`associationTypeId: 5`) quand `companyId` est fourni — déjà le cas, aucun changement.
+
+### 4. Logging et statut
+
+- Si Company créée automatiquement → log `info` (`company_auto_created: true`) dans `sync_logs.payload_summary`, status reste `success`.
+- Si `source_slug` absent → comportement actuel conservé (status `warning`, note, email admin).
+- L'erreur de création Company est non-bloquante : on logue, on continue avec `companyId = null` pour ne pas casser la synchro du Deal.
+
+### 5. Test manuel
+
+Après déploiement : appeler `sync-hubspot-diagnostic` sur un diagnostic récent dont le `source_slug` ne correspond à aucune Company existante, vérifier dans HubSpot :
+- Company créée avec le bon `source_slug`.
+- Contact lié à la Company.
+- Deal lié à la Company.
+
+## Fichier touché
+
+- `supabase/functions/sync-hubspot-diagnostic/index.ts`
