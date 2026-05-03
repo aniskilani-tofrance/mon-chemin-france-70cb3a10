@@ -262,20 +262,60 @@ async function getValidHubSpotProperties(objectType: string): Promise<Set<string
   }
 }
 
+// Redact PII for safe logging.
+const PII_KEYS = new Set(["email", "phone", "firstname", "lastname", "city"]);
+function redactValue(key: string, value: unknown): unknown {
+  if (value == null) return value;
+  if (PII_KEYS.has(key)) {
+    const str = String(value);
+    if (!str) return str;
+    if (str.length <= 4) return "***";
+    return `${str.slice(0, 2)}***${str.slice(-2)} (len=${str.length})`;
+  }
+  if (typeof value === "string" && value.length > 120) {
+    return `${value.slice(0, 120)}…(+${value.length - 120})`;
+  }
+  return value;
+}
+
+function previewPayload(properties: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(properties)) out[k] = redactValue(k, v);
+  return out;
+}
+
 async function filterValidProperties(
   objectType: string,
   properties: Record<string, unknown>,
+  context: { diagnostic_id?: string; operation?: string } = {},
 ): Promise<Record<string, unknown>> {
   const valid = await getValidHubSpotProperties(objectType);
-  if (!valid) return properties; // fail-open if schema fetch fails
+  if (!valid) {
+    console.warn(`[hubspot] schema unavailable for ${objectType} — sending payload as-is`, {
+      operation: context.operation,
+      diagnostic_id: context.diagnostic_id,
+      keys: Object.keys(properties),
+    });
+    return properties; // fail-open
+  }
   const out: Record<string, unknown> = {};
-  const dropped: string[] = [];
+  const dropped: Array<{ key: string; value: unknown }> = [];
   for (const [key, value] of Object.entries(properties)) {
     if (valid.has(key)) out[key] = value;
-    else dropped.push(key);
+    else dropped.push({ key, value: redactValue(key, value) });
   }
   if (dropped.length) {
-    console.warn(`[hubspot] dropped unknown ${objectType} properties:`, dropped.join(", "));
+    console.warn(`[hubspot] dropped ${dropped.length} unknown ${objectType} properties`, {
+      operation: context.operation,
+      diagnostic_id: context.diagnostic_id,
+      dropped,
+      kept_keys: Object.keys(out),
+    });
+  } else {
+    console.log(`[hubspot] all ${Object.keys(out).length} ${objectType} properties validated`, {
+      operation: context.operation,
+      diagnostic_id: context.diagnostic_id,
+    });
   }
   return out;
 }
