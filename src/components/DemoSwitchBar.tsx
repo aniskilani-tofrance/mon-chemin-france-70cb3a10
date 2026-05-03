@@ -112,15 +112,18 @@ export function DemoSwitchBar() {
     }
   };
 
-  const provision = async () => {
+  const provision = async (silent = false) => {
     setProvisioning(true);
     try {
       const { data, error } = await supabase.functions.invoke("admin-demo-accounts", { body: { action: "provision" } });
       if (error || data?.error) throw new Error(data?.error || error?.message);
-      toast.success("Comptes de démo prêts !");
-      await refresh();
+      if (silent) toast.success("Comptes démo initialisés automatiquement");
+      else toast.success("Comptes de démo prêts !");
+      const { data: listData } = await supabase.functions.invoke("admin-demo-accounts", { body: { action: "list" } });
+      if (listData?.accounts) setAccounts(listData.accounts);
     } catch (err: any) {
-      toast.error(err.message || "Erreur");
+      if (!silent) toast.error(err.message || "Erreur");
+      else console.error("Auto-provision failed:", err);
     } finally {
       setProvisioning(false);
     }
