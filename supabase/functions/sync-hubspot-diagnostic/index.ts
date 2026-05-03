@@ -588,10 +588,18 @@ async function createDeal(payload: HubSpotPayload, contactId: string, companyId?
   return created.id as string;
 }
 
-async function findOrCreateCompanyBySlug(payload: HubSpotPayload): Promise<{ id: string; created: boolean } | null> {
-  if (!payload.source_slug) return null;
+type CompanyResolution = {
+  id: string | null;
+  created: boolean;
+  reason: "found" | "created" | "no_slug" | "create_failed";
+  error?: string;
+  properties_sent?: Record<string, unknown>;
+};
+
+async function findOrCreateCompanyBySlug(payload: HubSpotPayload): Promise<CompanyResolution> {
+  if (!payload.source_slug) return { id: null, created: false, reason: "no_slug" };
   const existing = await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]);
-  if (existing?.id) return { id: existing.id, created: false };
+  if (existing?.id) return { id: existing.id, created: false, reason: "found" };
 
   const rawProps: Record<string, unknown> = {
     name: payload.source_name || payload.source_location || payload.source_slug,
@@ -611,36 +619,49 @@ async function findOrCreateCompanyBySlug(payload: HubSpotPayload): Promise<{ id:
       method: "POST",
       body: JSON.stringify({ properties }),
     });
-    console.log(`[hubspot] auto-created company`, { id: created?.id, source_slug: payload.source_slug });
-    return { id: created.id as string, created: true };
-  } catch (err) {
-    console.warn(`[hubspot] failed to auto-create company`, {
-      source_slug: payload.source_slug,
-      error: (err as Error).message,
+    console.log(`[hubspot] auto-created company`, {
+      id: created?.id, source_slug: payload.source_slug, properties: previewPayload(properties),
     });
-    return null;
+    return { id: created.id as string, created: true, reason: "created", properties_sent: previewPayload(properties) };
+  } catch (err) {
+    const message = (err as Error).message;
+    console.warn(`[hubspot] failed to auto-create company`, {
+      source_slug: payload.source_slug, error: message, properties: previewPayload(properties),
+    });
+    return { id: null, created: false, reason: "create_failed", error: message, properties_sent: previewPayload(properties) };
   }
 }
 
-async function hasAssociation(fromType: string, fromId: string, toType: string, toId: string): Promise<boolean> {
+type AssociationResult = {
+  fromType: string; fromId: string; toType: string; toId: string;
+  status: "created" | "already_exists" | "failed" | "check_failed";
+  error?: string;
+};
+
+async function hasAssociation(
+  fromType: string, fromId: string, toType: string, toId: string,
+): Promise<{ exists: boolean; error?: string }> {
   try {
     const data = await hubspot(`/crm/v4/objects/${fromType}/${fromId}/associations/${toType}?limit=500`);
     const results = data?.results || [];
-    return results.some((r: any) => String(r.toObjectId ?? r.id) === String(toId));
+    return { exists: results.some((r: any) => String(r.toObjectId ?? r.id) === String(toId)) };
   } catch (err) {
-    console.warn(`[hubspot] hasAssociation check failed`, {
-      fromType, fromId, toType, toId, error: (err as Error).message,
-    });
-    return false;
+    const message = (err as Error).message;
+    console.warn(`[hubspot] hasAssociation check failed`, { fromType, fromId, toType, toId, error: message });
+    return { exists: false, error: message };
   }
 }
 
 async function ensureAssociation(
   fromType: string, fromId: string, toType: string, toId: string, associationTypeId: number,
-): Promise<{ created: boolean; skipped: boolean }> {
-  if (await hasAssociation(fromType, fromId, toType, toId)) {
+): Promise<AssociationResult> {
+  const check = await hasAssociation(fromType, fromId, toType, toId);
+  if (check.exists) {
     console.log(`[hubspot] association already exists, skipping`, { fromType, fromId, toType, toId });
-    return { created: false, skipped: true };
+    return { fromType, fromId, toType, toId, status: "already_exists" };
+  }
+  if (check.error) {
+    return { fromType, fromId, toType, toId, status: "check_failed", error: check.error };
   }
   try {
     await hubspot(
@@ -650,24 +671,19 @@ async function ensureAssociation(
         body: JSON.stringify([{ associationCategory: "HUBSPOT_DEFINED", associationTypeId }]),
       },
     );
-    return { created: true, skipped: false };
+    console.log(`[hubspot] association created`, { fromType, fromId, toType, toId, associationTypeId });
+    return { fromType, fromId, toType, toId, status: "created" };
   } catch (err) {
-    console.warn(`[hubspot] association PUT failed`, {
-      fromType, fromId, toType, toId, error: (err as Error).message,
-    });
-    return { created: false, skipped: false };
+    const message = (err as Error).message;
+    console.warn(`[hubspot] association PUT failed`, { fromType, fromId, toType, toId, associationTypeId, error: message });
+    return { fromType, fromId, toType, toId, status: "failed", error: message };
   }
 }
 
-async function associateContactToCompany(contactId: string, companyId: string) {
-  // associationTypeId 279 = primary contact→company
-  await ensureAssociation("contacts", contactId, "companies", companyId, 279);
+async function associateContactToCompany(contactId: string, companyId: string): Promise<AssociationResult> {
+  return ensureAssociation("contacts", contactId, "companies", companyId, 279);
 }
 
-async function associateDealToCompany(dealId: string, companyId: string) {
-  // associationTypeId 5 = deal→company
-  await ensureAssociation("deals", dealId, "companies", companyId, 5);
-}
 
 
 async function createMissingCompanyNote(payload: HubSpotPayload, contactId: string, dealId?: string | null) {
