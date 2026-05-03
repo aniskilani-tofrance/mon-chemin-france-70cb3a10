@@ -1,14 +1,17 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { RefreshCw, AlertCircle, CheckCircle2, Volume2 } from "lucide-react";
+import { RefreshCw, AlertCircle, CheckCircle2, Volume2, Play, Loader2 } from "lucide-react";
 import { SEO } from "@/components/SEO";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
+import { toast } from "sonner";
+
+const TEST_TEXT_FR = "Bonjour, je suis Marianne, votre conseillère ToFrance. Je peux vous accompagner dans vos démarches d'orientation, votre formation en français, et l'accès à vos heures OFII gratuites.";
 
 interface TTSLog {
   id: string;
@@ -31,6 +34,44 @@ export default function AdminTTSDiagnostic() {
   const [loading, setLoading] = useState(true);
   const [providerFilter, setProviderFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<{ provider: string; latency_ms: number; request_id?: string } | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const runVoiceTest = useCallback(async () => {
+    setTesting(true);
+    setTestResult(null);
+    const t0 = performance.now();
+    try {
+      const { data, error } = await supabase.functions.invoke("openai-tts", {
+        body: { text: TEST_TEXT_FR, language: "fr" },
+      });
+      const latency = Math.round(performance.now() - t0);
+      if (error || !data?.audio_base64) {
+        throw new Error(error?.message || data?.error || "Pas d'audio reçu");
+      }
+      const provider = data.provider || "unknown";
+      setTestResult({ provider, latency_ms: latency, request_id: data.request_id });
+      toast.success(`Voix générée via ${provider} en ${latency}ms`);
+
+      // Play
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      const audio = new Audio(`data:audio/mpeg;base64,${data.audio_base64}`);
+      audioRef.current = audio;
+      audio.play().catch(e => console.warn("Lecture refusée:", e));
+
+      // Refresh logs after a beat so the new entry shows up
+      setTimeout(() => fetchLogs(), 800);
+    } catch (e) {
+      toast.error(`Échec du test : ${(e as Error).message}`);
+      setTestResult({ provider: "error", latency_ms: Math.round(performance.now() - t0) });
+    } finally {
+      setTesting(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
@@ -91,6 +132,46 @@ export default function AdminTTSDiagnostic() {
         <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">OpenAI (fallback)</p><p className="text-2xl font-bold">{stats.openai}</p></CardContent></Card>
         <Card><CardContent className="pt-6"><p className="text-sm text-muted-foreground">Latence moy.</p><p className="text-2xl font-bold">{stats.avgLatency}ms</p></CardContent></Card>
       </div>
+
+      {/* Voice test */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Play className="h-4 w-4" /> Tester la voix Marianne (FR)
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-muted-foreground italic">"{TEST_TEXT_FR}"</p>
+          <div className="flex items-center gap-3 flex-wrap">
+            <Button onClick={runVoiceTest} disabled={testing}>
+              {testing ? (
+                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Génération…</>
+              ) : (
+                <><Play className="h-4 w-4 mr-2" /> Lancer le test</>
+              )}
+            </Button>
+            {testResult && (
+              <div className="flex items-center gap-2 flex-wrap">
+                <Badge variant={testResult.provider === "elevenlabs" ? "default" : testResult.provider === "openai" ? "secondary" : "destructive"}>
+                  Provider : {testResult.provider}
+                </Badge>
+                <Badge variant="outline">{testResult.latency_ms}ms (round-trip)</Badge>
+                {testResult.request_id && (
+                  <Badge variant="outline" className="font-mono text-xs">
+                    req: {testResult.request_id.slice(0, 8)}
+                  </Badge>
+                )}
+                {testResult.provider === "elevenlabs" && (
+                  <span className="text-xs text-green-600">✓ Voix native Charlotte</span>
+                )}
+                {testResult.provider === "openai" && (
+                  <span className="text-xs text-amber-600">⚠ Fallback OpenAI actif</span>
+                )}
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Filters */}
       <Card>
