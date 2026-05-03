@@ -327,7 +327,7 @@ async function upsertContact(payload: HubSpotPayload): Promise<{ id: string; cre
   let existing = payload.phone ? await searchObject("contacts", "phone", payload.phone, ["phone", "email"]) : null;
   if (!existing && payload.email) existing = await searchObject("contacts", "email", payload.email, ["phone", "email"]);
 
-  const properties = hubspotProperties(payload);
+  const properties = await filterValidProperties("contacts", hubspotProperties(payload));
   if (existing?.id) {
     await hubspot(`/crm/v3/objects/contacts/${existing.id}`, {
       method: "PATCH",
