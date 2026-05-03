@@ -712,8 +712,10 @@ serve(async (req) => {
         console.warn("Slack diagnostic notification failed:", (slackErr as Error).message);
       }
     }
-    const company = payload.source_slug ? await searchObject("companies", "source_slug", payload.source_slug, ["name", "source_slug"]) : null;
-    const companyId = company?.id || null;
+    const companyResult = await findOrCreateCompanyBySlug(payload);
+    const companyId = companyResult?.id || null;
+    const companyAutoCreated = companyResult?.created || false;
+    if (companyId) await associateContactToCompany(contactId, companyId);
     const dealId = await createDeal(payload, contactId, companyId);
     await rememberHubSpotStatus(supabaseAdmin, diagnosticType, diagnosticId, contactId, dealId, payload.statut_lead);
 
