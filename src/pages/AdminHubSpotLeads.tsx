@@ -71,6 +71,7 @@ export default function AdminHubSpotLeads() {
   const [owners, setOwners] = useState<HubSpotOwner[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [taskOpen, setTaskOpen] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<HubSpotLead | null>(null);
@@ -187,6 +188,22 @@ export default function AdminHubSpotLeads() {
     URL.revokeObjectURL(url);
   };
 
+  const handleSyncFromHubspot = async () => {
+    setSyncing(true);
+    try {
+      const data = await invokeHubSpot({ action: "syncFromHubspot" });
+      toast({
+        title: "Synchronisation HubSpot → ToFrance terminée",
+        description: `${data.totalFetched} contacts • ${data.updatedProfiles} profils, ${data.updatedLeads} leads, ${data.updatedOnboarding} diagnostics mis à jour${data.errors ? ` • ${data.errors} erreurs` : ""}`,
+      });
+      await fetchLeads();
+    } catch (error) {
+      toast({ variant: "destructive", title: "Synchronisation impossible", description: error instanceof Error ? error.message : "Erreur HubSpot" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <SEO title="Admin profils HubSpot — ToFrance" description="Gestion des profils HubSpot ToFrance" path="/admin/leads" />
@@ -208,6 +225,10 @@ export default function AdminHubSpotLeads() {
             <Button variant="outline" onClick={fetchLeads} disabled={loading}>
               <RefreshCcw className="mr-2 h-4 w-4" />
               Actualiser
+            </Button>
+            <Button variant="secondary" onClick={handleSyncFromHubspot} disabled={syncing}>
+              {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+              Synchroniser depuis HubSpot
             </Button>
             <Button onClick={exportCsv} disabled={filteredLeads.length === 0}>
               <Download className="mr-2 h-4 w-4" />

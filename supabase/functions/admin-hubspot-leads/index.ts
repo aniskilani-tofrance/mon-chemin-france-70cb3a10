@@ -33,6 +33,7 @@ const CONTACT_PROPERTIES = [
 const ActionSchema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("list"), after: z.string().optional() }),
   z.object({ action: z.literal("owners") }),
+  z.object({ action: z.literal("syncFromHubspot") }),
   z.object({ action: z.literal("updateStatus"), contactId: z.string().min(1), dealId: z.string().optional().nullable(), diagnosticId: z.string().optional().nullable(), status: z.string().min(1).max(120) }),
   z.object({
     action: z.literal("createTask"),
@@ -239,6 +240,57 @@ async function createTask(input: z.infer<typeof ActionSchema> & { action: "creat
   return { taskId: data?.id };
 }
 
+async function syncFromHubspot() {
+  const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
+  let after: string | undefined = undefined;
+  let totalFetched = 0;
+  let updatedProfiles = 0;
+  let updatedLeads = 0;
+  let updatedOnboarding = 0;
+  const errors: string[] = [];
+
+  do {
+    const { contacts, paging }: any = await listContacts(after);
+    totalFetched += contacts.length;
+
+    for (const c of contacts) {
+      const values = {
+        statut_lead: c.statut_lead,
+        hubspot_contact_id: c.id,
+        hubspot_deal_id: c.dealId ?? null,
+        status_updated_from: "hubspot",
+        status_updated_at: new Date().toISOString(),
+      };
+
+      try {
+        if (c.diagnostic_id) {
+          const { data, error } = await supabaseAdmin.from("onboarding_results").update(values).eq("id", c.diagnostic_id).select("id");
+          if (!error && data) updatedOnboarding += data.length;
+        }
+        if (c.email) {
+          const { data: pData } = await supabaseAdmin.from("profiles").update(values).eq("email", c.email).select("id");
+          updatedProfiles += pData?.length || 0;
+          const { data: lData } = await supabaseAdmin.from("leads").update(values).eq("email", c.email).select("id");
+          updatedLeads += lData?.length || 0;
+        }
+      } catch (e: any) {
+        errors.push(`${c.id}: ${e.message}`);
+      }
+    }
+    after = paging?.next?.after;
+  } while (after);
+
+  await supabaseAdmin.from("sync_logs").insert({
+    direction: "hubspot_to_tofrance",
+    source_system: "hubspot",
+    target_system: "tofrance",
+    status: errors.length ? "partial" : "success",
+    payload: { totalFetched, updatedProfiles, updatedLeads, updatedOnboarding, errors: errors.slice(0, 10) },
+  });
+
+  return { totalFetched, updatedProfiles, updatedLeads, updatedOnboarding, errors: errors.length };
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Méthode non autorisée" }, 405);
@@ -250,6 +302,7 @@ serve(async (req) => {
 
     if (parsed.data.action === "list") return json(await listContacts(parsed.data.after));
     if (parsed.data.action === "owners") return json(await listOwners());
+    if (parsed.data.action === "syncFromHubspot") return json(await syncFromHubspot());
     if (parsed.data.action === "updateStatus") return json(await updateStatus(parsed.data.contactId, parsed.data.dealId, parsed.data.diagnosticId, parsed.data.status));
     return json(await createTask(parsed.data));
   } catch (error) {
