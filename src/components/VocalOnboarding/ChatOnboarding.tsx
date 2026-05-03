@@ -68,6 +68,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
   const [showSignupCheckpoint, setShowSignupCheckpoint] = useState(false);
   const [checkpointDismissed, setCheckpointDismissed] = useState(false);
   const [checkpointId, setCheckpointId] = useState<string | null>(resumeCheckpointId || null);
+  const [multiSelected, setMultiSelected] = useState<string[]>([]);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const locationInputRef = useRef<GooglePlacesAutocompleteHandle>(null);
   const hasGreeted = useRef(false);
@@ -582,6 +583,78 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     }
   }, [currentQuestionId, currentQuestion, answers, isProcessing, isComplete, isDirectText, isEmail, language, speak, buildSummary, onComplete]);
 
+  // Direct choice click — bypasses AI parsing
+  const handleChoiceClick = useCallback(async (choiceIds: string[]) => {
+    if (isProcessing || isComplete || !currentQuestion?.choices) return;
+    const isMulti = currentQuestion.type === "multiChoice";
+    const matchedAnswer = isMulti ? choiceIds.join(",") : choiceIds[0];
+    const allTags: string[] = [];
+    const labels: string[] = [];
+    choiceIds.forEach(id => {
+      const c = currentQuestion.choices?.find(ch => ch.id === id);
+      if (c?.tags) allTags.push(...c.tags);
+      if (c) labels.push(getTranslatedText(c.label as any, "text", language));
+    });
+
+    const userMsg: ChatMessage = { role: "user", content: labels.join(" · ") };
+    setMessages(prev => [...prev, userMsg]);
+    setMultiSelected([]);
+    setIsProcessing(true);
+
+    try {
+      const newAnswers: OnboardingAnswers = {
+        ...answers,
+        [currentQuestionId]: matchedAnswer,
+        tags: allTags.length > 0 ? [...answers.tags, ...allTags] : answers.tags,
+      };
+      setAnswers(newAnswers);
+
+      const nextQId = getNextQuestion(currentQuestionId, matchedAnswer, newAnswers);
+      const nextQ = nextQId ? ONBOARDING_TREE.questions[nextQId] : null;
+
+      let marianneText = "";
+      try {
+        const response = await callOnboardingChat({
+          action: "onboarding_chat",
+          phase: "parse",
+          question: currentQuestion,
+          user_answer: labels.join(", "),
+          next_question: nextQ,
+          language,
+          conversation_summary: buildSummary(),
+        });
+        marianneText = response.marianne_message;
+      } catch {
+        marianneText = nextQ ? getTranslatedText(nextQ as any, "text", language) : "Merci !";
+      }
+
+      const marianneMsg: ChatMessage = { role: "marianne", content: marianneText };
+      setMessages(prev => [...prev, marianneMsg]);
+      speakAndListen(marianneText);
+
+      if (nextQId) {
+        setQuestionHistory(prev => [...prev, currentQuestionId]);
+        setCurrentQuestionId(nextQId);
+        if (currentQuestionId === CHECKPOINT_AFTER_QUESTION && !user && !checkpointDismissed) {
+          setShowSignupCheckpoint(true);
+        }
+      } else {
+        setIsComplete(true);
+        markCheckpointComplete();
+        setTimeout(() => onComplete(newAnswers), 1500);
+      }
+    } catch (err) {
+      console.error("Choice click error:", err);
+      toast.error("Erreur");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [currentQuestion, currentQuestionId, answers, isProcessing, isComplete, language, buildSummary, speakAndListen, user, checkpointDismissed, markCheckpointComplete, onComplete]);
+
+  const toggleMulti = (id: string) => {
+    setMultiSelected(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const handleMicToggle = () => {
     if (isListening) {
       stopListening();
@@ -880,6 +953,45 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
 
           {emailError && (
             <p className="mb-2 text-xs text-destructive px-1">{emailError}</p>
+          )}
+
+          {/* Choice buttons (visible options for choice/multiChoice questions) */}
+          {currentQuestion?.choices && (currentQuestion.type === "choice" || currentQuestion.type === "multiChoice") && !isWidget && (
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {currentQuestion.choices.map((choice) => {
+                  const label = getTranslatedText(choice.label as any, "text", language);
+                  const isMulti = currentQuestion.type === "multiChoice";
+                  const selected = isMulti && multiSelected.includes(choice.id);
+                  return (
+                    <button
+                      key={choice.id}
+                      type="button"
+                      disabled={isProcessing}
+                      onClick={() => isMulti ? toggleMulti(choice.id) : handleChoiceClick([choice.id])}
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition-all ${
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border bg-card hover:border-primary hover:bg-primary/5"
+                      } disabled:opacity-50`}
+                    >
+                      {choice.icon && <span>{choice.icon}</span>}
+                      <span>{label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {currentQuestion.type === "multiChoice" && multiSelected.length > 0 && (
+                <Button
+                  size="sm"
+                  onClick={() => handleChoiceClick(multiSelected)}
+                  disabled={isProcessing}
+                  className="w-full"
+                >
+                  {language === "ar" ? "تأكيد" : language === "en" ? "Confirm" : "Confirmer"} ({multiSelected.length})
+                </Button>
+              )}
+            </div>
           )}
 
           {/* Vocal-first: mic button + always-visible text input */}
