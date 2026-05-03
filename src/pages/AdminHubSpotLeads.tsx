@@ -226,6 +226,10 @@ export default function AdminHubSpotLeads() {
               <RefreshCcw className="mr-2 h-4 w-4" />
               Actualiser
             </Button>
+            <Button variant="secondary" onClick={handleSyncFromHubspot} disabled={syncing}>
+              {syncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCcw className="mr-2 h-4 w-4" />}
+              Synchroniser depuis HubSpot
+            </Button>
             <Button onClick={exportCsv} disabled={filteredLeads.length === 0}>
               <Download className="mr-2 h-4 w-4" />
               Export CSV
