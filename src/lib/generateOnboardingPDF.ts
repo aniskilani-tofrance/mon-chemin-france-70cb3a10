@@ -69,6 +69,24 @@ const LEVEL_LABELS: Record<string, string> = {
   b1: "Intermédiaire (B1)",
 };
 
+const TAG_LABELS: Record<string, string> = {
+  status_refugie: "Statut réfugié",
+  status_demandeur_asile: "Demandeur d'asile",
+  status_sans_papiers: "Sans-papiers",
+  status_titre_sejour: "Titre de séjour",
+  needs_housing: "Besoin de logement",
+  needs_admin: "Aide administrative",
+  needs_health: "Besoin santé",
+  ready_to_work: "Prêt à travailler",
+  has_diploma: "Diplôme à reconnaître",
+  cir_signed: "CIR signé",
+  cir_in_progress: "CIR en cours",
+};
+
+function humanizeTag(tag: string): string {
+  return TAG_LABELS[tag.trim()] || tag.trim().replace(/_/g, " ");
+}
+
 const WORK_LABELS: Record<string, string> = {
   yes: "Oui",
   no: "Non",
