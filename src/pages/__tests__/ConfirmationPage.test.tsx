@@ -81,18 +81,21 @@ describe("ConfirmationPage — Discover my path", () => {
     expect(screen.getByText(/Accompagnement personnalisé/)).toBeInTheDocument();
   });
 
-  it("handles tags as array and as CSV string without crashing", () => {
+  it("handles tags as array and as CSV string with human-readable labels", () => {
     localStorage.setItem(
       "onboarding_answers",
       JSON.stringify({
         leadRoute: "route_c",
         contact_email: "x@y.fr",
+        french_level_cecrl: "b1",
         tags: ["status_refugie", "needs_housing"],
       })
     );
     const { unmount } = renderPage();
-    expect(screen.getByText("status refugie")).toBeInTheDocument();
-    expect(screen.getByText("needs housing")).toBeInTheDocument();
+    expect(screen.getByText("Statut réfugié")).toBeInTheDocument();
+    expect(screen.getByText("Besoin de logement")).toBeInTheDocument();
+    expect(screen.getByText(/Parcours Emploi/)).toBeInTheDocument();
+    expect(screen.getByText(/Intermédiaire \(B1\)/)).toBeInTheDocument();
     unmount();
     localStorage.clear();
 
@@ -101,11 +104,14 @@ describe("ConfirmationPage — Discover my path", () => {
       JSON.stringify({
         leadRoute: "route_c",
         contact_email: "x@y.fr",
-        tags: "status_refugie,needs_housing",
+        tags: "status_refugie,needs_housing,unknown_tag",
       })
     );
     renderPage();
-    expect(screen.getByText("status refugie")).toBeInTheDocument();
+    expect(screen.getByText("Statut réfugié")).toBeInTheDocument();
+    expect(screen.getByText("Besoin de logement")).toBeInTheDocument();
+    // Unknown tags fallback to humanized form (underscores → spaces)
+    expect(screen.getByText("unknown tag")).toBeInTheDocument();
   });
 
   it("ignores null / undefined fields without throwing", () => {
@@ -120,6 +126,44 @@ describe("ConfirmationPage — Discover my path", () => {
     );
     expect(() => renderPage()).not.toThrow();
     expect(screen.getByText(/Parcours FLE/)).toBeInTheDocument();
+  });
+
+  // ─── Key-field assertions across all 4 scenarios ───
+  describe("key fields rendered correctly per scenario", () => {
+    const scenarios = [
+      { route: "route_a", routeLabel: "Parcours FLE", level: "alpha", levelLabel: "Ne parle pas français" },
+      { route: "route_b", routeLabel: "Parcours Formation", level: "a1", levelLabel: "Débutant (A1)" },
+      { route: "route_c", routeLabel: "Parcours Emploi", level: "b1", levelLabel: "Intermédiaire (B1)" },
+      { route: "sas", routeLabel: "Accompagnement personnalisé", level: "a2", levelLabel: "Se débrouille (A2)" },
+    ];
+
+    for (const s of scenarios) {
+      it(`${s.route} — renders parcours, CECRL level, and humanized tags`, () => {
+        localStorage.setItem(
+          "onboarding_answers",
+          JSON.stringify({
+            leadRoute: s.route,
+            french_level_cecrl: s.level,
+            main_goal: ["learn_french", "find_job"],
+            tags: ["status_refugie", "needs_housing", "ready_to_work"],
+            contact_firstname: "Test",
+            contact_email: "test@test.fr",
+          })
+        );
+        renderPage();
+        // Parcours label
+        expect(screen.getByText(new RegExp(s.routeLabel))).toBeInTheDocument();
+        // CECRL level mapped to human label
+        expect(screen.getByText(s.levelLabel)).toBeInTheDocument();
+        // Multi-goal joined with comma
+        expect(screen.getByText(/Apprendre le français.*Trouver un emploi/)).toBeInTheDocument();
+        // Tags humanized (no raw snake_case visible)
+        expect(screen.getByText("Statut réfugié")).toBeInTheDocument();
+        expect(screen.getByText("Besoin de logement")).toBeInTheDocument();
+        expect(screen.getByText("Prêt à travailler")).toBeInTheDocument();
+        expect(screen.queryByText("status_refugie")).not.toBeInTheDocument();
+      });
+    }
   });
 
   // ─── Robustness fuzz: multi-select fields must NEVER crash the page ───
