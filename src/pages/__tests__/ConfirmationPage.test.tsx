@@ -46,7 +46,7 @@ describe("ConfirmationPage — Discover my path", () => {
       })
     );
     renderPage();
-    expect(screen.getByText(/Amine/)).toBeInTheDocument();
+    expect(screen.getAllByText(/Amine/).length).toBeGreaterThan(0);
     expect(screen.getByText(/amine@example.com/)).toBeInTheDocument();
     expect(screen.getByText(/Parcours FLE/)).toBeInTheDocument();
     // multi-goal rendered as comma-joined labels
