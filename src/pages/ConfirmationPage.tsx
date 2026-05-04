@@ -308,7 +308,7 @@ const ConfirmationPage = () => {
                         .slice(0, 8)
                         .map((tag: string) => (
                           <Badge key={tag} variant="secondary" className="text-[10px]">
-                            {tag.replace(/_/g, " ")}
+                            {humanizeTag(tag)}
                           </Badge>
                         ))}
                     </div>
