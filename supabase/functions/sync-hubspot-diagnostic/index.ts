@@ -57,6 +57,87 @@ const boolish = (value: unknown): boolean => {
   return ["true", "yes", "oui", "1", "whatsapp"].includes(normalized);
 };
 
+// ─── HubSpot enum mappings ──────────────────────────────────────────
+// HubSpot rejects any value not in its predefined option list (400 INVALID_OPTION).
+// We map our internal codes/labels to the exact strings configured in HubSpot.
+
+const ROUTE_ORIENTATION_MAP: Record<string, string> = {
+  // Internal parcours IDs (orientationEngine)
+  FRANCAIS: "FLE", FLE: "FLE", fle: "FLE", route_a: "FLE",
+  FORMATION: "Formation", formation: "Formation", route_b: "Formation",
+  INSERTION: "Emploi direct", emploi: "Emploi direct", route_c: "Emploi direct",
+  MIXTE: "FOS",
+  RECONNAISSANCE: "Certification",
+  ORIENTATION: "Orientation externe", sas: "Orientation externe",
+  ECOUTE: "Accompagnement social",
+  ADMIN: "Accompagnement social",
+  LOGEMENT: "Accompagnement social",
+  BPI: "Accompagnement social",
+  OFII: "FLE",
+};
+
+const BESOIN_PRINCIPAL_MAP: Record<string, string> = {
+  learn_french: "FLE",
+  find_job: "Emploi",
+  get_training: "Formation",
+  job_training: "Formation",
+  recognize_diploma: "Certification",
+  digital: "Numérique",
+  need_help: "Orientation",
+};
+
+const FREIN_MAP: Record<string, string> = {
+  transport: "Mobilité",
+  mobility: "Mobilité",
+  childcare: "Garde d'enfants",
+  schedule: "Emploi",
+  housing: "Logement",
+  health: "Santé",
+  mental_health: "Santé",
+  admin: "Administratif",
+  digital: "Numérique",
+  language: "Langue",
+  french: "Langue",
+};
+
+const DISPONIBILITE_MAP: Record<string, string> = {
+  yes: "Flexible", oui: "Flexible", true: "Flexible", "1": "Flexible",
+  no: "Flexible", non: "Flexible",
+  morning: "Matin", matin: "Matin",
+  afternoon: "Après-midi", apres_midi: "Après-midi", "apres-midi": "Après-midi",
+  evening: "Soir", soir: "Soir",
+  weekend: "Week-end", "week-end": "Week-end",
+  flexible: "Flexible",
+};
+
+function mapEnum(map: Record<string, string>, value: unknown): string | null {
+  if (value == null) return null;
+  // Multi-value: pick the first one HubSpot recognizes.
+  const items = Array.isArray(value)
+    ? value
+    : String(value).split(/[,;|]/);
+  for (const raw of items) {
+    const key = String(raw).trim();
+    if (!key) continue;
+    const direct = map[key] || map[key.toLowerCase()] || map[key.toUpperCase()];
+    if (direct) return direct;
+  }
+  return null;
+}
+
+function mapEnumMulti(map: Record<string, string>, value: unknown): string | null {
+  if (value == null) return null;
+  const items = Array.isArray(value) ? value : String(value).split(/[,;|]/);
+  const out: string[] = [];
+  for (const raw of items) {
+    const key = String(raw).trim();
+    if (!key) continue;
+    const mapped = map[key] || map[key.toLowerCase()] || map[key.toUpperCase()];
+    if (mapped && !out.includes(mapped)) out.push(mapped);
+  }
+  return out.length ? out.join(";") : null;
+}
+
 async function hubspot(path: string, init: RequestInit = {}) {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
