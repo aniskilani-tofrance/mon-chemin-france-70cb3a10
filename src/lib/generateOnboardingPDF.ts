@@ -129,6 +129,8 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
     </div>
   `).join("");
 
+  const logoUrl = `${window.location.origin}/logo-tofrance.png`;
+
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -137,31 +139,47 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
   <style>
     @media print {
       body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page-break { page-break-before: always; }
     }
     * { margin:0; padding:0; box-sizing:border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1a1a2e; padding:40px; max-width:700px; margin:0 auto; }
-    .header { text-align:center; margin-bottom:32px; border-bottom:2px solid ${routeInfo.color}; padding-bottom:20px; }
-    .header h1 { font-size:22px; margin-bottom:4px; }
-    .header p { font-size:12px; color:#888; }
-    .route-box { background: ${routeInfo.color}11; border: 2px solid ${routeInfo.color}44; border-radius:12px; padding:20px; margin-bottom:28px; text-align:center; }
-    .route-box h2 { color:${routeInfo.color}; font-size:20px; margin-bottom:4px; }
-    .route-box p { font-size:13px; color:#555; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1a1a2e; padding:40px; max-width:760px; margin:0 auto; background:#fff; }
+    .brand-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-bottom:18px; border-bottom:3px solid ${routeInfo.color}; }
+    .brand-header img { height:54px; width:auto; }
+    .brand-header .meta { text-align:right; font-size:11px; color:#888; line-height:1.5; }
+    .brand-header .meta strong { display:block; color:#1a1a2e; font-size:13px; margin-bottom:2px; }
+    .doc-title { margin: 22px 0 28px; }
+    .doc-title h1 { font-size:24px; font-weight:700; color:#1a1a2e; margin-bottom:6px; }
+    .doc-title p { font-size:13px; color:#666; }
+    .route-box { background: linear-gradient(135deg, ${routeInfo.color}14, ${routeInfo.color}05); border-left: 5px solid ${routeInfo.color}; border-radius:8px; padding:22px 24px; margin-bottom:32px; }
+    .route-box .label { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:${routeInfo.color}; font-weight:700; margin-bottom:6px; }
+    .route-box h2 { color:${routeInfo.color}; font-size:22px; margin-bottom:6px; }
+    .route-box p { font-size:13px; color:#444; }
     .section { margin-bottom:28px; }
-    .section-title { font-size:13px; text-transform:uppercase; letter-spacing:1.5px; color:#888; font-weight:700; margin-bottom:14px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
+    .section-title { font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:#666; font-weight:700; margin-bottom:14px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
     table { width:100%; border-collapse:collapse; }
-    td { padding:8px 10px; font-size:13px; border-bottom:1px solid #f0f0f0; }
-    td:first-child { color:#888; width:40%; font-size:12px; }
-    td:last-child { font-weight:500; }
-    .footer { margin-top:36px; text-align:center; font-size:11px; color:#aaa; border-top:1px solid #e5e7eb; padding-top:16px; }
+    td { padding:9px 10px; font-size:13px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
+    td:first-child { color:#888; width:42%; font-size:12px; }
+    td:last-child { font-weight:500; color:#1a1a2e; }
+    .footer { margin-top:40px; padding-top:18px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#888; }
+    .footer img { height:28px; opacity:0.8; }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🇫🇷 ToFrance — Récapitulatif de parcours</h1>
-    <p>Généré le ${date}</p>
+  <div class="brand-header">
+    <img src="${logoUrl}" alt="ToFrance" />
+    <div class="meta">
+      <strong>Récapitulatif de parcours</strong>
+      Généré le ${date}
+    </div>
+  </div>
+
+  <div class="doc-title">
+    <h1>${fullName ? `Bonjour ${fullName},` : "Votre parcours d'orientation"}</h1>
+    <p>Voici la synthèse de votre diagnostic et les prochaines étapes recommandées.</p>
   </div>
 
   <div class="route-box">
+    <div class="label">Parcours recommandé</div>
     <h2>${routeInfo.label}</h2>
     <p>${routeInfo.description}</p>
   </div>
@@ -177,8 +195,11 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
   </div>
 
   <div class="footer">
-    <p>Document généré automatiquement par ToFrance • tofrance.fr</p>
-    <p style="margin-top:4px;">Pour toute question, contactez-nous à contact@tofrance.fr</p>
+    <img src="${logoUrl}" alt="ToFrance" />
+    <div style="text-align:right;">
+      <div>ToFrance • tofrance.life</div>
+      <div>contact@tofrance.life</div>
+    </div>
   </div>
 </body>
 </html>`;
