@@ -111,12 +111,22 @@ const WORK_LABELS: Record<string, string> = {
   not_sure: "Ne sait pas",
 };
 
-function formatFieldValue(key: string, value: string): string {
-  if (key === "main_goal") return GOAL_LABELS[value] || value;
-  if (key === "french_level_cecrl") return LEVEL_LABELS[value] || value;
-  if (key === "work_right") return WORK_LABELS[value] || value;
-  if (key === "immediate_availability") return value === "yes" ? "Oui" : value === "no" ? "Non" : value;
-  return value.replace(/_/g, " ");
+function formatFieldValue(key: string, value: unknown): string {
+  // Normalise: arrays → CSV string, other → string
+  const raw = Array.isArray(value)
+    ? value.map((v) => String(v)).join(", ")
+    : value == null
+      ? ""
+      : String(value);
+  if (!raw) return "";
+  if (key === "main_goal") {
+    const parts = raw.split(",").map((s) => s.trim()).filter(Boolean);
+    return parts.map((p) => GOAL_LABELS[p] || p.replace(/_/g, " ")).join(", ");
+  }
+  if (key === "french_level_cecrl") return LEVEL_LABELS[raw] || raw;
+  if (key === "work_right") return WORK_LABELS[raw] || raw;
+  if (key === "immediate_availability") return raw === "yes" ? "Oui" : raw === "no" ? "Non" : raw;
+  return raw.replace(/_/g, " ");
 }
 
 const ConfirmationPage = () => {
