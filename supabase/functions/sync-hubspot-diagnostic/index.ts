@@ -57,6 +57,87 @@ const boolish = (value: unknown): boolean => {
   return ["true", "yes", "oui", "1", "whatsapp"].includes(normalized);
 };
 
+// ─── HubSpot enum mappings ──────────────────────────────────────────
+// HubSpot rejects any value not in its predefined option list (400 INVALID_OPTION).
+// We map our internal codes/labels to the exact strings configured in HubSpot.
+
+const ROUTE_ORIENTATION_MAP: Record<string, string> = {
+  // Internal parcours IDs (orientationEngine)
+  FRANCAIS: "FLE", FLE: "FLE", fle: "FLE", route_a: "FLE",
+  FORMATION: "Formation", formation: "Formation", route_b: "Formation",
+  INSERTION: "Emploi direct", emploi: "Emploi direct", route_c: "Emploi direct",
+  MIXTE: "FOS",
+  RECONNAISSANCE: "Certification",
+  ORIENTATION: "Orientation externe", sas: "Orientation externe",
+  ECOUTE: "Accompagnement social",
+  ADMIN: "Accompagnement social",
+  LOGEMENT: "Accompagnement social",
+  BPI: "Accompagnement social",
+  OFII: "FLE",
+};
+
+const BESOIN_PRINCIPAL_MAP: Record<string, string> = {
+  learn_french: "FLE",
+  find_job: "Emploi",
+  get_training: "Formation",
+  job_training: "Formation",
+  recognize_diploma: "Certification",
+  digital: "Numérique",
+  need_help: "Orientation",
+};
+
+const FREIN_MAP: Record<string, string> = {
+  transport: "Mobilité",
+  mobility: "Mobilité",
+  childcare: "Garde d'enfants",
+  schedule: "Emploi",
+  housing: "Logement",
+  health: "Santé",
+  mental_health: "Santé",
+  admin: "Administratif",
+  digital: "Numérique",
+  language: "Langue",
+  french: "Langue",
+};
+
+const DISPONIBILITE_MAP: Record<string, string> = {
+  yes: "Flexible", oui: "Flexible", true: "Flexible", "1": "Flexible",
+  no: "Flexible", non: "Flexible",
+  morning: "Matin", matin: "Matin",
+  afternoon: "Après-midi", apres_midi: "Après-midi", "apres-midi": "Après-midi",
+  evening: "Soir", soir: "Soir",
+  weekend: "Week-end", "week-end": "Week-end",
+  flexible: "Flexible",
+};
+
+function mapEnum(map: Record<string, string>, value: unknown): string | null {
+  if (value == null) return null;
+  // Multi-value: pick the first one HubSpot recognizes.
+  const items = Array.isArray(value)
+    ? value
+    : String(value).split(/[,;|]/);
+  for (const raw of items) {
+    const key = String(raw).trim();
+    if (!key) continue;
+    const direct = map[key] || map[key.toLowerCase()] || map[key.toUpperCase()];
+    if (direct) return direct;
+  }
+  return null;
+}
+
+function mapEnumMulti(map: Record<string, string>, value: unknown): string | null {
+  if (value == null) return null;
+  const items = Array.isArray(value) ? value : String(value).split(/[,;|]/);
+  const out: string[] = [];
+  for (const raw of items) {
+    const key = String(raw).trim();
+    if (!key) continue;
+    const mapped = map[key] || map[key.toLowerCase()] || map[key.toUpperCase()];
+    if (mapped && !out.includes(mapped)) out.push(mapped);
+  }
+  return out.length ? out.join(";") : null;
+}
+
 async function hubspot(path: string, init: RequestInit = {}) {
   const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
   if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -148,7 +229,8 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
   const consentementRappel = boolish(answers.contact_48h);
   const consentementTransmission = boolish(answers.consent_lead_sharing) || boolish(answers.consentement_transmission);
   const niveauFrancais = text(data.french_level_cecrl) || text(answers.french_level_cecrl);
-  const besoinPrincipal = text(data.main_goal) || text(answers.main_goal);
+  const besoinPrincipalRaw = data.main_goal ?? answers.main_goal;
+  const besoinPrincipal = mapEnum(BESOIN_PRINCIPAL_MAP, besoinPrincipalRaw) || text(besoinPrincipalRaw);
   const phone = text(answers.contact_phone);
 
   const score = calculateQualificationScore({
@@ -158,6 +240,10 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
     besoin_principal: besoinPrincipal,
     niveau_francais: niveauFrancais,
   });
+
+  const routeRaw = data.lead_route ?? answers.leadRoute ?? answers.lead_route;
+  const freinsRaw = data.barriers ?? answers.barriers;
+  const dispoRaw = answers.immediate_availability ?? answers.contact_48h ?? answers.disponibilite;
 
   return {
     firstname: text(answers.contact_firstname),
@@ -175,10 +261,10 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
     niveau_francais: niveauFrancais,
     lecture_ecriture_francais: text(data.literacy) || text(answers.literacy),
     besoin_principal: besoinPrincipal,
-    route_orientation: text(data.lead_route) || text(answers.leadRoute),
+    route_orientation: mapEnum(ROUTE_ORIENTATION_MAP, routeRaw),
     secteur_metier: text(data.target_sector) || text(answers.target_sector),
-    freins_identifies: text(data.barriers) || text(answers.barriers),
-    disponibilite: text(answers.immediate_availability) || text(answers.contact_48h),
+    freins_identifies: mapEnumMulti(FREIN_MAP, freinsRaw),
+    disponibilite: mapEnum(DISPONIBILITE_MAP, dispoRaw),
     mobilite: text(answers.mobility) || text(answers.mobility_km),
     whatsapp: boolish(answers.whatsapp),
     consentement_rappel: consentementRappel,
