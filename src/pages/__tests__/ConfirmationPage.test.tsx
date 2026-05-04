@@ -120,5 +120,76 @@ describe("ConfirmationPage — Discover my path", () => {
     );
     expect(() => renderPage()).not.toThrow();
     expect(screen.getByText(/Parcours FLE/)).toBeInTheDocument();
+
+  // ─── Robustness fuzz: multi-select fields must NEVER crash the page ───
+  describe("robustness — multi-select fields never crash", () => {
+    const multiSelectFields = [
+      "main_goal",
+      "barriers",
+      "tags",
+      "target_sector",
+      "fle_type",
+    ];
+
+    const weirdValues: Array<{ name: string; value: unknown }> = [
+      { name: "null", value: null },
+      { name: "undefined", value: undefined },
+      { name: "empty string", value: "" },
+      { name: "empty array", value: [] },
+      { name: "array of strings", value: ["learn_french", "find_job"] },
+      { name: "array with null/empty entries", value: [null, "", "find_job", undefined] },
+      { name: "CSV string", value: "learn_french,find_job" },
+      { name: "single string", value: "learn_french" },
+      { name: "number", value: 42 },
+      { name: "boolean", value: true },
+      { name: "nested array", value: [["a", "b"], "c"] },
+      { name: "object", value: { a: 1 } },
+    ];
+
+    for (const field of multiSelectFields) {
+      for (const { name, value } of weirdValues) {
+        it(`does not crash when ${field} is ${name}`, () => {
+          localStorage.setItem(
+            "onboarding_answers",
+            JSON.stringify({ [field]: value, leadRoute: "route_a" })
+          );
+          expect(() => renderPage()).not.toThrow();
+          // Page sentinel renders → no white screen
+          expect(screen.getByText(/Parcours FLE/)).toBeInTheDocument();
+        });
+      }
+    }
+
+    it("does not crash when ALL multi-select fields are arrays simultaneously", () => {
+      localStorage.setItem(
+        "onboarding_answers",
+        JSON.stringify({
+          main_goal: ["learn_french", "find_job"],
+          barriers: ["transport", "childcare"],
+          tags: ["status_refugie", "needs_housing"],
+          target_sector: ["logistique"],
+          fle_type: ["intensive"],
+          leadRoute: "route_b",
+        })
+      );
+      expect(() => renderPage()).not.toThrow();
+      expect(screen.getByText(/Parcours Formation/)).toBeInTheDocument();
+    });
+
+    it("does not crash when ALL multi-select fields are null", () => {
+      localStorage.setItem(
+        "onboarding_answers",
+        JSON.stringify({
+          main_goal: null,
+          barriers: null,
+          tags: null,
+          target_sector: null,
+          fle_type: null,
+          leadRoute: "route_c",
+        })
+      );
+      expect(() => renderPage()).not.toThrow();
+      expect(screen.getByText(/Parcours Emploi/)).toBeInTheDocument();
+    });
   });
 });
