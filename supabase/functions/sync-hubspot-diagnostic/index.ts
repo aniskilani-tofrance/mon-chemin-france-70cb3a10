@@ -229,7 +229,8 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
   const consentementRappel = boolish(answers.contact_48h);
   const consentementTransmission = boolish(answers.consent_lead_sharing) || boolish(answers.consentement_transmission);
   const niveauFrancais = text(data.french_level_cecrl) || text(answers.french_level_cecrl);
-  const besoinPrincipal = text(data.main_goal) || text(answers.main_goal);
+  const besoinPrincipalRaw = data.main_goal ?? answers.main_goal;
+  const besoinPrincipal = mapEnum(BESOIN_PRINCIPAL_MAP, besoinPrincipalRaw) || text(besoinPrincipalRaw);
   const phone = text(answers.contact_phone);
 
   const score = calculateQualificationScore({
@@ -239,6 +240,10 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
     besoin_principal: besoinPrincipal,
     niveau_francais: niveauFrancais,
   });
+
+  const routeRaw = data.lead_route ?? answers.leadRoute ?? answers.lead_route;
+  const freinsRaw = data.barriers ?? answers.barriers;
+  const dispoRaw = answers.immediate_availability ?? answers.contact_48h ?? answers.disponibilite;
 
   return {
     firstname: text(answers.contact_firstname),
@@ -256,10 +261,10 @@ async function buildMariannePayload(supabaseAdmin: any, diagnosticId: string): P
     niveau_francais: niveauFrancais,
     lecture_ecriture_francais: text(data.literacy) || text(answers.literacy),
     besoin_principal: besoinPrincipal,
-    route_orientation: text(data.lead_route) || text(answers.leadRoute),
+    route_orientation: mapEnum(ROUTE_ORIENTATION_MAP, routeRaw),
     secteur_metier: text(data.target_sector) || text(answers.target_sector),
-    freins_identifies: text(data.barriers) || text(answers.barriers),
-    disponibilite: text(answers.immediate_availability) || text(answers.contact_48h),
+    freins_identifies: mapEnumMulti(FREIN_MAP, freinsRaw),
+    disponibilite: mapEnum(DISPONIBILITE_MAP, dispoRaw),
     mobilite: text(answers.mobility) || text(answers.mobility_km),
     whatsapp: boolish(answers.whatsapp),
     consentement_rappel: consentementRappel,
