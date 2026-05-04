@@ -195,4 +195,3 @@ describe("ConfirmationPage — Discover my path", () => {
   });
 });
 
-});
