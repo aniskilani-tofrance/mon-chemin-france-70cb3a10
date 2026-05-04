@@ -111,6 +111,31 @@ const WORK_LABELS: Record<string, string> = {
   not_sure: "Ne sait pas",
 };
 
+// Human-readable tag labels (display only — storage keys unchanged for HubSpot sync)
+const TAG_LABELS: Record<string, string> = {
+  status_refugie: "Statut réfugié",
+  status_demandeur_asile: "Demandeur d'asile",
+  status_regularise: "Titre de séjour régularisé",
+  needs_housing: "Besoin de logement",
+  needs_transport: "Besoin de mobilité",
+  needs_childcare: "Besoin de garde d'enfants",
+  needs_french: "Besoin de cours de français",
+  needs_funding: "Besoin de financement",
+  urgent: "Situation urgente",
+  family_with_kids: "Famille avec enfants",
+  single_parent: "Parent isolé",
+  young_adult: "Jeune adulte",
+  senior: "Senior",
+  high_qualification: "Diplômé",
+  low_literacy: "Peu alphabétisé",
+  ready_to_work: "Prêt à travailler",
+};
+
+function humanizeTag(tag: string): string {
+  const key = tag.trim();
+  return TAG_LABELS[key] || key.replace(/_/g, " ");
+}
+
 function formatFieldValue(key: string, value: unknown): string {
   // Normalise: arrays → CSV string, other → string
   const raw = Array.isArray(value)
@@ -283,7 +308,7 @@ const ConfirmationPage = () => {
                         .slice(0, 8)
                         .map((tag: string) => (
                           <Badge key={tag} variant="secondary" className="text-[10px]">
-                            {tag.replace(/_/g, " ")}
+                            {humanizeTag(tag)}
                           </Badge>
                         ))}
                     </div>
