@@ -237,5 +237,67 @@ describe("ConfirmationPage — Discover my path", () => {
       expect(screen.getByText(/Parcours Emploi/)).toBeInTheDocument();
     });
   });
+
+  // ─── Storage invariant: display must NEVER mutate stored tags structure ───
+  describe("storage invariant — tags structure unchanged after render", () => {
+    it("preserves the exact tags array (keys, order, count) in localStorage after rendering", () => {
+      const originalTags = ["status_refugie", "needs_housing", "ready_to_work"];
+      const stored = {
+        leadRoute: "route_c",
+        french_level_cecrl: "b1",
+        main_goal: ["learn_french", "find_job"],
+        tags: originalTags,
+        contact_email: "x@y.fr",
+      };
+      const serialized = JSON.stringify(stored);
+      localStorage.setItem("onboarding_answers", serialized);
+
+      renderPage();
+
+      // Humanized labels visible in UI
+      expect(screen.getByText("Statut réfugié")).toBeInTheDocument();
+      expect(screen.getByText("Besoin de logement")).toBeInTheDocument();
+      expect(screen.getByText("Prêt à travailler")).toBeInTheDocument();
+
+      // Raw snake_case keys MUST NOT leak in the rendered table
+      expect(screen.queryByText("status_refugie")).not.toBeInTheDocument();
+      expect(screen.queryByText("needs_housing")).not.toBeInTheDocument();
+      expect(screen.queryByText("ready_to_work")).not.toBeInTheDocument();
+
+      // Stored payload byte-for-byte unchanged (no mutation, no humanization persisted)
+      const after = localStorage.getItem("onboarding_answers");
+      expect(after).toBe(serialized);
+
+      const parsed = JSON.parse(after!);
+      // Structure preserved: still an array (not table/object), same keys, same order, same length
+      expect(Array.isArray(parsed.tags)).toBe(true);
+      expect(parsed.tags).toEqual(originalTags);
+      expect(parsed.tags).toHaveLength(originalTags.length);
+      // Internal keys (HubSpot-compatible) preserved verbatim
+      expect(parsed.tags[0]).toBe("status_refugie");
+      expect(parsed.tags[1]).toBe("needs_housing");
+      expect(parsed.tags[2]).toBe("ready_to_work");
+    });
+
+    it("preserves CSV string tags as-is (no conversion to array on storage)", () => {
+      const stored = {
+        leadRoute: "route_c",
+        contact_email: "x@y.fr",
+        tags: "status_refugie,needs_housing",
+      };
+      const serialized = JSON.stringify(stored);
+      localStorage.setItem("onboarding_answers", serialized);
+
+      renderPage();
+
+      expect(screen.getByText("Statut réfugié")).toBeInTheDocument();
+      expect(screen.getByText("Besoin de logement")).toBeInTheDocument();
+
+      const parsed = JSON.parse(localStorage.getItem("onboarding_answers")!);
+      // CSV string preserved (not coerced to array) → keeps HubSpot multi-select format
+      expect(typeof parsed.tags).toBe("string");
+      expect(parsed.tags).toBe("status_refugie,needs_housing");
+    });
+  });
 });
 
