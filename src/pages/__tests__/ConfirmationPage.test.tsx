@@ -90,8 +90,10 @@ describe("ConfirmationPage — Discover my path", () => {
       })
     );
     const { unmount } = renderPage();
-    expect(screen.getByText(/status refugie/i)).toBeInTheDocument();
+    expect(screen.getByText("status refugie")).toBeInTheDocument();
+    expect(screen.getByText("needs housing")).toBeInTheDocument();
     unmount();
+    localStorage.clear();
 
     localStorage.setItem(
       "onboarding_answers",
@@ -101,7 +103,7 @@ describe("ConfirmationPage — Discover my path", () => {
       })
     );
     renderPage();
-    expect(screen.getByText(/status refugie/i)).toBeInTheDocument();
+    expect(screen.getByText("status refugie")).toBeInTheDocument();
   });
 
   it("ignores null / undefined fields without throwing", () => {
