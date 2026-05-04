@@ -69,6 +69,24 @@ const LEVEL_LABELS: Record<string, string> = {
   b1: "Intermédiaire (B1)",
 };
 
+const TAG_LABELS: Record<string, string> = {
+  status_refugie: "Statut réfugié",
+  status_demandeur_asile: "Demandeur d'asile",
+  status_sans_papiers: "Sans-papiers",
+  status_titre_sejour: "Titre de séjour",
+  needs_housing: "Besoin de logement",
+  needs_admin: "Aide administrative",
+  needs_health: "Besoin santé",
+  ready_to_work: "Prêt à travailler",
+  has_diploma: "Diplôme à reconnaître",
+  cir_signed: "CIR signé",
+  cir_in_progress: "CIR en cours",
+};
+
+function humanizeTag(tag: string): string {
+  return TAG_LABELS[tag.trim()] || tag.trim().replace(/_/g, " ");
+}
+
 const WORK_LABELS: Record<string, string> = {
   yes: "Oui",
   no: "Non",
@@ -96,16 +114,18 @@ function formatValue(key: string, value: unknown): string {
   return v.replace(/_/g, " ");
 }
 
-export function generateOnboardingPDF(answers: Record<string, unknown>): void {
+export function buildOnboardingPDFHtml(
+  answers: Record<string, unknown>,
+  opts: { logoUrl?: string; date?: string } = {}
+): string {
   const route = String(answers.leadRoute || answers.route || "sas");
   const routeInfo = ROUTE_LABELS[route] || ROUTE_LABELS.sas;
   const steps = NEXT_STEPS[route] || NEXT_STEPS.sas;
   const fullName = [answers.contact_firstname, answers.contact_lastname].filter(Boolean).join(" ");
-  const date = new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const date = opts.date ?? new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" });
+  const logoUrl = opts.logoUrl ?? "/logo-tofrance.png";
 
-  // Build profile rows
   const profileRows: string[] = [];
-
   if (fullName) profileRows.push(row("Nom", fullName));
   if (answers.contact_email) profileRows.push(row("Email", String(answers.contact_email)));
   if (answers.location) profileRows.push(row("Localisation", String(answers.location)));
@@ -115,6 +135,30 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
       profileRows.push(row(label, formatValue(key, answers[key])));
     }
   }
+
+  // ── CECRL block (always present) ──
+  const rawLevel = answers.french_level_cecrl;
+  const levelKey = typeof rawLevel === "string" ? rawLevel : "";
+  const levelLabel = LEVEL_LABELS[levelKey] || (levelKey ? levelKey : "Non renseigné");
+  const cecrlBlock = `
+    <div class="cecrl-block" data-testid="pdf-cecrl">
+      <div class="cecrl-label">Niveau de français (CECRL)</div>
+      <div class="cecrl-value" data-level="${levelKey}">${levelLabel}</div>
+    </div>
+  `;
+
+  // ── Tags badges (always present, humanized but raw key kept in data-key) ──
+  const rawTags = answers.tags;
+  const tagList: string[] = Array.isArray(rawTags)
+    ? rawTags.filter((t): t is string => typeof t === "string" && t.trim() !== "")
+    : typeof rawTags === "string" && rawTags.trim() !== ""
+      ? rawTags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+  const tagsHtml = tagList.length > 0
+    ? `<div class="tags" data-testid="pdf-tags">${tagList
+        .map((t) => `<span class="tag-badge" data-key="${t}">${humanizeTag(t)}</span>`)
+        .join("")}</div>`
+    : `<div class="tags" data-testid="pdf-tags"><span class="tag-empty">Aucun tag</span></div>`;
 
   const stepsHtml = steps.map((s, i) => `
     <div style="display:flex;gap:12px;margin-bottom:16px;">
@@ -129,37 +173,34 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
     </div>
   `).join("");
 
-  const logoUrl = `${window.location.origin}/logo-tofrance.png`;
-
-  const html = `<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="utf-8"/>
   <title>Récapitulatif ToFrance - ${fullName || "Mon parcours"}</title>
   <style>
-    @media print {
-      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-      .page-break { page-break-before: always; }
-    }
+    @media print { body { -webkit-print-color-adjust: exact; print-color-adjust: exact; } .page-break { page-break-before: always; } }
     * { margin:0; padding:0; box-sizing:border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color:#1a1a2e; padding:40px; max-width:760px; margin:0 auto; background:#fff; }
     .brand-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; padding-bottom:18px; border-bottom:3px solid ${routeInfo.color}; }
     .brand-header img { height:54px; width:auto; }
     .brand-header .meta { text-align:right; font-size:11px; color:#888; line-height:1.5; }
-    .brand-header .meta strong { display:block; color:#1a1a2e; font-size:13px; margin-bottom:2px; }
     .doc-title { margin: 22px 0 28px; }
-    .doc-title h1 { font-size:24px; font-weight:700; color:#1a1a2e; margin-bottom:6px; }
-    .doc-title p { font-size:13px; color:#666; }
+    .doc-title h1 { font-size:24px; font-weight:700; margin-bottom:6px; }
     .route-box { background: linear-gradient(135deg, ${routeInfo.color}14, ${routeInfo.color}05); border-left: 5px solid ${routeInfo.color}; border-radius:8px; padding:22px 24px; margin-bottom:32px; }
     .route-box .label { font-size:11px; text-transform:uppercase; letter-spacing:1.5px; color:${routeInfo.color}; font-weight:700; margin-bottom:6px; }
     .route-box h2 { color:${routeInfo.color}; font-size:22px; margin-bottom:6px; }
-    .route-box p { font-size:13px; color:#444; }
     .section { margin-bottom:28px; }
     .section-title { font-size:12px; text-transform:uppercase; letter-spacing:1.5px; color:#666; font-weight:700; margin-bottom:14px; padding-bottom:6px; border-bottom:1px solid #e5e7eb; }
     table { width:100%; border-collapse:collapse; }
     td { padding:9px 10px; font-size:13px; border-bottom:1px solid #f0f0f0; vertical-align:top; }
     td:first-child { color:#888; width:42%; font-size:12px; }
-    td:last-child { font-weight:500; color:#1a1a2e; }
+    .cecrl-block { background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:16px 20px; margin-bottom:20px; }
+    .cecrl-label { font-size:11px; text-transform:uppercase; letter-spacing:1.2px; color:#666; font-weight:700; margin-bottom:6px; }
+    .cecrl-value { font-size:18px; font-weight:600; color:${routeInfo.color}; }
+    .tags { display:flex; flex-wrap:wrap; gap:8px; }
+    .tag-badge { display:inline-block; background:${routeInfo.color}15; color:${routeInfo.color}; border:1px solid ${routeInfo.color}40; border-radius:14px; padding:4px 12px; font-size:12px; font-weight:500; }
+    .tag-empty { color:#999; font-size:12px; font-style:italic; }
     .footer { margin-top:40px; padding-top:18px; border-top:1px solid #e5e7eb; display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#888; }
     .footer img { height:28px; opacity:0.8; }
   </style>
@@ -167,10 +208,7 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
 <body>
   <div class="brand-header">
     <img src="${logoUrl}" alt="ToFrance" />
-    <div class="meta">
-      <strong>Récapitulatif de parcours</strong>
-      Généré le ${date}
-    </div>
+    <div class="meta"><strong>Récapitulatif de parcours</strong>Généré le ${date}</div>
   </div>
 
   <div class="doc-title">
@@ -178,10 +216,20 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
     <p>Voici la synthèse de votre diagnostic et les prochaines étapes recommandées.</p>
   </div>
 
-  <div class="route-box">
+  <div class="route-box" data-testid="pdf-route" data-route="${route}">
     <div class="label">Parcours recommandé</div>
     <h2>${routeInfo.label}</h2>
     <p>${routeInfo.description}</p>
+  </div>
+
+  <div class="section">
+    <div class="section-title">Niveau de français</div>
+    ${cecrlBlock}
+  </div>
+
+  <div class="section">
+    <div class="section-title">Tags du profil</div>
+    ${tagsHtml}
   </div>
 
   <div class="section">
@@ -203,8 +251,13 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
   </div>
 </body>
 </html>`;
+}
 
-  // Open print dialog in a new window
+export function generateOnboardingPDF(answers: Record<string, unknown>): void {
+  const html = buildOnboardingPDFHtml(answers, {
+    logoUrl: `${window.location.origin}/logo-tofrance.png`,
+  });
+
   const printWindow = window.open("", "_blank", "width=800,height=900");
   if (!printWindow) {
     alert("Veuillez autoriser les pop-ups pour télécharger le PDF.");
