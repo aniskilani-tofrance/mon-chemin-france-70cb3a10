@@ -120,6 +120,7 @@ describe("ConfirmationPage — Discover my path", () => {
     );
     expect(() => renderPage()).not.toThrow();
     expect(screen.getByText(/Parcours FLE/)).toBeInTheDocument();
+  });
 
   // ─── Robustness fuzz: multi-select fields must NEVER crash the page ───
   describe("robustness — multi-select fields never crash", () => {
