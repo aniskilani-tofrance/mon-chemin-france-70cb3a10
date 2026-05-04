@@ -134,6 +134,30 @@ export function generateOnboardingPDF(answers: Record<string, unknown>): void {
     }
   }
 
+  // ── CECRL level block (always rendered, even when missing) ──
+  const rawLevel = answers.french_level_cecrl;
+  const levelKey = typeof rawLevel === "string" ? rawLevel : "";
+  const levelLabel = LEVEL_LABELS[levelKey] || (levelKey ? levelKey : "Non renseigné");
+  const cecrlBlock = `
+    <div class="cecrl-block" data-testid="pdf-cecrl">
+      <div class="cecrl-label">Niveau de français (CECRL)</div>
+      <div class="cecrl-value">${levelLabel}</div>
+    </div>
+  `;
+
+  // ── Tags badges block ──
+  const rawTags = answers.tags;
+  const tagList: string[] = Array.isArray(rawTags)
+    ? rawTags.filter((t): t is string => typeof t === "string" && t.trim() !== "")
+    : typeof rawTags === "string" && rawTags.trim() !== ""
+      ? rawTags.split(",").map((t) => t.trim()).filter(Boolean)
+      : [];
+  const tagsHtml = tagList.length > 0
+    ? `<div class="tags" data-testid="pdf-tags">${tagList
+        .map((t) => `<span class="tag-badge" data-key="${t}">${humanizeTag(t)}</span>`)
+        .join("")}</div>`
+    : `<div class="tags" data-testid="pdf-tags"><span class="tag-empty">Aucun tag</span></div>`;
+
   const stepsHtml = steps.map((s, i) => `
     <div style="display:flex;gap:12px;margin-bottom:16px;">
       <div style="width:28px;height:28px;border-radius:50%;background:${routeInfo.color};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;">${i + 1}</div>
