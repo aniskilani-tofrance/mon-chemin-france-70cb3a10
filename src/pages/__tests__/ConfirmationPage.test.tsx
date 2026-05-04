@@ -86,6 +86,7 @@ describe("ConfirmationPage — Discover my path", () => {
       "onboarding_answers",
       JSON.stringify({
         leadRoute: "route_c",
+        contact_email: "x@y.fr",
         tags: ["status_refugie", "needs_housing"],
       })
     );
@@ -99,6 +100,7 @@ describe("ConfirmationPage — Discover my path", () => {
       "onboarding_answers",
       JSON.stringify({
         leadRoute: "route_c",
+        contact_email: "x@y.fr",
         tags: "status_refugie,needs_housing",
       })
     );
