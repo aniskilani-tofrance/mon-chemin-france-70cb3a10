@@ -184,15 +184,6 @@ export function LanguageStep({ onSelect }: LanguageStepProps) {
         ))}
       </div>
 
-      {/* Subtle helper */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mt-6 text-xs text-muted-foreground/60"
-      >
-        🌍 6 langues disponibles
-      </motion.p>
     </motion.div>
   );
 }

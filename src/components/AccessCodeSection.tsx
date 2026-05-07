@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic } from "lucide-react";
+import { ClipboardList, GraduationCap, KeyRound, ArrowRight, Mic, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
@@ -17,6 +17,7 @@ export function AccessCodeSection() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [pilotCode, setPilotCode] = useState<string | null>(null);
+  const [showCodeForm, setShowCodeForm] = useState(false);
 
   useEffect(() => {
     if (!isAdmin) return;
@@ -63,55 +64,74 @@ export function AccessCodeSection() {
   return (
     <section id="access-code" className="py-20 bg-muted/30 scroll-mt-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Accès pilote
+        <div className="mb-10 text-center">
+          <h2 className="mb-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+            Commencez avec Marianne
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            ToFrance est en version pilote. Marianne s'ouvre avec un code d'accès,
-            les autres outils sont réservés aux formateurs connectés.
+          <p className="mx-auto max-w-xl text-lg text-muted-foreground">
+            Marianne vous écoute et vous oriente. C'est simple et gratuit.
           </p>
         </div>
 
-        {/* Code input */}
-        <Card className="mx-auto mb-10 max-w-xl border-primary/20 bg-card">
+        {/* Big primary CTA */}
+        <Card className="mx-auto mb-6 max-w-xl border-primary/20 bg-card">
           <CardContent className="p-6">
+            <Button
+              type="button"
+              size="lg"
+              className="h-16 w-full text-lg font-semibold"
+              onClick={() => navigate("/onboarding")}
+            >
+              <Mic className="mr-2 h-6 w-6" />
+              Commencer avec Marianne
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+
             {(isAdmin || user) && (
-              <Button type="button" size="lg" className="mb-4 w-full" onClick={() => navigate("/onboarding") }>
-                Démarrer Marianne directement {isAdmin ? "(admin)" : ""}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <p className="mt-3 text-center text-xs text-muted-foreground">
+                {isAdmin ? "Accès admin direct" : "Accès direct (compte connecté)"}
+              </p>
             )}
-            {isAdmin && pilotCode && (
-              <button
-                type="button"
-                onClick={() => setCode(pilotCode)}
-                className="mb-3 w-full rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors"
-                title="Cliquer pour pré-remplir"
-              >
-                Code pilote actif (démo) : <span className="font-mono font-semibold tracking-wider">{pilotCode}</span> — cliquer pour pré-remplir
-              </button>
-            )}
-            <form onSubmit={handleJoin} className="flex flex-col gap-4 sm:flex-row sm:items-end">
-              <div className="flex-1">
-                <label className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
-                  <KeyRound className="h-4 w-4 text-primary" />
-                  J'ai un code d'accès Marianne
-                </label>
-                <Input
-                  value={code}
-                  onChange={(e) => setCode(normalizeMarianneAccessCode(e.target.value).slice(0, 12))}
-                  placeholder="EX : A2B4D6"
-                  maxLength={16}
-                  className="font-mono text-lg tracking-widest uppercase"
-                  autoComplete="off"
-                />
+
+            {/* Collapsible code form */}
+            <button
+              type="button"
+              onClick={() => setShowCodeForm((v) => !v)}
+              className="mx-auto mt-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <KeyRound className="h-3.5 w-3.5" />
+              J'ai un code d'accès
+              <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showCodeForm ? "rotate-180" : ""}`} />
+            </button>
+
+            {showCodeForm && (
+              <div className="mt-4 border-t border-border/60 pt-4">
+                {isAdmin && pilotCode && (
+                  <button
+                    type="button"
+                    onClick={() => setCode(pilotCode)}
+                    className="mb-3 w-full rounded-md border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-xs text-primary hover:bg-primary/10 transition-colors"
+                  >
+                    Code pilote (démo) : <span className="font-mono font-semibold tracking-wider">{pilotCode}</span>
+                  </button>
+                )}
+                <form onSubmit={handleJoin} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+                  <div className="flex-1">
+                    <Input
+                      value={code}
+                      onChange={(e) => setCode(normalizeMarianneAccessCode(e.target.value).slice(0, 12))}
+                      placeholder="EX : A2B4D6"
+                      maxLength={16}
+                      className="h-12 font-mono text-lg tracking-widest uppercase"
+                      autoComplete="off"
+                    />
+                  </div>
+                  <Button type="submit" disabled={loading || code.length < 4} size="lg">
+                    {loading ? "Vérification…" : "Valider"}
+                  </Button>
+                </form>
               </div>
-              <Button type="submit" disabled={loading || code.length < 4} size="lg">
-                {loading ? "Vérification…" : "Rejoindre"}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </form>
+            )}
           </CardContent>
         </Card>
 
