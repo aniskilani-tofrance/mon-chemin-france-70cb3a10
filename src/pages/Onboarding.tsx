@@ -503,7 +503,7 @@ const Onboarding = () => {
       ? Math.round(((activeQuestions.length + 2) / totalSteps) * 100)
       : 100;
 
-  const accessCode = normalizeMarianneAccessCode(searchParams.get("code") || "");
+  
 
 
   return (
