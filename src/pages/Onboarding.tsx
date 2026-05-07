@@ -29,7 +29,7 @@ import { calculateUnifiedLeadScore } from "@/lib/leadScoring";
 import { getLeadSourcePrefill, resolveLeadSource } from "@/lib/leadSources";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import { toast } from "@/hooks/use-toast";
-import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
+
 import { preloadOnboardingIllustrations } from "@/lib/onboardingIllustrations";
 
 type OnboardingStep = "language" | "visual-quiz" | "recap" | "postal-code" | "contact" | "email" | "magic-link-sent" | "complete";
