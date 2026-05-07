@@ -94,9 +94,9 @@ export function ContactStep({
           {touched && !PHONE_REGEX.test(phone.trim()) && <p className="text-sm text-destructive">Téléphone requis pour être recontacté.</p>}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-2">
-          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2"><ArrowLeft className="h-4 w-4" />Retour</Button>
-          <Button type="submit" disabled={!isValid} className="gap-2">Continuer<ArrowRight className="h-4 w-4" /></Button>
+        <div className="flex flex-col gap-3 pt-2">
+          <Button type="submit" disabled={!isValid} size="lg" className="h-14 w-full gap-2 text-base font-semibold">Continuer<ArrowRight className="h-5 w-5" /></Button>
+          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2 self-start"><ArrowLeft className="h-4 w-4" />Retour</Button>
         </div>
       </form>
     </motion.div>

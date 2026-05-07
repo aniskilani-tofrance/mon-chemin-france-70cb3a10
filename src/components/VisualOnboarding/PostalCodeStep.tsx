@@ -123,14 +123,14 @@ export function PostalCodeStep({
           )}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-2">
-          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2">
+        <div className="flex flex-col gap-3 pt-2">
+          <Button type="submit" disabled={!isValid} size="lg" className="h-14 w-full gap-2 text-base font-semibold">
+            {t("onboardingVisual.actions.next")}
+            <ArrowRight className="h-5 w-5" />
+          </Button>
+          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2 self-start">
             <ArrowLeft className="h-4 w-4" />
             {t("onboardingVisual.actions.previous")}
-          </Button>
-          <Button type="submit" disabled={!isValid} className="gap-2">
-            {t("onboardingVisual.actions.next")}
-            <ArrowRight className="h-4 w-4" />
           </Button>
         </div>
       </form>
