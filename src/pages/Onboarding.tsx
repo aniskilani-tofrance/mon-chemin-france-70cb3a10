@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { AnimatePresence, motion } from "framer-motion";
-import { KeyRound, LockKeyhole, RotateCcw, Volume2, VolumeX } from "lucide-react";
+import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
