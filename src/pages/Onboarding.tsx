@@ -71,10 +71,7 @@ const Onboarding = () => {
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
-  const [accessStatus, setAccessStatus] = useState<"checking" | "granted" | "denied">(() => {
-    const initialCode = normalizeMarianneAccessCode(new URLSearchParams(window.location.search).get("code") || "");
-    return initialCode && sessionStorage.getItem(`marianne_access_granted_${initialCode}`) === "true" ? "granted" : "checking";
-  });
+  const [accessStatus] = useState<"granted">("granted");
   const resumeAttemptedRef = useRef(false);
   const prefillAppliedRef = useRef<string | null>(null);
 
