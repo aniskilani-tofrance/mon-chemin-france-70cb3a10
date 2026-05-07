@@ -97,21 +97,126 @@ const WORK_LABELS: Record<string, string> = {
   not_sure: "Ne sait pas",
 };
 
+const SECTOR_LABELS: Record<string, string> = {
+  btp: "Bâtiment et travaux publics",
+  logistique: "Logistique",
+  proprete: "Propreté",
+  aide_personne: "Aide à la personne",
+  sante: "Santé",
+  hotellerie: "Hôtellerie-restauration",
+  restauration: "Restauration",
+  commerce: "Commerce",
+  securite: "Sécurité",
+  transport: "Transport",
+  autre: "Autre",
+  nsp: "Ne sait pas",
+};
+
+const MOBILITY_LABELS: Record<string, string> = {
+  walk: "À pied",
+  bike: "Vélo",
+  car: "Voiture",
+  transit: "Transports en commun",
+  public_transport: "Transports en commun",
+  none: "Aucune",
+};
+
+const LITERACY_LABELS: Record<string, string> = {
+  yes: "Sait lire et écrire",
+  partial: "Lecture/écriture partielle",
+  no: "Ne sait pas lire ni écrire",
+};
+
+const BARRIER_LABELS: Record<string, string> = {
+  transport: "Transport",
+  childcare: "Garde d'enfants",
+  schedule: "Horaires",
+  housing: "Logement",
+  health: "Santé",
+  admin: "Démarches administratives",
+  language: "Langue",
+  none: "Aucun",
+};
+
+const FLE_TYPE_LABELS: Record<string, string> = {
+  intensive: "Cours intensifs",
+  evening: "Cours du soir",
+  weekend: "Cours le week-end",
+  online: "Cours en ligne",
+  in_person: "Cours en présentiel",
+  hybrid: "Cours hybrides",
+};
+
+const TRAINING_DURATION_LABELS: Record<string, string> = {
+  short: "Courte (< 3 mois)",
+  medium: "Moyenne (3-6 mois)",
+  long: "Longue (> 6 mois)",
+  flexible: "Flexible",
+};
+
+const WORK_SCHEDULE_LABELS: Record<string, string> = {
+  day: "Journée",
+  night: "Nuit",
+  weekend: "Week-end",
+  flexible: "Flexibles",
+  any: "Tous horaires",
+};
+
+const FUNDING_LABELS: Record<string, string> = {
+  cpf: "CPF",
+  pole_emploi: "France Travail",
+  france_travail: "France Travail",
+  region: "Région",
+  ofii: "OFII",
+  none: "Aucun",
+  unknown: "Ne sait pas",
+};
+
+const ADMIN_STATUS_LABELS: Record<string, string> = {
+  titre_sejour: "Titre de séjour",
+  bpi_refugie: "Statut de réfugié",
+  bpi_subsidiaire: "Protection subsidiaire",
+  demandeur_asile: "Demandeur d'asile",
+  sans_papiers: "Sans-papiers",
+  ue: "Citoyen UE",
+  cir_signed: "CIR signé",
+  cir_in_progress: "CIR en cours",
+  dont_know: "Ne sait pas",
+};
+
+function humanizeFallback(v: string): string {
+  const cleaned = v.replace(/_/g, " ").trim();
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function mapList(value: unknown, dict: Record<string, string>, emptyLabel = "Aucun"): string {
+  const arr = Array.isArray(value)
+    ? value
+    : String(value).split(",");
+  const labels = arr
+    .map((x) => String(x).trim())
+    .filter(Boolean)
+    .map((x) => dict[x] || humanizeFallback(x));
+  return labels.length ? labels.join(", ") : emptyLabel;
+}
+
 function formatValue(key: string, value: unknown): string {
   const v = String(value);
-  if (key === "main_goal") {
-    // Handle multi-choice (comma-separated)
-    return v.split(",").map(g => GOAL_LABELS[g.trim()] || g.trim()).join(", ");
-  }
-  if (key === "french_level_cecrl") return LEVEL_LABELS[v] || v;
-  if (key === "work_right") return WORK_LABELS[v] || v;
-  if (key === "immediate_availability") return v === "yes" ? "Oui, immédiatement" : v === "soon" ? "Sous 1-2 semaines" : v === "later" ? "Plus tard" : v;
-  if (key === "contact_48h") return v === "yes" ? "Oui, disponible" : v === "this_week" ? "Cette semaine" : v === "prefer_message" ? "Par message" : v === "no" ? "Pas tout de suite" : v;
-  if (key === "barriers") {
-    const arr = Array.isArray(value) ? value : v.split(",");
-    return arr.map((b: string) => b.trim().replace(/_/g, " ")).join(", ") || "Aucun";
-  }
-  return v.replace(/_/g, " ");
+  if (key === "main_goal") return mapList(value, GOAL_LABELS, "—");
+  if (key === "french_level_cecrl") return LEVEL_LABELS[v] || humanizeFallback(v);
+  if (key === "work_right") return WORK_LABELS[v] || humanizeFallback(v);
+  if (key === "target_sector") return SECTOR_LABELS[v] || humanizeFallback(v);
+  if (key === "mobility") return mapList(value, MOBILITY_LABELS, "—");
+  if (key === "literacy") return LITERACY_LABELS[v] || humanizeFallback(v);
+  if (key === "barriers") return mapList(value, BARRIER_LABELS, "Aucun");
+  if (key === "fle_type") return FLE_TYPE_LABELS[v] || humanizeFallback(v);
+  if (key === "training_duration") return TRAINING_DURATION_LABELS[v] || humanizeFallback(v);
+  if (key === "work_schedule") return mapList(value, WORK_SCHEDULE_LABELS, "—");
+  if (key === "funding_status") return FUNDING_LABELS[v] || humanizeFallback(v);
+  if (key === "immediate_availability") return v === "yes" ? "Oui, immédiatement" : v === "soon" ? "Sous 1-2 semaines" : v === "later" ? "Plus tard" : humanizeFallback(v);
+  if (key === "contact_48h") return v === "yes" ? "Oui, disponible" : v === "this_week" ? "Cette semaine" : v === "prefer_message" ? "Par message" : v === "no" ? "Pas tout de suite" : humanizeFallback(v);
+  if (key === "mobility_km") return `${v} km`;
+  return humanizeFallback(v);
 }
 
 export function buildOnboardingPDFHtml(
