@@ -2,6 +2,19 @@
 @import url("https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Inconsolata:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Arabic:wght@400;500;600;700&display=swap");
+
+/* RTL support for Arabic */
+[lang="ar"],
+[lang="ar"] body,
+html[dir="rtl"],
+html[dir="rtl"] body {
+  font-family: 'Noto Sans Arabic', 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+
+[dir="rtl"] .no-flip {
+  direction: ltr;
+}
 
 @tailwind base;
 
