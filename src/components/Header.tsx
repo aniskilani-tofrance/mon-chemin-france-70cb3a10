@@ -48,8 +48,8 @@ export function Header() {
             )}
           </nav>
 
-          {/* Actions */}
-          <div className="hidden items-center gap-3 sm:flex">
+          {/* Actions desktop (lg+) */}
+          <div className="hidden items-center gap-3 lg:flex">
             <LanguageSelector />
             {user ? (
               <>
@@ -78,20 +78,20 @@ export function Header() {
                   </Link>
                 </Button>
                 <Button variant="hero" size="sm" asChild>
-                  <Link to="/#access-code">Accès pilote</Link>
+                  <Link to="/onboarding">Démarrer Marianne</Link>
                 </Button>
               </>
             )}
           </div>
 
-          {/* Mobile menu button */}
-          <div className="flex items-center gap-2 sm:hidden">
+          {/* Mobile / tablet menu button (< lg) */}
+          <div className="flex items-center gap-2 lg:hidden">
             <LanguageSelector />
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
             >
               {mobileMenuOpen ? <X /> : <Menu />}
             </Button>
