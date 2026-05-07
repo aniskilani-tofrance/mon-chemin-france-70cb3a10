@@ -71,7 +71,7 @@ const Onboarding = () => {
   const [onboardingStartedAt] = useState(() => Date.now());
   const [completionAnswers, setCompletionAnswers] = useState<Record<string, string>>({});
   const [resumed, setResumed] = useState(false);
-  const [accessStatus] = useState<"granted">("granted");
+  
   const resumeAttemptedRef = useRef(false);
   const prefillAppliedRef = useRef<string | null>(null);
 
