@@ -89,7 +89,7 @@ export function ContactStep({
           <Label htmlFor="contact_phone" className="text-base">Téléphone</Label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder="06 12 34 56 78" className="h-12 pl-10 text-base" />
+            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder="06 12 34 56 78" className="h-14 pl-10 text-lg" />
           </div>
           {touched && !PHONE_REGEX.test(phone.trim()) && <p className="text-sm text-destructive">Téléphone requis pour être recontacté.</p>}
         </div>
