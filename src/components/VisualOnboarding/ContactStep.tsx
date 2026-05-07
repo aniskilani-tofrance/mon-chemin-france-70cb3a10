@@ -81,7 +81,7 @@ export function ContactStep({
           <Label htmlFor="contact_firstname" className="text-base">Prénom</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder="Votre prénom" className="h-12 pl-10 text-base" />
+            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder="Votre prénom" className="h-14 pl-10 text-lg" />
           </div>
         </div>
 
