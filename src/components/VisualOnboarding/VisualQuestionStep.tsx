@@ -1,9 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, ArrowRight, Volume2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Volume2, Hand } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   PhotoLanguageChoice,
   PhotoLanguageGrid,
@@ -11,6 +10,7 @@ import {
 import type { VisualQuestion } from "@/lib/visualQuestions";
 import type { useTTS } from "@/hooks/useTTS";
 import { playPreSpeech } from "@/lib/sounds";
+import { cn } from "@/lib/utils";
 
 interface VisualQuestionStepProps {
   question: VisualQuestion;
@@ -117,43 +117,55 @@ export function VisualQuestionStep({
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -30 }}
       transition={{ duration: 0.3 }}
-      className="flex flex-col gap-6 w-full"
+      className="flex flex-col gap-6 w-full pb-28 sm:pb-6"
     >
-      {/* Barre de progression */}
-      <div className="space-y-2">
-        <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>
-            {t("onboardingVisual.progress.step", {
-              current: questionNumber,
-              total: totalQuestions,
-            })}
-          </span>
-          <span>{progressPercent}%</span>
-        </div>
-        <Progress value={progressPercent} className="h-2" />
+      {/* Barre de progression à pastilles */}
+      <div className="flex items-center justify-center gap-1.5">
+        {Array.from({ length: totalQuestions }).map((_, i) => (
+          <span
+            key={i}
+            className={cn(
+              "h-2.5 rounded-full transition-all",
+              i + 1 < questionNumber && "w-2.5 bg-primary",
+              i + 1 === questionNumber && "w-8 bg-primary",
+              i + 1 > questionNumber && "w-2.5 bg-muted"
+            )}
+            aria-hidden="true"
+          />
+        ))}
+        <span className="sr-only">
+          {t("onboardingVisual.progress.step", { current: questionNumber, total: totalQuestions })}
+        </span>
       </div>
 
-      {/* Titre + bouton réécouter */}
-      <div className="space-y-2 text-center">
-        <div className="flex items-center justify-center gap-2">
-          <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
-            {title}
-          </h2>
-          {tts.isSupported && (
-            <button
-              type="button"
-              onClick={handleReplay}
-              aria-label={t("onboardingVisual.actions.replay")}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10"
-            >
-              <Volume2 className={`h-4 w-4 ${tts.isSpeaking ? "animate-pulse" : ""}`} />
-            </button>
-          )}
-        </div>
+      {/* Titre */}
+      <div className="space-y-3 text-center">
+        <h2 className="text-2xl sm:text-3xl font-bold text-foreground leading-tight">
+          {title}
+        </h2>
         {subtitle && (
-          <p className="text-sm sm:text-base text-muted-foreground">{subtitle}</p>
+          <p className="text-base text-muted-foreground">{subtitle}</p>
+        )}
+        {tts.isSupported && (
+          <button
+            type="button"
+            onClick={handleReplay}
+            aria-label={t("onboardingVisual.actions.replay")}
+            className="mx-auto inline-flex items-center gap-2 rounded-full border-2 border-primary/30 bg-primary/5 px-4 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+          >
+            <Volume2 className={`h-4 w-4 ${tts.isSpeaking ? "animate-pulse" : ""}`} />
+            {t("onboardingVisual.actions.replay")}
+          </button>
         )}
       </div>
+
+      {/* Indication multi-sélection */}
+      {question.type === "multi" && (
+        <div className="mx-auto flex items-center gap-2 rounded-full bg-secondary/60 px-4 py-2 text-sm text-foreground">
+          <Hand className="h-4 w-4 text-primary" />
+          Vous pouvez choisir plusieurs réponses
+        </div>
+      )}
 
       {/* Grille de cartes images */}
       <PhotoLanguageGrid columns={question.columns}>
@@ -168,7 +180,6 @@ export function VisualQuestionStep({
             isSelected={question.type === "info" ? false : selectedSet.has(option.id)}
             isMultiSelect={question.type === "multi"}
             onClick={() => {
-              // Sur écran info, les cartes ne sont pas interactives
               if (question.type === "info") return;
               handleToggle(option.id);
             }}
@@ -177,39 +188,53 @@ export function VisualQuestionStep({
         ))}
       </PhotoLanguageGrid>
 
-      {/* Navigation */}
-      <div className="flex items-center justify-between gap-3 pt-2">
-        <Button
-          variant="ghost"
-          onClick={onPrevious}
-          disabled={isFirst}
-          className="gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          {t("onboardingVisual.actions.previous")}
-        </Button>
+      {/* Navigation — sticky bottom mobile pour les cas multi/info/optional */}
+      {(question.type === "multi" || question.type === "info" || (question.type === "single" && question.optional)) && (
+        <div className="sticky bottom-3 z-20 mx-[-1rem] sm:static sm:mx-0 sm:mt-2">
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-border/60 bg-background/95 px-4 py-3 shadow-lg backdrop-blur sm:border-0 sm:bg-transparent sm:p-0 sm:shadow-none">
+            <Button
+              variant="ghost"
+              onClick={onPrevious}
+              disabled={isFirst}
+              size="lg"
+              className="gap-2"
+            >
+              <ArrowLeft className="h-5 w-5" />
+              {t("onboardingVisual.actions.previous")}
+            </Button>
 
-        {question.type === "multi" && (
-          <Button onClick={onNext} disabled={!canContinue} className="gap-2">
-            {t("onboardingVisual.actions.next")}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        )}
+            <Button
+              onClick={onNext}
+              disabled={!canContinue}
+              size="lg"
+              className="h-12 flex-1 max-w-[260px] gap-2 text-base font-semibold"
+            >
+              {question.type === "info" && question.infoCtaKey
+                ? t(question.infoCtaKey)
+                : question.type === "single" && question.optional
+                ? t("onboardingVisual.actions.skip")
+                : t("onboardingVisual.actions.next")}
+              <ArrowRight className="h-5 w-5" />
+            </Button>
+          </div>
+        </div>
+      )}
 
-        {question.type === "info" && (
-          <Button onClick={onNext} className="gap-2">
-            {question.infoCtaKey ? t(question.infoCtaKey) : t("onboardingVisual.actions.next")}
-            <ArrowRight className="h-4 w-4" />
+      {/* Pour les questions single non-optionnelles : juste un retour discret (auto-advance après tap) */}
+      {question.type === "single" && !question.optional && (
+        <div className="flex items-center justify-start pt-1">
+          <Button
+            variant="ghost"
+            onClick={onPrevious}
+            disabled={isFirst}
+            size="sm"
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {t("onboardingVisual.actions.previous")}
           </Button>
-        )}
-
-        {question.type === "single" && question.optional && (
-          <Button variant="outline" onClick={onNext} className="gap-2">
-            {t("onboardingVisual.actions.skip")}
-            <ArrowRight className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
+        </div>
+      )}
     </motion.div>
   );
 }
