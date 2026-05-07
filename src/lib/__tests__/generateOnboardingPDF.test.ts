@@ -114,4 +114,34 @@ describe("generateOnboardingPDF — rendu complet par scénario", () => {
       expect(html).toContain("contact@tofrance.life");
     }
   });
+
+  it("traduit en français les valeurs du profil (pas de valeurs brutes en anglais)", () => {
+    const html = buildOnboardingPDFHtml({
+      leadRoute: "route_a",
+      contact_firstname: "Salim",
+      contact_email: "salim@test.fr",
+      main_goal: "learn_french",
+      french_level_cecrl: "a1",
+      work_right: "no",
+      target_sector: "hotellerie",
+      mobility: ["bike"],
+      literacy: "partial",
+      barriers: ["childcare"],
+      contact_48h: "yes",
+    });
+    const doc = parse(html);
+    const text = doc.body.textContent || "";
+
+    expect(text).toContain("Hôtellerie-restauration");
+    expect(text).toContain("Vélo");
+    expect(text).toContain("Lecture/écriture partielle");
+    expect(text).toContain("Garde d'enfants");
+
+    const cells = Array.from(doc.querySelectorAll("td")).map((c) => c.textContent || "");
+    for (const raw of ["bike", "childcare", "partial", "hotellerie"]) {
+      for (const cell of cells) {
+        expect(cell).not.toBe(raw);
+      }
+    }
+  });
 });
