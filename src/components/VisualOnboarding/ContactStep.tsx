@@ -81,7 +81,7 @@ export function ContactStep({
           <Label htmlFor="contact_firstname" className="text-base">Prénom</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder="Votre prénom" className="h-12 pl-10 text-base" />
+            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder="Votre prénom" className="h-14 pl-10 text-lg" />
           </div>
         </div>
 
@@ -89,14 +89,14 @@ export function ContactStep({
           <Label htmlFor="contact_phone" className="text-base">Téléphone</Label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder="06 12 34 56 78" className="h-12 pl-10 text-base" />
+            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder="06 12 34 56 78" className="h-14 pl-10 text-lg" />
           </div>
           {touched && !PHONE_REGEX.test(phone.trim()) && <p className="text-sm text-destructive">Téléphone requis pour être recontacté.</p>}
         </div>
 
-        <div className="flex items-center justify-between gap-3 pt-2">
-          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2"><ArrowLeft className="h-4 w-4" />Retour</Button>
-          <Button type="submit" disabled={!isValid} className="gap-2">Continuer<ArrowRight className="h-4 w-4" /></Button>
+        <div className="flex flex-col gap-3 pt-2">
+          <Button type="submit" disabled={!isValid} size="lg" className="h-14 w-full gap-2 text-base font-semibold">Continuer<ArrowRight className="h-5 w-5" /></Button>
+          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2 self-start"><ArrowLeft className="h-4 w-4" />Retour</Button>
         </div>
       </form>
     </motion.div>

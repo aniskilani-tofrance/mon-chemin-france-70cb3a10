@@ -7,7 +7,7 @@ import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
-import { OnboardingPathChoice } from "@/components/VocalOnboarding/OnboardingPathChoice";
+
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
 import { VisualQuestionStep } from "@/components/VisualOnboarding/VisualQuestionStep";
 import { VisualRecapStep } from "@/components/VisualOnboarding/VisualRecapStep";
@@ -32,7 +32,7 @@ import { toast } from "@/hooks/use-toast";
 import { normalizeMarianneAccessCode } from "@/lib/marianneAccessCode";
 import { preloadOnboardingIllustrations } from "@/lib/onboardingIllustrations";
 
-type OnboardingStep = "language" | "path-choice" | "visual-quiz" | "recap" | "postal-code" | "contact" | "email" | "magic-link-sent" | "complete";
+type OnboardingStep = "language" | "visual-quiz" | "recap" | "postal-code" | "contact" | "email" | "magic-link-sent" | "complete";
 
 interface VisualAnswers {
   [questionId: string]: string | string[];
@@ -201,11 +201,6 @@ const Onboarding = () => {
   const handleLanguageSelect = (lang: LanguageCode) => {
     track("onboarding_language_selected", { lang }, "/onboarding", lang);
     setLanguage(lang);
-    setStep("path-choice");
-  };
-
-  const handleSelectVisualPath = () => {
-    track("onboarding_path_selected", { path: "visual" }, "/onboarding", language);
     setStep("visual-quiz");
     setQuestionIndex(0);
   };
@@ -275,7 +270,7 @@ const Onboarding = () => {
     if (questionIndex > 0) {
       setQuestionIndex((i) => i - 1);
     } else {
-      setStep("path-choice");
+      setStep("language");
     }
   };
 
@@ -648,9 +643,6 @@ const Onboarding = () => {
           <AnimatePresence mode="wait">
             {step === "language" && <LanguageStep key="language" onSelect={handleLanguageSelect} />}
 
-            {step === "path-choice" && (
-              <OnboardingPathChoice key="path-choice" onSelectVisual={handleSelectVisualPath} />
-            )}
 
             {step === "visual-quiz" && currentQuestion && (
               <VisualQuestionStep

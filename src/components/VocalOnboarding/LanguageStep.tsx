@@ -176,23 +176,14 @@ export function LanguageStep({ onSelect }: LanguageStepProps) {
             {/* Subtle gradient overlay on hover */}
             <div className="absolute inset-0 bg-accent/0 transition-all duration-300 group-hover:bg-accent/40" />
             
-            <span className="relative text-4xl sm:text-5xl drop-shadow-sm" aria-hidden="true">{lang.flag}</span>
-            <span className="relative text-sm font-semibold text-foreground sm:text-base tracking-wide">
+            <span className="relative text-5xl sm:text-6xl drop-shadow-sm" aria-hidden="true">{lang.flag}</span>
+            <span className="relative text-base font-semibold text-foreground sm:text-lg tracking-wide">
               {lang.name}
             </span>
           </motion.button>
         ))}
       </div>
 
-      {/* Subtle helper */}
-      <motion.p
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
-        className="mt-6 text-xs text-muted-foreground/60"
-      >
-        🌍 6 langues disponibles
-      </motion.p>
     </motion.div>
   );
 }

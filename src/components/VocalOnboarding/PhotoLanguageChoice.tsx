@@ -144,20 +144,20 @@ export function PhotoLanguageChoice({
       onClick={onClick}
       className={cn(
         "group relative flex flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 transition-all duration-300",
-        compact ? "p-2.5 sm:p-3" : "p-3 sm:p-4",
+        compact ? "p-3 sm:p-4 pt-9" : "p-4 sm:p-5 pt-10",
         isSelected
-          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20 ring-2 ring-primary/30"
+          ? "border-primary border-[3px] bg-primary/15 shadow-xl shadow-primary/30 ring-4 ring-primary/20"
           : "border-border bg-card hover:border-primary/50 hover:bg-secondary/30 hover:shadow-md",
-        customImage ? "min-h-[164px] sm:min-h-[200px]" : "min-h-[116px] sm:min-h-[132px]"
+        customImage ? "min-h-[200px] sm:min-h-[230px]" : "min-h-[140px] sm:min-h-[160px]"
       )}
     >
-      {/* Numéro d'option (synchronisé avec la lecture vocale "1. ... 2. ...") */}
+      {/* Numéro d'option centré, gros, lisible (synchronisé avec lecture vocale "1. ... 2. ...") */}
       <div
         className={cn(
-          "absolute left-2 top-2 z-10 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold shadow-sm transition-all",
+          "absolute left-1/2 -translate-x-1/2 top-1.5 z-10 flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-sm sm:text-base font-bold shadow-md transition-all",
           isSelected
-            ? "bg-primary text-primary-foreground"
-            : "bg-background/90 text-foreground border border-border"
+            ? "bg-primary text-primary-foreground scale-110"
+            : "bg-background text-foreground border-2 border-border"
         )}
         aria-hidden="true"
       >
@@ -216,7 +216,7 @@ export function PhotoLanguageChoice({
       {/* Label */}
       <span
         className={cn(
-          "relative z-10 min-h-[2rem] text-center text-xs font-medium leading-tight transition-colors sm:text-sm",
+          "relative z-10 min-h-[2rem] text-center text-sm font-semibold leading-tight transition-colors sm:text-base",
           isSelected ? "text-primary" : "text-foreground"
         )}
       >
