@@ -1,76 +1,40 @@
+## Audit UI ToFrance — Plan de correction P1
 
-# Rendre Marianne accessible à un public non-numérique
+Le brief identifie 5 correctifs P1. Voici comment les traiter dans la stack actuelle (Vite + React SPA + Lovable Cloud).
 
-Objectif : un primo-arrivant qui ne sait quasiment pas utiliser un téléphone doit pouvoir lancer Marianne en **un seul tap visible**, comprendre où il en est, et avancer sans lire de petits textes.
+### Correctif 1 — `twitter:site = @Lovable` (Critique, < 5 min)
+**Fichier** : `index.html` lignes 21-22
+- Remplacer `content="@Lovable"` par `content="@tofrance_life"` sur `twitter:site`
+- Ajouter `<meta name="twitter:creator" content="@tofrance_life" />`
 
-Le travail reste **purement frontend / présentation** (pas de changement de logique métier ni de questions).
+### Correctif 2 — OG image sur URL Google Storage signée expirant le 28/07/2026 (Critique)
+**Fichier** : `index.html` lignes 18 et 22
+- Générer une image OG ToFrance (1200×630, PNG) via `imagegen` → `public/og-tofrance.png`
+- Remplacer les deux URLs Google Storage par `https://tofrance.life/og-tofrance.png`
+- Ajouter `og:image:width`, `og:image:height`, `og:image:alt`
 
----
+### Correctif 3 — `meta author = "Bienvenue"` (Majeur, < 2 min)
+**Fichier** : `index.html` ligne 13
+- Remplacer par `<meta name="author" content="ToFrance" />`
 
-## 1. Entrée vers Marianne (page d'accueil)
+### Correctif 4 — Support RTL pour l'arabe (Critique)
+**Fichiers** : `src/hooks/useLanguage.tsx`, `src/index.css`, `index.html`
+- Dans `useLanguage`, à chaque changement de langue : `document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"` et `document.documentElement.lang = lang`
+- Ajouter dans `src/index.css` :
+  - Police arabe : `@import` Noto Sans Arabic + sélecteur `[lang="ar"] { font-family: 'Noto Sans Arabic', ... }`
+  - Quelques utilitaires logiques pour le chat Marianne si besoin (alignement basé sur `dir`)
+- Tailwind v3 supporte déjà bien les propriétés logiques modernes via classes standard ; on ne refactor pas tout, on s'appuie sur `dir="rtl"` qui inverse `flex-row` en RTL natif et on ajoute des overrides ciblés pour le `Header` et le `ChatOnboarding` si visuellement cassés.
 
-Aujourd'hui : `AccessCodeSection` met un champ "code" en avant — bloquant et anxiogène pour un débutant numérique.
+### Correctif 5 — SPA invisible aux crawlers (Stratégique, 1-2j)
+**Hors scope frontend court-terme** : un vrai pré-rendu (`vite-plugin-prerender` / `react-snap`) demande une intégration build non triviale dans Lovable. Actions immédiates applicables maintenant :
+- Vérifier que `public/sitemap.xml` existe (déjà présent) et est à jour
+- Enrichir `index.html` avec un fallback `<noscript>` contenant H1 + description courte ToFrance, pour que les crawlers basiques voient au moins du contenu sémantique
+- Le pré-rendu complet sera proposé en suivi séparé
 
-Changements :
-- **Gros bouton unique "Commencer avec Marianne"** (pleine largeur, hauteur ~64px, icône micro + flèche) tout en haut de la section, qui mène directement à `/onboarding`.
-- Le champ code est replié dans un lien discret sous le bouton : *"J'ai un code d'accès"* → ouvre le champ uniquement au clic.
-- Texte simplifié : phrases courtes (max 8 mots), lecture niveau A1, suppression du jargon "version pilote".
-- Bouton de **lecture audio** (icône haut-parleur) à côté du titre principal pour faire lire le texte d'intro par TTS.
+### Hors plan
+Pas de changement business logic, pas de refactor des composants UI au-delà de ce qui est nécessaire pour le RTL.
 
-## 2. Choix de la langue (`LanguageStep`)
-
-- Garder le visuel actuel mais : **drapeau plus grand** (text-6xl), **nom de la langue dans la langue elle-même** déjà fait, plus titre court "Votre langue ?" / "اختر لغتك" / etc.
-- **Auto-lecture** du titre dans chaque langue au survol/focus (déjà partiellement OK), et lecture du nom de langue au tap avant de continuer.
-- Supprimer le helper "🌍 6 langues disponibles" (bruit visuel inutile).
-
-## 3. Écran intermédiaire `OnboardingPathChoice`
-
-Aujourd'hui : 2 cartes (visuel / vocal verrouillé). Inutile et déroutant puisqu'une seule option est active.
-
-Changement : **supprimer cet écran** et passer directement de la langue à la 1ʳᵉ question. Une seule décision en moins.
-
-## 4. Écran de question (`VisualQuestionStep` + `PhotoLanguageChoice`)
-
-- **Bouton "Réécouter"** : passer d'une icône 36×36 à un bouton large avec libellé texte ("Réécouter la question" / icône + mot), placé sous le titre, bien visible.
-- **Numéros d'option** (1, 2, 3…) : agrandir (h-9 w-9), placer en haut-centre de la carte au lieu d'un petit badge en coin — ces numéros sont la clé pour les non-lecteurs ("appuie sur le 2").
-- **Cartes plus grandes** : min-h passe à ~220px mobile, image qui prend toute la largeur, label en gros (text-base font-semibold).
-- **Indicateur de sélection** : remplacer le petit `Check` discret par une **bordure pleine épaisse + halo coloré** sur toute la carte sélectionnée.
-- **Progression** : remplacer "3/12 — 25 %" par une barre simple **avec petits ronds** (un par étape, rempli si fait), sans pourcentage écrit.
-- **Boutons navigation** : "Précédent" devient une flèche ronde discrète en haut à gauche ; "Suivant" devient un **gros bouton vert pleine largeur** en bas, sticky sur mobile, libellé "Continuer" + flèche.
-- Pour les questions `multi`, ajouter une mini-instruction visuelle au-dessus de la grille : icône doigt + "Vous pouvez choisir plusieurs réponses".
-
-## 5. Étapes de saisie texte (postal, contact, email)
-
-Ces étapes cassent le rythme visuel. Changements :
-- **Une seule donnée par écran** (déjà le cas).
-- Champ input **hauteur 56px, text-lg**, label au-dessus en gros, exemple gris en dessous ("Exemple : 75011").
-- Clavier mobile adapté : `inputMode="numeric"` pour code postal/téléphone, `inputMode="email"` pour l'email (vérifier que c'est bien posé).
-- Bouton TTS visible pour faire lire la question.
-
-## 6. Récap & complétion
-
-- `VisualRecapStep` : grosse vignette image + valeur en clair par item, bouton "Modifier" gros et clair (pas un petit lien).
-- `CompletionStep` : un seul bouton géant "Voir mes résultats", animation rassurante (déjà OK).
-
-## 7. Accessibilité transverse
-
-- Taille de base passe à `text-base` partout dans le flux Marianne (suppression des `text-xs`, `text-sm` sur le contenu utile, on les garde uniquement pour les mentions légales).
-- Contrastes vérifiés WCAG AA.
-- Tous les boutons cliquables ≥ 48×48 px (cible tactile WCAG).
-- Ajout d'un bouton **"🔊 Tout réécouter"** flottant en bas à droite, persistant pendant tout le parcours Marianne.
-
----
-
-## Détails techniques (fichiers touchés)
-
-- `src/components/AccessCodeSection.tsx` — refonte hiérarchie + repli du champ code.
-- `src/components/VocalOnboarding/LanguageStep.tsx` — simplification typo + audio.
-- `src/pages/Onboarding.tsx` — supprimer le step `path-choice` (passer direct de `language` → `visual-quiz`), supprimer l'import `OnboardingPathChoice`.
-- `src/components/VocalOnboarding/OnboardingPathChoice.tsx` — supprimer le fichier.
-- `src/components/VisualOnboarding/VisualQuestionStep.tsx` — barre de progression à ronds, bouton Réécouter en gros, sticky CTA mobile, instruction multi.
-- `src/components/VocalOnboarding/PhotoLanguageChoice.tsx` — numéros d'option agrandis et centrés, état sélection plus marqué, min-h augmenté.
-- `src/components/VisualOnboarding/PostalCodeStep.tsx`, `ContactStep.tsx`, `EmailStep.tsx` — gros inputs, `inputMode` adaptés, bouton TTS.
-- `src/components/VisualOnboarding/VisualRecapStep.tsx` — boutons Modifier visibles.
-- Nouveau composant `src/components/VocalOnboarding/FloatingReplayButton.tsx` — bouton flottant TTS persistant.
-
-Aucune modification du décisionnel, de la base, des fonctions edge ou du contenu des questions.
+### Validation
+- Inspection `index.html` après build
+- Bascule en arabe dans l'app pour vérifier `dir="rtl"` et la lisibilité
+- Test partage sur opengraph.xyz (côté utilisateur, après publish)

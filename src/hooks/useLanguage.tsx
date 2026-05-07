@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode, useCallback } from "react";
+import { createContext, useContext, useState, ReactNode, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { LanguageCode, TRANSLATIONS } from "@/lib/translations";
 
@@ -10,13 +10,24 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const applyDocumentLang = (lang: LanguageCode) => {
+  if (typeof document === "undefined") return;
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+};
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<LanguageCode>("fr");
   const { i18n } = useTranslation();
 
+  useEffect(() => {
+    applyDocumentLang(language);
+  }, [language]);
+
   const setLanguage = useCallback((lang: LanguageCode) => {
     setLanguageState(lang);
     i18n.changeLanguage(lang);
+    applyDocumentLang(lang);
   }, [i18n]);
 
   const t = TRANSLATIONS[language];
