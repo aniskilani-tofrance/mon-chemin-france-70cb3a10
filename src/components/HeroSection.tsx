@@ -13,24 +13,8 @@ export function HeroSection() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { isAdmin } = useAdminCheck();
-  // Logged-in users (admin or apprenant) skip the access-code gate.
-  const userIsLoggedIn = !!user;
-  const handleMarianneClick = (e: React.MouseEvent) => {
-    if (userIsLoggedIn) return; // <Link to="/onboarding"> handles navigation
-    e.preventDefault();
-    const target = document.getElementById("access-code");
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth", block: "start" });
-      // Focus the code input for instant typing
-      setTimeout(() => {
-        const input = target.querySelector<HTMLInputElement>('input[autocomplete="off"]');
-        input?.focus();
-      }, 400);
-    } else {
-      window.location.href = "/#access-code";
-    }
-  };
-  const marianneHref = userIsLoggedIn ? "/onboarding" : "#access-code";
+  void user; void isAdmin;
+  const marianneHref = "/onboarding";
 
   return (
     <section className="relative min-h-screen overflow-hidden pt-24">
@@ -72,9 +56,9 @@ export function HeroSection() {
         <AnimatedContainer delay={0.4}>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button variant="hero" size="xl" asChild>
-              <Link to={marianneHref} onClick={handleMarianneClick} className="gap-3">
+              <Link to={marianneHref} className="gap-3">
                 <Mic className="h-5 w-5" />
-                {userIsLoggedIn ? "Démarrer Marianne" : "Accès pilote Marianne"}
+                Démarrer Marianne
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
