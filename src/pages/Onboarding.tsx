@@ -5,7 +5,7 @@ import { RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast as sonnerToast } from "sonner";
 import { Header } from "@/components/Header";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
 import { LanguageStep } from "@/components/VocalOnboarding/LanguageStep";
 
 import { CompletionStep } from "@/components/VocalOnboarding/CompletionStep";
