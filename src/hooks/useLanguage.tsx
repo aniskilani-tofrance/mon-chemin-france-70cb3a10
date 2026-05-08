@@ -10,24 +10,43 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const STORAGE_KEY = "tofrance.language";
+const SUPPORTED: LanguageCode[] = ["fr", "en", "ar", "es", "pt", "ru"];
+
 const applyDocumentLang = (lang: LanguageCode) => {
   if (typeof document === "undefined") return;
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
 };
 
+const readInitialLanguage = (): LanguageCode => {
+  if (typeof window === "undefined") return "fr";
+  try {
+    const stored = window.localStorage.getItem(STORAGE_KEY) as LanguageCode | null;
+    if (stored && SUPPORTED.includes(stored)) return stored;
+  } catch { /* ignore */ }
+  return "fr";
+};
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [language, setLanguageState] = useState<LanguageCode>("fr");
+  const [language, setLanguageState] = useState<LanguageCode>(readInitialLanguage);
   const { i18n } = useTranslation();
 
+  // Sync i18n + document on mount and whenever language changes
   useEffect(() => {
     applyDocumentLang(language);
-  }, [language]);
+    if (i18n.language !== language) {
+      i18n.changeLanguage(language);
+    }
+  }, [language, i18n]);
 
   const setLanguage = useCallback((lang: LanguageCode) => {
     setLanguageState(lang);
     i18n.changeLanguage(lang);
     applyDocumentLang(lang);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, lang);
+    } catch { /* ignore */ }
   }, [i18n]);
 
   const t = TRANSLATIONS[language];
