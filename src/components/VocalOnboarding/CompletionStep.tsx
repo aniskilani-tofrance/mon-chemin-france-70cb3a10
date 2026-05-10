@@ -24,6 +24,7 @@ interface CompletionStepProps {
 
 export function CompletionStep({ answers, onComplete, isLoading = false }: CompletionStepProps) {
   const { t } = useLanguage();
+  const { t: ti18n } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   // Compute v2 orientation result
@@ -47,10 +48,10 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
     try {
       await navigator.clipboard.writeText(result.messageWhatsapp);
       setCopied(true);
-      toast.success("Message copié !");
+      toast.success(ti18n("completion.copySuccess"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Impossible de copier");
+      toast.error(ti18n("completion.copyError"));
     }
   };
 
