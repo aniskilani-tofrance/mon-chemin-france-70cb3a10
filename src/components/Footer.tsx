@@ -35,6 +35,11 @@ export function Footer() {
                   Inscription partenaire
                 </Link>
               </li>
+              <li>
+                <Link to="/recrutement" className="hover:text-primary">
+                  Recrutement
+                </Link>
+              </li>
             </ul>
           </div>
 
