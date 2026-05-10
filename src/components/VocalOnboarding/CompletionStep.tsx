@@ -228,7 +228,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             onClick={handleCopyWhatsApp}
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copié !" : "Copier le message WhatsApp"}
+            {copied ? ti18n("completion.copied") : ti18n("completion.copyWhatsapp")}
           </Button>
 
           <Button
