@@ -646,13 +646,22 @@ export default function Recrutement() {
                     </div>
 
                     <div className="mt-6 flex-1" />
-                    <Button
-                      className="mt-2 w-full gap-2"
-                      onClick={() => scrollTo("candidater", p.id)}
-                    >
-                      Candidater pour ce poste
-                      <ArrowRight className="h-4 w-4" />
-                    </Button>
+                    <div className="mt-2 flex flex-col gap-2">
+                      <Button
+                        className="w-full gap-2"
+                        onClick={() => scrollTo("candidater", p.id)}
+                      >
+                        Candidater pour ce poste
+                        <ArrowRight className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setOffreOuverte(p.id)}
+                      >
+                        Voir l'offre complète
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
               );
