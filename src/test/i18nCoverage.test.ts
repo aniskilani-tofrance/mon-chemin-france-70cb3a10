@@ -30,11 +30,14 @@ function getByPath(obj: any, path: string): unknown {
 
 // Paths whose value may legitimately match FR (proper nouns, brand, units, very short)
 const ALLOW_SAME_AS_FR = (path: string, value: string): boolean => {
-  if (value.trim().length <= 2) return true; // single chars / digits
-  if (/^[\p{Emoji}\s\d.,:/-]+$/u.test(value)) return true; // emoji-only / numeric
-  if (/^[A-Z0-9]{1,5}$/.test(value)) return true; // codes (CIR, BPI, etc.)
+  const v = value.trim();
+  if (v.length <= 2) return true; // single chars / digits
+  if (/^[\p{Emoji}\s\d.,:/-]+$/u.test(v)) return true; // emoji-only / numeric
+  if (/^[A-Z0-9]{1,5}$/.test(v)) return true; // codes (CIR, BPI, etc.)
+  // Numeric ranges with units (km, m, h, €, %) shared across languages
+  if (/^[<>≤≥]?\s*\d+([.,]\d+)?(\s*[-–]\s*\d+([.,]\d+)?)?\s*(km|m|h|€|%)?$/i.test(v)) return true;
   // Brand / proper nouns commonly identical across languages
-  if (/^(ToFrance|France|Marianne|Lyon|Paris|Marseille|Stripe|WhatsApp|HubSpot|Email|OK)$/i.test(value)) return true;
+  if (/^(ToFrance|France|Marianne|Lyon|Paris|Marseille|Stripe|WhatsApp|HubSpot|Email|OK)$/i.test(v)) return true;
   return false;
 };
 
