@@ -258,28 +258,29 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
 
 // Personalized plan steps based on route
 function PersonalizedPlanSteps({ route, distanceToJob, adminStatus }: { route: string; distanceToJob?: number; adminStatus?: string }) {
+  const { t: ti18n } = useTranslation();
   const steps: { emoji: string; text: string }[] = [];
 
   if (adminStatus === "sans_papiers" || adminStatus === "demandeur_asile") {
-    steps.push({ emoji: "📋", text: "Régulariser ta situation administrative" });
+    steps.push({ emoji: "📋", text: ti18n("completion.step_admin") });
   }
 
   if (route === "fle" || route === "fle_pro") {
-    steps.push({ emoji: "📖", text: "Améliorer ton français (1-2 mois)" });
-    steps.push({ emoji: "🎓", text: "Accéder à une formation professionnelle" });
-    steps.push({ emoji: "💼", text: "Trouver un emploi stable" });
+    steps.push({ emoji: "📖", text: ti18n("completion.step_french") });
+    steps.push({ emoji: "🎓", text: ti18n("completion.step_training") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_job") });
   } else if (route === "formation") {
-    steps.push({ emoji: "🎓", text: "Suivre une formation qualifiante" });
-    steps.push({ emoji: "📜", text: "Obtenir ta certification" });
-    steps.push({ emoji: "💼", text: "Décrocher un emploi dans ton secteur" });
+    steps.push({ emoji: "🎓", text: ti18n("completion.step_qualifying") });
+    steps.push({ emoji: "📜", text: ti18n("completion.step_certif") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_sector_job") });
   } else if (route === "emploi") {
-    steps.push({ emoji: "🔍", text: "Mise en relation avec des employeurs" });
-    steps.push({ emoji: "🤝", text: "Entretiens et recrutement" });
-    steps.push({ emoji: "💼", text: "Démarrer ton emploi" });
+    steps.push({ emoji: "🔍", text: ti18n("completion.step_employer") });
+    steps.push({ emoji: "🤝", text: ti18n("completion.step_interview") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_start_job") });
   } else {
-    steps.push({ emoji: "🧭", text: "Orientation personnalisée" });
-    steps.push({ emoji: "📖", text: "Formation adaptée à ton profil" });
-    steps.push({ emoji: "💼", text: "Insertion professionnelle" });
+    steps.push({ emoji: "🧭", text: ti18n("completion.step_orientation") });
+    steps.push({ emoji: "📖", text: ti18n("completion.step_adapted") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_insertion") });
   }
 
   return (
