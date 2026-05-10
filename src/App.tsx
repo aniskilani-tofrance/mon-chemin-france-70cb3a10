@@ -57,6 +57,8 @@ const PlacementTestResults = lazy(() => import("./pages/PlacementTestResults"));
 const PlacementTestTrainer = lazy(() => import("./pages/PlacementTestTrainer"));
 const PlacementTestLegal = lazy(() => import("./pages/PlacementTestLegal"));
 
+const Recrutement = lazy(() => import("./pages/Recrutement"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -127,6 +129,7 @@ const App = () => (
               <Route path="/placement-test/results" element={<PlacementTestResults />} />
               <Route path="/placement-test/trainer" element={<FormateurRoute><PlacementTestTrainer /></FormateurRoute>} />
               <Route path="/placement-test/:page" element={<PlacementTestLegal />} />
+              <Route path="/recrutement" element={<Recrutement />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
