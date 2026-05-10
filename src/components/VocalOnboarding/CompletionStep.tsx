@@ -184,7 +184,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
                 {result.metier.certification} · {result.metier.duree}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Financements : {result.metier.financements.join(", ")}
+                {ti18n("completion.funding")} : {result.metier.financements.join(", ")}
               </p>
             </div>
           )}
