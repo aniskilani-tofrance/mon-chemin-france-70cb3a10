@@ -1,40 +1,46 @@
-## Audit UI ToFrance — Plan de correction P1
 
-Le brief identifie 5 correctifs P1. Voici comment les traiter dans la stack actuelle (Vite + React SPA + Lovable Cloud).
+# Page de recrutement ToFrance — phase pilote
 
-### Correctif 1 — `twitter:site = @Lovable` (Critique, < 5 min)
-**Fichier** : `index.html` lignes 21-22
-- Remplacer `content="@Lovable"` par `content="@tofrance_life"` sur `twitter:site`
-- Ajouter `<meta name="twitter:creator" content="@tofrance_life" />`
+## Objectif
+Créer une page publique `/recrutement` présentant les 3 stages ouverts pour la phase pilote, avec un ton startup à impact social, sobre et chaleureux, en réutilisant le design system existant (tokens HSL, composants shadcn, Header/Footer du site).
 
-### Correctif 2 — OG image sur URL Google Storage signée expirant le 28/07/2026 (Critique)
-**Fichier** : `index.html` lignes 18 et 22
-- Générer une image OG ToFrance (1200×630, PNG) via `imagegen` → `public/og-tofrance.png`
-- Remplacer les deux URLs Google Storage par `https://tofrance.life/og-tofrance.png`
-- Ajouter `og:image:width`, `og:image:height`, `og:image:alt`
+## Route
+- Ajout de la route `/recrutement` dans `src/App.tsx` (lazy) → `src/pages/Recrutement.tsx`
+- Ajout au sitemap `public/sitemap.xml`
+- SEO via le composant existant `<SEO />` (titre + description optimisés, JSON-LD `JobPosting` x3 pour les 3 offres)
 
-### Correctif 3 — `meta author = "Bienvenue"` (Majeur, < 2 min)
-**Fichier** : `index.html` ligne 13
-- Remplacer par `<meta name="author" content="ToFrance" />`
+## Structure de la page (sections)
 
-### Correctif 4 — Support RTL pour l'arabe (Critique)
-**Fichiers** : `src/hooks/useLanguage.tsx`, `src/index.css`, `index.html`
-- Dans `useLanguage`, à chaque changement de langue : `document.documentElement.dir = lang === "ar" ? "rtl" : "ltr"` et `document.documentElement.lang = lang`
-- Ajouter dans `src/index.css` :
-  - Police arabe : `@import` Noto Sans Arabic + sélecteur `[lang="ar"] { font-family: 'Noto Sans Arabic', ... }`
-  - Quelques utilitaires logiques pour le chat Marianne si besoin (alignement basé sur `dir`)
-- Tailwind v3 supporte déjà bien les propriétés logiques modernes via classes standard ; on ne refactor pas tout, on s'appuie sur `dir="rtl"` qui inverse `flex-row` en RTL natif et on ajoute des overrides ciblés pour le `Header` et le `ChatOnboarding` si visuellement cassés.
+1. **Header** — réutilise `<Header />` existant
+2. **Hero** — titre, sous-titre, paragraphe, 2 CTA (« Voir les postes » → ancre `#postes`, « Candidater » → ancre `#candidater`), badges (Stage 2-6 mois, Saint-Ouen / hybride, Début dès que possible, Impact social, IA · formation · emploi)
+3. **Pourquoi ToFrance ?** — texte + grille de 5 cartes (Accès à la langue, Orientation formation, Parcours réfugiés, Reconnaissance des diplômes, Métiers en tension) avec icônes lucide
+4. **Les 3 postes ouverts** (`#postes`) — 3 grandes cartes côte à côte (desktop) / empilées (mobile) :
+   - Chargé(e) de projet pilote
+   - UX / Produit no-code
+   - Partenariats / Développement
+   Chaque carte : titre, mission courte, liste missions, profil recherché, bouton « Candidater pour ce poste » (scroll vers `#candidater` + pré-remplit le poste)
+5. **Ce que vous allez apprendre** — 6 cartes avec icônes
+6. **Profil commun recherché** — texte + liste de qualités (chips/badges)
+7. **Informations pratiques** — bloc structuré clair (Structure, Projet, Lieu, Format, Contrat, Durée, Début, Email)
+8. **CTA final + Formulaire** (`#candidater`) — titre, texte, formulaire avec : prénom, nom, email, téléphone, poste choisi (Select), message, lien LinkedIn/portfolio, bouton envoyer + bouton secondaire `mailto:contact@parleremploi.fr` avec objet pré-rempli
+9. **Footer** — réutilise `<Footer />`
 
-### Correctif 5 — SPA invisible aux crawlers (Stratégique, 1-2j)
-**Hors scope frontend court-terme** : un vrai pré-rendu (`vite-plugin-prerender` / `react-snap`) demande une intégration build non triviale dans Lovable. Actions immédiates applicables maintenant :
-- Vérifier que `public/sitemap.xml` existe (déjà présent) et est à jour
-- Enrichir `index.html` avec un fallback `<noscript>` contenant H1 + description courte ToFrance, pour que les crawlers basiques voient au moins du contenu sémantique
-- Le pré-rendu complet sera proposé en suivi séparé
+## Formulaire — backend
+Réutiliser la table `contact_requests` existante (déjà utilisée par `ContactForm`) en ajoutant un nouveau `request_type = "internship"` et en stockant les champs additionnels (poste, téléphone, lien) concaténés dans `message` pour éviter une migration. En complément : bouton mailto qui ouvre `contact@parleremploi.fr` avec objet `Candidature stage ToFrance – [poste]` et corps pré-rempli, garantissant un canal fonctionnel quoi qu'il arrive.
 
-### Hors plan
-Pas de changement business logic, pas de refactor des composants UI au-delà de ce qui est nécessaire pour le RTL.
+Validation zod côté client (nom 1-100, email valide, téléphone optionnel, poste obligatoire, message 10-2000, lien optionnel URL). Rate limit via `useRateLimit` existant.
 
-### Validation
-- Inspection `index.html` après build
-- Bascule en arabe dans l'app pour vérifier `dir="rtl"` et la lisibilité
-- Test partage sur opengraph.xyz (côté utilisateur, après publish)
+## Design
+- Tokens HSL existants (primary, accent, muted, background, card, border)
+- Typo : conserver les fonts du site
+- Cartes : variants `feature` / `elevated` du composant `Card` existant
+- Animation légère au scroll : `AnimatedContainer` existant (fade-in + translate)
+- Responsive : grilles `grid-cols-1 md:grid-cols-2 lg:grid-cols-3`, espacements généreux
+- Pas d'emojis, icônes lucide-react uniquement (Languages, GraduationCap, Users, Award, Briefcase, Sparkles, MapPin, Clock, etc.)
+
+## Fichiers
+- **Créé** : `src/pages/Recrutement.tsx` (page complète, sections en composants internes pour rester lisible)
+- **Édité** : `src/App.tsx` (ajout route lazy)
+- **Édité** : `public/sitemap.xml` (ajout URL)
+
+Aucun changement de logique métier ailleurs, aucune migration DB.
