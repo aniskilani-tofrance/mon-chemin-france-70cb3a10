@@ -870,6 +870,109 @@ export default function Recrutement() {
       </section>
 
       <Footer />
+
+      <Dialog open={!!offreOuverte} onOpenChange={(o) => !o && setOffreOuverte(null)}>
+        <DialogContent className="max-w-3xl p-0">
+          {(() => {
+            const offre = POSTES.find((p) => p.id === offreOuverte);
+            if (!offre) return null;
+            const Icon = offre.icon;
+            return (
+              <>
+                <DialogHeader className="border-b border-border p-6 pb-5">
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <Icon className="h-6 w-6" />
+                    </div>
+                    <div className="text-left">
+                      <DialogTitle className="text-2xl">{offre.titre}</DialogTitle>
+                      <DialogDescription className="mt-1.5">
+                        {offre.sousTitre}
+                      </DialogDescription>
+                    </div>
+                  </div>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <Badge variant="outline">Stage 2 à 6 mois</Badge>
+                    <Badge variant="outline">Saint-Ouen / hybride</Badge>
+                    <Badge variant="outline">Début dès que possible</Badge>
+                  </div>
+                </DialogHeader>
+
+                <ScrollArea className="max-h-[60vh] px-6">
+                  <div className="space-y-6 py-6">
+                    <div className="rounded-lg bg-primary/5 p-4">
+                      <p className="text-sm font-medium text-foreground">{offre.mission}</p>
+                    </div>
+
+                    {offre.sections.map((s) => (
+                      <div key={s.titre}>
+                        <h4 className="text-base font-semibold text-foreground">{s.titre}</h4>
+                        {s.texte && (
+                          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                            {s.texte}
+                          </p>
+                        )}
+                        {s.items && (
+                          <ul className="mt-3 space-y-1.5">
+                            {s.items.map((it) => (
+                              <li
+                                key={it}
+                                className="flex items-start gap-2 text-sm text-foreground/80"
+                              >
+                                <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary" />
+                                <span>{it}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ))}
+
+                    <div className="rounded-lg border border-border bg-muted/30 p-4">
+                      <h4 className="text-sm font-semibold text-foreground">Conditions</h4>
+                      <dl className="mt-3 grid gap-2 text-sm sm:grid-cols-2">
+                        {INFOS.map(({ label, value }) => (
+                          <div key={label}>
+                            <dt className="text-xs uppercase tracking-wide text-muted-foreground">
+                              {label}
+                            </dt>
+                            <dd className="text-foreground">{value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  </div>
+                </ScrollArea>
+
+                <DialogFooter className="flex flex-col gap-2 border-t border-border p-6 sm:flex-row">
+                  <Button
+                    variant="outline"
+                    asChild
+                    className="gap-2 sm:flex-1"
+                  >
+                    <a
+                      href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(offre.objetMail)}`}
+                    >
+                      <Mail className="h-4 w-4" />
+                      Envoyer par email
+                    </a>
+                  </Button>
+                  <Button
+                    className="gap-2 sm:flex-1"
+                    onClick={() => {
+                      setOffreOuverte(null);
+                      scrollTo("candidater", offre.id);
+                    }}
+                  >
+                    Candidater
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
