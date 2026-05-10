@@ -160,7 +160,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {result.actionsLabels.length > 0 && (
             <div className="mb-6 rounded-xl border border-border bg-secondary/30 p-4 text-left">
               <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-                Prochaines étapes
+                {ti18n("completion.nextSteps")}
               </h3>
               <ul className="space-y-2">
                 {result.actionsLabels.map((action, i) => (
