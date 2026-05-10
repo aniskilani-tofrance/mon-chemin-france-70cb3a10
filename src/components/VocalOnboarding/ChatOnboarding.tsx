@@ -449,12 +449,10 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
     if (isEmail) {
       const result = emailSchema.safeParse(userText);
       if (!result.success) {
-        setEmailError("Format email invalide");
+        setEmailError(tr("emailInvalid", language));
         const errorMsg: ChatMessage = {
           role: "marianne",
-          content: language === "ar" ? "يبدو أنَّ هذا البريد الإلكتروني غير صحيح. هل يمكنكم المحاولة مرّةً أخرى؟" :
-            language === "en" ? "This email doesn't look right. Could you try again?" :
-            "Cet email ne semble pas correct. Pouvez-vous réessayer ?"
+          content: tr("emailRetry", language),
         };
         setMessages(prev => [...prev, errorMsg]);
         speakAndListen(errorMsg.content);
@@ -677,7 +675,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
         });
         marianneText = response.marianne_message;
       } catch {
-        marianneText = nextQ ? getTranslatedText(nextQ as any, "text", language) : "Merci !";
+        marianneText = nextQ ? getTranslatedText(nextQ as any, "text", language) : tr("thanks", language);
       }
 
       const marianneMsg: ChatMessage = { role: "marianne", content: marianneText };
@@ -873,17 +871,13 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
               className="w-full"
             >
               <Volume2 className="h-4 w-4" />
-              {language === "ar" ? "إعادة تشغيل ماريان" : language === "en" ? "Replay Marianne" : "Réécouter Marianne"}
+              {tr("replay", language)}
             </Button>
           )}
 
           {(currentQuestionId === "location" || isPostalCode) && (
             <p className="px-1 text-xs text-muted-foreground">
-              {language === "ar"
-                ? "في خطوة العنوان والرمز البريدي، يبقى الميكروفون متوقفًا أثناء الكتابة."
-                : language === "en"
-                ? "For address and postal code, the microphone stays off while you type."
-                : "Pour l’adresse et le code postal, le micro reste coupé pendant la saisie."}
+              {tr("micHint", language)}
             </p>
           )}
 
