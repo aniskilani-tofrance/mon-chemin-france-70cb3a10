@@ -1226,6 +1226,7 @@ export type Database = {
           origin_country: string | null
           phone: string | null
           postal_code: string | null
+          preferred_language: string | null
           prefers_female_trainer: boolean | null
           previous_job: string | null
           real_comprehension_score: string | null
@@ -1281,6 +1282,7 @@ export type Database = {
           origin_country?: string | null
           phone?: string | null
           postal_code?: string | null
+          preferred_language?: string | null
           prefers_female_trainer?: boolean | null
           previous_job?: string | null
           real_comprehension_score?: string | null
@@ -1336,6 +1338,7 @@ export type Database = {
           origin_country?: string | null
           phone?: string | null
           postal_code?: string | null
+          preferred_language?: string | null
           prefers_female_trainer?: boolean | null
           previous_job?: string | null
           real_comprehension_score?: string | null
