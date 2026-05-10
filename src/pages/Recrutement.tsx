@@ -44,10 +44,14 @@ import { useRateLimit } from "@/hooks/useRateLimit";
 
 const CONTACT_EMAIL = "contact@parleremploi.fr";
 
+type Section = { titre: string; texte?: string; items?: string[] };
+
 const POSTES = [
   {
     id: "projet-pilote",
     titre: "Stagiaire Chargé(e) de projet pilote",
+    sousTitre: "Innovation sociale, IA, orientation et accès à l'emploi",
+    objetMail: "Candidature stage – Chargé(e) de projet pilote ToFrance",
     icon: Compass,
     mission:
       "Participer à l'organisation des tests terrain, recueillir les retours utilisateurs, analyser les besoins et suivre les premiers indicateurs d'impact.",
@@ -61,10 +65,83 @@ const POSTES = [
     ],
     profil:
       "Étudiant(e) en innovation sociale, ESS, sciences sociales, gestion de projet, développement territorial, insertion ou formation.",
+    sections: [
+      {
+        titre: "Missions principales",
+        texte:
+          "Sous la responsabilité de l'équipe projet, vous participerez à la mise en œuvre opérationnelle de la phase pilote de ToFrance.",
+        items: [
+          "Organiser les sessions de tests avec des bénéficiaires",
+          "Préparer les supports de test et questionnaires de diagnostic",
+          "Participer à l'accueil et à l'observation des utilisateurs",
+          "Recueillir les retours terrain des bénéficiaires et partenaires",
+          "Identifier les freins rencontrés : langue, numérique, mobilité, emploi, administratif, reconnaissance des diplômes",
+          "Analyser les besoins spécifiques des publics réfugiés et primo-arrivants",
+          "Contribuer à la structuration des parcours d'orientation",
+          "Suivre les premiers indicateurs d'impact",
+          "Rédiger des comptes rendus clairs après les sessions de test",
+          "Proposer des pistes d'amélioration pour la plateforme",
+          "Participer à la préparation de synthèses pour les partenaires, financeurs et institutions",
+        ],
+      },
+      {
+        titre: "Parcours travaillés pendant le pilote",
+        texte: "Vous participerez notamment à la structuration de plusieurs parcours clés :",
+        items: [
+          "Parcours d'accès au français",
+          "Parcours d'orientation vers la formation professionnelle",
+          "Parcours spécifique pour les personnes réfugiées",
+          "Parcours de reconnaissance des diplômes et compétences acquis à l'étranger",
+          "Parcours vers les métiers en tension",
+          "Parcours de mise en relation avec des partenaires emploi, formation ou accompagnement",
+        ],
+      },
+      {
+        titre: "Profil recherché",
+        texte: "Vous êtes étudiant(e) en Bachelor, Master 1 ou Master 2 dans l'un des domaines suivants :",
+        items: [
+          "Innovation sociale",
+          "Économie sociale et solidaire",
+          "Sciences sociales",
+          "Politiques publiques",
+          "Insertion professionnelle",
+          "Développement territorial",
+          "Gestion de projet",
+          "Formation",
+          "Accompagnement social",
+          "Entrepreneuriat social",
+        ],
+      },
+      {
+        titre: "Qualités attendues",
+        items: [
+          "Organisée",
+          "Autonome",
+          "À l'écoute",
+          "À l'aise avec les publics fragilisés",
+          "Capable d'observer et d'analyser",
+          "Bon esprit de synthèse",
+          "Sensible aux enjeux d'accès à l'emploi, de migration, de formation et d'inclusion",
+          "Capable de transformer des retours terrain en propositions concrètes",
+        ],
+      },
+      {
+        titre: "Ce que vous allez apprendre",
+        texte:
+          "Ce stage vous permettra de participer à la construction d'un projet innovant à impact social, à la croisée de l'intelligence artificielle, de l'insertion professionnelle, de l'apprentissage du français et de l'accompagnement des parcours de vie. Vous découvrirez concrètement comment se construit une phase pilote : tests utilisateurs, retours terrain, adaptation du produit, mesure d'impact, relation partenaires et amélioration continue.",
+      },
+      {
+        titre: "Pourquoi rejoindre ToFrance ?",
+        texte:
+          "Vous ne rejoignez pas seulement un projet numérique. Vous participez à une solution qui veut aider des personnes à comprendre leurs possibilités, faire reconnaître leur parcours, accéder à la langue, se former et avancer vers un emploi durable. Vous contribuerez à un projet utile, humain et concret, dès ses premières étapes.",
+      },
+    ] as Section[],
   },
   {
     id: "ux-produit",
     titre: "Stagiaire UX / Produit no-code",
+    sousTitre: "Plateforme IA d'orientation vers la langue, la formation et l'emploi",
+    objetMail: "Candidature stage – UX Produit ToFrance",
     icon: Lightbulb,
     mission:
       "Améliorer l'expérience utilisateur de la plateforme et simplifier les parcours d'orientation.",
@@ -78,10 +155,96 @@ const POSTES = [
     ],
     profil:
       "Étudiant(e) en UX design, product management, design de service, no-code, marketing digital ou innovation sociale.",
+    sections: [
+      {
+        titre: "Le besoin",
+        texte:
+          "Pour que ToFrance fonctionne vraiment, l'expérience utilisateur doit être très simple. La plateforme doit pouvoir être utilisée par des personnes qui ne maîtrisent pas toujours bien le français, le numérique ou les codes administratifs. Dans le cadre de la phase pilote, nous recherchons un(e) stagiaire UX / Produit no-code pour nous aider à tester, améliorer et simplifier les parcours utilisateurs.",
+      },
+      {
+        titre: "Missions principales",
+        texte: "Vous participerez à l'amélioration de l'expérience utilisateur de la plateforme.",
+        items: [
+          "Tester les parcours utilisateurs existants",
+          "Identifier les points de blocage dans l'expérience",
+          "Simplifier les écrans, les questions et les étapes",
+          "Améliorer les scénarios de diagnostic",
+          "Créer des parcours types selon les profils utilisateurs",
+          "Travailler sur le parcours spécifique réfugié",
+          "Contribuer au parcours de reconnaissance des diplômes et compétences acquis à l'étranger",
+          "Réfléchir aux parcours vers les métiers en tension",
+          "Proposer des améliorations concrètes pour rendre la plateforme plus accessible",
+          "Participer à la structuration des contenus dans des outils no-code",
+          "Documenter les bugs, besoins et évolutions produit",
+          "Aider à préparer des supports de démonstration pour les partenaires",
+        ],
+      },
+      {
+        titre: "Parcours utilisateurs à travailler",
+        items: [
+          "Une personne qui veut apprendre le français",
+          "Une personne réfugiée qui cherche à reconstruire un projet professionnel",
+          "Une personne diplômée à l'étranger qui souhaite faire reconnaître ses compétences",
+          "Une personne qui cherche une formation courte vers un métier en tension",
+          "Une personne éloignée de l'emploi qui ne sait pas par où commencer",
+          "Une structure partenaire qui souhaite orienter un bénéficiaire",
+        ],
+      },
+      {
+        titre: "Profil recherché",
+        texte: "Vous êtes étudiant(e) en :",
+        items: [
+          "UX design",
+          "UI design",
+          "Product management",
+          "Design de service",
+          "No-code",
+          "Marketing digital",
+          "Innovation sociale",
+          "Communication digitale",
+          "Entrepreneuriat",
+          "École de commerce ou école du numérique",
+        ],
+      },
+      {
+        titre: "Compétences appréciées",
+        items: [
+          "Notions d'UX/UI",
+          "Capacité à tester un parcours utilisateur",
+          "Capacité à simplifier une interface",
+          "Bonne rédaction",
+          "Esprit logique",
+          "Sens de l'accessibilité",
+          "Intérêt pour les outils no-code : Lovable, Bubble, Airtable, Notion, Canva ou équivalents",
+          "Intérêt pour l'intelligence artificielle appliquée à l'impact social",
+          "Capacité à proposer des solutions simples et pratiques",
+        ],
+      },
+      {
+        titre: "Qualités attendues",
+        items: [
+          "Curieuse",
+          "Autonome",
+          "Organisée",
+          "Créative",
+          "Rigoureuse",
+          "Sensible aux enjeux sociaux",
+          "À l'aise avec les outils numériques",
+          "Capable de tester, observer, comprendre et améliorer",
+        ],
+      },
+      {
+        titre: "Pourquoi rejoindre ToFrance ?",
+        texte:
+          "Parce que l'UX, ici, n'est pas seulement une question de design. C'est une question d'accès, de compréhension, de dignité. Votre travail aidera des personnes à mieux comprendre leurs possibilités, à s'orienter plus facilement et à trouver leur place dans un parcours de langue, de formation ou d'emploi.",
+      },
+    ] as Section[],
   },
   {
     id: "partenariats",
     titre: "Stagiaire Partenariats / Développement",
+    sousTitre: "Innovation sociale, insertion, formation et intelligence artificielle",
+    objetMail: "Candidature stage – Partenariats ToFrance",
     icon: Handshake,
     mission:
       "Identifier et mobiliser les partenaires qui pourront participer à la phase pilote de ToFrance.",
@@ -96,6 +259,95 @@ const POSTES = [
     ],
     profil:
       "Étudiant(e) en développement commercial, communication, ESS, relations institutionnelles, développement territorial ou entrepreneuriat social.",
+    sections: [
+      {
+        titre: "Le besoin",
+        texte:
+          "La réussite de ToFrance repose sur un réseau solide de partenaires. Pour tester la plateforme, orienter les bons publics et construire des parcours utiles, nous devons mobiliser des associations, centres sociaux, organismes de formation, acteurs de l'emploi, structures d'accueil, collectivités, entreprises et institutions.",
+      },
+      {
+        titre: "Missions principales",
+        texte: "Vous participerez au développement du réseau de partenaires de ToFrance.",
+        items: [
+          "Identifier les partenaires potentiels du projet",
+          "Cartographier les acteurs de l'insertion, de la formation, de l'emploi, de l'accueil des réfugiés et de l'accompagnement social",
+          "Créer et mettre à jour une base de contacts",
+          "Qualifier les partenaires selon leur rôle potentiel dans le pilote",
+          "Préparer des messages de prise de contact",
+          "Participer aux relances par mail ou LinkedIn",
+          "Organiser des rendez-vous de présentation",
+          "Préparer des supports simples pour présenter ToFrance",
+          "Suivre les échanges dans un tableau de bord",
+          "Aider à structurer l'offre pilote pour les partenaires",
+          "Identifier les besoins des structures terrain",
+          "Contribuer à la préparation de dossiers partenaires, financeurs ou institutions",
+        ],
+      },
+      {
+        titre: "Types de partenaires à identifier",
+        items: [
+          "Associations d'accueil et d'accompagnement des personnes réfugiées",
+          "Structures d'accompagnement des primo-arrivants",
+          "Centres sociaux et maisons de quartier",
+          "Organismes de formation linguistique et professionnelle",
+          "Acteurs de l'emploi et de l'insertion",
+          "Missions locales",
+          "Collectivités territoriales",
+          "Entreprises confrontées à des besoins de recrutement",
+          "Acteurs des métiers en tension",
+          "Structures spécialisées dans la reconnaissance des diplômes ou l'orientation professionnelle",
+        ],
+      },
+      {
+        titre: "Profil recherché",
+        texte: "Vous êtes étudiant(e) en :",
+        items: [
+          "Développement commercial",
+          "Communication",
+          "Économie sociale et solidaire",
+          "Gestion de projet",
+          "Relations institutionnelles",
+          "Développement territorial",
+          "Sciences politiques",
+          "Entrepreneuriat social",
+          "École de commerce",
+          "Politiques publiques",
+          "Insertion ou formation",
+        ],
+      },
+      {
+        titre: "Compétences appréciées",
+        items: [
+          "Aisance relationnelle",
+          "Bonne rédaction",
+          "Capacité à rechercher et qualifier des contacts",
+          "Sens de l'organisation",
+          "Maîtrise des outils bureautiques",
+          "Capacité à suivre un tableau de bord",
+          "Aisance avec LinkedIn et les recherches en ligne",
+          "Capacité à comprendre les besoins d'un partenaire",
+          "Intérêt pour l'insertion, la formation, l'emploi et l'innovation sociale",
+        ],
+      },
+      {
+        titre: "Qualités attendues",
+        items: [
+          "Curieuse",
+          "Autonome",
+          "Persévérante",
+          "Structurée",
+          "À l'aise à l'écrit",
+          "Capable de prendre des initiatives",
+          "Sensible aux enjeux sociaux",
+          "Motivée par un projet utile et concret",
+        ],
+      },
+      {
+        titre: "Pourquoi rejoindre ToFrance ?",
+        texte:
+          "Parce que ce stage vous place au cœur d'un projet qui relie plusieurs enjeux majeurs : l'accès à la langue, à la formation et à l'emploi, la reconnaissance des compétences, l'accompagnement des personnes réfugiées, la réponse aux besoins des métiers en tension, et l'usage de l'intelligence artificielle au service de l'impact social. Vous contribuerez à construire les premiers partenariats d'un projet ambitieux, humain et ancré dans le terrain.",
+      },
+    ] as Section[],
   },
 ] as const;
 
