@@ -93,7 +93,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             <div className="flex items-center gap-2 mb-3">
               <Target className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-semibold uppercase text-primary">
-                Ton plan personnalisé
+                {ti18n("completion.yourPlan")}
               </h3>
             </div>
             <PersonalizedPlanSteps
@@ -102,7 +102,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
               adminStatus={answers.admin_status}
             />
             <p className="mt-3 text-sm font-medium text-primary">
-              Tu es sur le bon chemin 💪
+              {ti18n("completion.onTrack")} 💪
             </p>
           </div>
 
