@@ -137,7 +137,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {answers.admin_status === "sans_papiers" && (
             <div className="mb-6 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <span>⚠️ Orientation juridique recommandée — nous vous mettrons en relation avec des partenaires spécialisés</span>
+              <span>⚠️ {ti18n("completion.legalAlert")}</span>
             </div>
           )}
 
