@@ -118,7 +118,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-amber-500" />
-                <span className="font-medium">Score de qualification</span>
+                <span className="font-medium">{ti18n("completion.score")}</span>
               </div>
               <span className="text-2xl font-bold" style={{ color: scoreColor }}>
                 {result.score}/100
