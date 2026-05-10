@@ -177,7 +177,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {result.metier && (
             <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
               <h3 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
-                Métier conseillé
+                {ti18n("completion.recommendedJob")}
               </h3>
               <p className="font-semibold text-foreground">{result.metier.label}</p>
               <p className="text-sm text-muted-foreground">
