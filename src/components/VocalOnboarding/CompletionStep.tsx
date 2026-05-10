@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "@/hooks/useLanguage";
+import { useTranslation } from "react-i18next";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
 import {
   computeOrientation,
@@ -23,6 +24,7 @@ interface CompletionStepProps {
 
 export function CompletionStep({ answers, onComplete, isLoading = false }: CompletionStepProps) {
   const { t } = useLanguage();
+  const { t: ti18n } = useTranslation();
   const [copied, setCopied] = useState(false);
 
   // Compute v2 orientation result
@@ -46,10 +48,10 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
     try {
       await navigator.clipboard.writeText(result.messageWhatsapp);
       setCopied(true);
-      toast.success("Message copié !");
+      toast.success(ti18n("completion.copySuccess"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Impossible de copier");
+      toast.error(ti18n("completion.copyError"));
     }
   };
 
@@ -91,7 +93,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             <div className="flex items-center gap-2 mb-3">
               <Target className="h-5 w-5 text-primary" />
               <h3 className="text-sm font-semibold uppercase text-primary">
-                Ton plan personnalisé
+                {ti18n("completion.yourPlan")}
               </h3>
             </div>
             <PersonalizedPlanSteps
@@ -100,7 +102,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
               adminStatus={answers.admin_status}
             />
             <p className="mt-3 text-sm font-medium text-primary">
-              Tu es sur le bon chemin 💪
+              {ti18n("completion.onTrack")} 💪
             </p>
           </div>
 
@@ -116,7 +118,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             <div className="mb-3 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Star className="h-5 w-5 text-amber-500" />
-                <span className="font-medium">Score de qualification</span>
+                <span className="font-medium">{ti18n("completion.score")}</span>
               </div>
               <span className="text-2xl font-bold" style={{ color: scoreColor }}>
                 {result.score}/100
@@ -135,7 +137,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {answers.admin_status === "sans_papiers" && (
             <div className="mb-6 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-4 w-4 flex-shrink-0" />
-              <span>⚠️ Orientation juridique recommandée — nous vous mettrons en relation avec des partenaires spécialisés</span>
+              <span>⚠️ {ti18n("completion.legalAlert")}</span>
             </div>
           )}
 
@@ -158,7 +160,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {result.actionsLabels.length > 0 && (
             <div className="mb-6 rounded-xl border border-border bg-secondary/30 p-4 text-left">
               <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-                Prochaines étapes
+                {ti18n("completion.nextSteps")}
               </h3>
               <ul className="space-y-2">
                 {result.actionsLabels.map((action, i) => (
@@ -175,14 +177,14 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {result.metier && (
             <div className="mb-6 rounded-xl border border-primary/20 bg-primary/5 p-4 text-left">
               <h3 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
-                Métier conseillé
+                {ti18n("completion.recommendedJob")}
               </h3>
               <p className="font-semibold text-foreground">{result.metier.label}</p>
               <p className="text-sm text-muted-foreground">
                 {result.metier.certification} · {result.metier.duree}
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                Financements : {result.metier.financements.join(", ")}
+                {ti18n("completion.funding")} : {result.metier.financements.join(", ")}
               </p>
             </div>
           )}
@@ -190,7 +192,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {/* Lead pack summary */}
           <div className="mb-6 space-y-2 rounded-xl border border-border bg-secondary/30 p-4 text-left">
             <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-              Récapitulatif
+              {ti18n("completion.summary")}
             </h3>
             {leadPackInfo.name && (
               <div className="flex items-center gap-2 text-sm">
@@ -226,7 +228,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             onClick={handleCopyWhatsApp}
           >
             {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "Copié !" : "Copier le message WhatsApp"}
+            {copied ? ti18n("completion.copied") : ti18n("completion.copyWhatsapp")}
           </Button>
 
           <Button
@@ -239,7 +241,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Finalisation...
+                {ti18n("completion.finalizing")}
               </>
             ) : (
               <>
@@ -256,28 +258,29 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
 
 // Personalized plan steps based on route
 function PersonalizedPlanSteps({ route, distanceToJob, adminStatus }: { route: string; distanceToJob?: number; adminStatus?: string }) {
+  const { t: ti18n } = useTranslation();
   const steps: { emoji: string; text: string }[] = [];
 
   if (adminStatus === "sans_papiers" || adminStatus === "demandeur_asile") {
-    steps.push({ emoji: "📋", text: "Régulariser ta situation administrative" });
+    steps.push({ emoji: "📋", text: ti18n("completion.step_admin") });
   }
 
   if (route === "fle" || route === "fle_pro") {
-    steps.push({ emoji: "📖", text: "Améliorer ton français (1-2 mois)" });
-    steps.push({ emoji: "🎓", text: "Accéder à une formation professionnelle" });
-    steps.push({ emoji: "💼", text: "Trouver un emploi stable" });
+    steps.push({ emoji: "📖", text: ti18n("completion.step_french") });
+    steps.push({ emoji: "🎓", text: ti18n("completion.step_training") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_job") });
   } else if (route === "formation") {
-    steps.push({ emoji: "🎓", text: "Suivre une formation qualifiante" });
-    steps.push({ emoji: "📜", text: "Obtenir ta certification" });
-    steps.push({ emoji: "💼", text: "Décrocher un emploi dans ton secteur" });
+    steps.push({ emoji: "🎓", text: ti18n("completion.step_qualifying") });
+    steps.push({ emoji: "📜", text: ti18n("completion.step_certif") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_sector_job") });
   } else if (route === "emploi") {
-    steps.push({ emoji: "🔍", text: "Mise en relation avec des employeurs" });
-    steps.push({ emoji: "🤝", text: "Entretiens et recrutement" });
-    steps.push({ emoji: "💼", text: "Démarrer ton emploi" });
+    steps.push({ emoji: "🔍", text: ti18n("completion.step_employer") });
+    steps.push({ emoji: "🤝", text: ti18n("completion.step_interview") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_start_job") });
   } else {
-    steps.push({ emoji: "🧭", text: "Orientation personnalisée" });
-    steps.push({ emoji: "📖", text: "Formation adaptée à ton profil" });
-    steps.push({ emoji: "💼", text: "Insertion professionnelle" });
+    steps.push({ emoji: "🧭", text: ti18n("completion.step_orientation") });
+    steps.push({ emoji: "📖", text: ti18n("completion.step_adapted") });
+    steps.push({ emoji: "💼", text: ti18n("completion.step_insertion") });
   }
 
   return (
