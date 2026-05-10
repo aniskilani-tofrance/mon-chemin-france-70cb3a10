@@ -418,6 +418,7 @@ function buildMailto(poste?: string) {
 
 export default function Recrutement() {
   const [posteSelectionne, setPosteSelectionne] = useState<string>("");
+  const [offreOuverte, setOffreOuverte] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const rateLimit = useRateLimit(3, 120_000);
