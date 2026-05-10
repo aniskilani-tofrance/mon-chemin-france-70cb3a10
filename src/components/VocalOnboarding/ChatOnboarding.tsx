@@ -1026,7 +1026,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                   disabled={isProcessing}
                   className="w-full"
                 >
-                  {language === "ar" ? "تأكيد" : language === "en" ? "Confirm" : "Confirmer"} ({multiSelected.length})
+                  {tr("confirm", language)} ({multiSelected.length})
                 </Button>
               )}
             </div>
@@ -1037,12 +1037,12 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
             <div className="flex flex-col items-center gap-3">
               {isListening && (
                 <p className="text-xs text-muted-foreground animate-pulse">
-                  {language === "ar" ? "🎤 أستمع إليكم..." : "🎤 Je vous écoute..."}
+                  {tr("listening", language)}
                 </p>
               )}
               {isSpeaking && !isListening && (
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
-                  {language === "ar" ? "🔊 ماريان تتحدّث..." : "🔊 Marianne parle..."}
+                  {tr("speaking", language)}
                   {wasCached && <span className="text-yellow-500" title="Servi depuis le cache">⚡</span>}
                 </p>
               )}
@@ -1067,7 +1067,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && inputText.trim()) handleSubmit();
                   }}
-                  placeholder={language === "ar" ? "أو اكتبوا إجابتكم هنا..." : language === "en" ? "Or type your answer here..." : "Ou tapez votre réponse ici..."}
+                  placeholder={tr("typeAnswer", language)}
                   className="flex-1 text-sm"
                   dir={isRTL ? "rtl" : "ltr"}
                   disabled={isProcessing}
@@ -1108,23 +1108,9 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                   placeholder={
                     isEmail ? "email@exemple.com" :
                     isPhone ? "+33 6 12 34 56 78" :
-                    currentQuestionId === "contact_firstname" ? (
-                      language === "ar" ? "اسمكم الأوّل..." :
-                      language === "en" ? "Your first name..." :
-                      language === "es" ? "Tu nombre..." :
-                      language === "pt" ? "Seu primeiro nome..." :
-                      language === "ru" ? "Ваше имя..." :
-                      "Votre prénom..."
-                    ) :
-                    currentQuestionId === "contact_lastname" ? (
-                      language === "ar" ? "اسم عائلتكم..." :
-                      language === "en" ? "Your last name..." :
-                      language === "es" ? "Tu apellido..." :
-                      language === "pt" ? "Seu sobrenome..." :
-                      language === "ru" ? "Ваша фамилия..." :
-                      "Votre nom de famille..."
-                    ) :
-                    (language === "ar" ? "اكتبوا إجابتكم..." : "Tapez votre réponse...")
+                    currentQuestionId === "contact_firstname" ? tr("firstNamePh", language) :
+                    currentQuestionId === "contact_lastname" ? tr("lastNamePh", language) :
+                    tr("typeAnswerShort", language)
                   }
                   className="flex-1"
                   disabled={isProcessing}
@@ -1154,7 +1140,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
               onCheckedChange={(checked) => setRgpdAccepted(!!checked)} 
             />
             <Label htmlFor="rgpd" className="text-xs text-muted-foreground">
-              {language === "ar" ? "أوافق على معالجة بياناتي الشخصية وفقًا لسياسة الخصوصية" : "J'accepte le traitement de mes données conformément à la politique de confidentialité"}
+              {tr("rgpd", language)}
             </Label>
           </div>
         </div>
@@ -1167,7 +1153,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
           className="rounded-xl border border-green-500/30 bg-green-500/10 p-4 text-center"
         >
           <p className="text-sm font-medium text-foreground">
-            {language === "ar" ? "🎉 شكرًا لكم! جارٍ تحليل ملفكم الشخصي..." : "🎉 Merci ! Analyse de votre profil en cours..."}
+            {tr("completing", language)}
           </p>
         </motion.div>
       )}
