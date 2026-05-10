@@ -428,6 +428,19 @@
       "confirm": "Todo bien, continuar",
       "empty": "Aún no hay respuestas registradas.",
       "tts_intro": "Aquí está tu resumen. {{count}} respuestas guardadas."
+    },
+    "contact": {
+      "title": "¿Cómo podemos contactarte?",
+      "subtitle": "Tu nombre y teléfono permiten al equipo ToFrance llamarte rápidamente.",
+      "step": "Paso {{current}} de {{total}}",
+      "firstname_label": "Nombre",
+      "firstname_placeholder": "Tu nombre",
+      "phone_label": "Teléfono",
+      "phone_placeholder": "+34 600 00 00 00",
+      "phone_error": "Teléfono requerido para poder contactarte.",
+      "submit": "Continuar",
+      "back": "Atrás",
+      "replay": "Repetir"
     }
   }
 }

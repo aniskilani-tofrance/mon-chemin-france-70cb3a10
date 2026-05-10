@@ -428,6 +428,19 @@
       "confirm": "Tout est bon, continuer",
       "empty": "Aucune réponse enregistrée pour le moment.",
       "tts_intro": "Voici votre récapitulatif. {{count}} réponses enregistrées."
+    },
+    "contact": {
+      "title": "Comment pouvons-nous vous joindre ?",
+      "subtitle": "Votre prénom et votre téléphone permettent à l'équipe ToFrance de vous rappeler rapidement.",
+      "step": "Étape {{current}} sur {{total}}",
+      "firstname_label": "Prénom",
+      "firstname_placeholder": "Votre prénom",
+      "phone_label": "Téléphone",
+      "phone_placeholder": "06 12 34 56 78",
+      "phone_error": "Téléphone requis pour être recontacté.",
+      "submit": "Continuer",
+      "back": "Retour",
+      "replay": "Réécouter"
     }
   }
 }

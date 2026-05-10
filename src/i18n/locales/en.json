@@ -428,6 +428,19 @@
       "confirm": "Looks good, continue",
       "empty": "No answers recorded yet.",
       "tts_intro": "Here is your recap. {{count}} answers saved."
+    },
+    "contact": {
+      "title": "How can we reach you?",
+      "subtitle": "Your first name and phone number let the ToFrance team call you back quickly.",
+      "step": "Step {{current}} of {{total}}",
+      "firstname_label": "First name",
+      "firstname_placeholder": "Your first name",
+      "phone_label": "Phone",
+      "phone_placeholder": "+33 6 12 34 56 78",
+      "phone_error": "Phone number required so we can call you back.",
+      "submit": "Continue",
+      "back": "Back",
+      "replay": "Replay"
     }
   }
 }
