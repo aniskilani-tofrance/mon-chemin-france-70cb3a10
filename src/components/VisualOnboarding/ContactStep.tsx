@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Phone, User, Volume2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,13 +31,14 @@ export function ContactStep({
   totalQuestions,
   tts,
 }: ContactStepProps) {
+  const { t } = useTranslation();
   const [firstname, setFirstname] = useState(initialFirstname);
   const [phone, setPhone] = useState(initialPhone);
   const [touched, setTouched] = useState(false);
   const lastSpokenRef = useRef(false);
 
-  const title = "Comment pouvons-nous vous joindre ?";
-  const subtitle = "Votre prénom et votre téléphone permettent à l’équipe ToFrance de vous rappeler rapidement.";
+  const title = t("onboardingVisual.contact.title");
+  const subtitle = t("onboardingVisual.contact.subtitle");
 
   useEffect(() => {
     if (!tts.isEnabled || !tts.isSupported || lastSpokenRef.current) return;
@@ -58,7 +60,7 @@ export function ContactStep({
     <motion.div initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -30 }} transition={{ duration: 0.3 }} className="flex w-full flex-col gap-6">
       <div className="space-y-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground">
-          <span>Étape {questionNumber} sur {totalQuestions}</span>
+          <span>{t("onboardingVisual.contact.step", { current: questionNumber, total: totalQuestions })}</span>
           <span>{progressPercent}%</span>
         </div>
         <Progress value={progressPercent} className="h-2" />
@@ -68,7 +70,7 @@ export function ContactStep({
         <div className="flex items-center justify-center gap-2">
           <h2 className="text-2xl font-bold leading-tight text-foreground sm:text-3xl">{title}</h2>
           {tts.isSupported && (
-            <button type="button" onClick={() => tts.speak(`${title}. ${subtitle}`)} aria-label="Réécouter" className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10">
+            <button type="button" onClick={() => tts.speak(`${title}. ${subtitle}`)} aria-label={t("onboardingVisual.contact.replay")} className="flex h-9 w-9 items-center justify-center rounded-full border border-primary/30 bg-card text-primary transition-colors hover:bg-primary/10">
               <Volume2 className={`h-4 w-4 ${tts.isSpeaking ? "animate-pulse" : ""}`} />
             </button>
           )}
@@ -78,25 +80,25 @@ export function ContactStep({
 
       <form onSubmit={handleSubmit} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="contact_firstname" className="text-base">Prénom</Label>
+          <Label htmlFor="contact_firstname" className="text-base">{t("onboardingVisual.contact.firstname_label")}</Label>
           <div className="relative">
             <User className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder="Votre prénom" className="h-14 pl-10 text-lg" />
+            <Input id="contact_firstname" autoComplete="given-name" required value={firstname} onChange={(event) => setFirstname(event.target.value)} onBlur={() => setTouched(true)} placeholder={t("onboardingVisual.contact.firstname_placeholder")} className="h-14 pl-10 text-lg" />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="contact_phone" className="text-base">Téléphone</Label>
+          <Label htmlFor="contact_phone" className="text-base">{t("onboardingVisual.contact.phone_label")}</Label>
           <div className="relative">
             <Phone className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder="06 12 34 56 78" className="h-14 pl-10 text-lg" />
+            <Input id="contact_phone" type="tel" inputMode="tel" autoComplete="tel" required value={phone} onChange={(event) => setPhone(event.target.value)} onBlur={() => setTouched(true)} placeholder={t("onboardingVisual.contact.phone_placeholder")} className="h-14 pl-10 text-lg" />
           </div>
-          {touched && !PHONE_REGEX.test(phone.trim()) && <p className="text-sm text-destructive">Téléphone requis pour être recontacté.</p>}
+          {touched && !PHONE_REGEX.test(phone.trim()) && <p className="text-sm text-destructive">{t("onboardingVisual.contact.phone_error")}</p>}
         </div>
 
         <div className="flex flex-col gap-3 pt-2">
-          <Button type="submit" disabled={!isValid} size="lg" className="h-14 w-full gap-2 text-base font-semibold">Continuer<ArrowRight className="h-5 w-5" /></Button>
-          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2 self-start"><ArrowLeft className="h-4 w-4" />Retour</Button>
+          <Button type="submit" disabled={!isValid} size="lg" className="h-14 w-full gap-2 text-base font-semibold">{t("onboardingVisual.contact.submit")}<ArrowRight className="h-5 w-5" /></Button>
+          <Button type="button" variant="ghost" onClick={onPrevious} className="gap-2 self-start"><ArrowLeft className="h-4 w-4" />{t("onboardingVisual.contact.back")}</Button>
         </div>
       </form>
     </motion.div>

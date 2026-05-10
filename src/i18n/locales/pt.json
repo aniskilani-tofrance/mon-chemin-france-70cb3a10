@@ -428,6 +428,19 @@
       "confirm": "Tudo certo, continuar",
       "empty": "Nenhuma resposta registrada ainda.",
       "tts_intro": "Aqui está seu resumo. {{count}} respostas salvas."
+    },
+    "contact": {
+      "title": "Como podemos entrar em contato?",
+      "subtitle": "Seu primeiro nome e telefone permitem que a equipe ToFrance te ligue de volta rapidamente.",
+      "step": "Etapa {{current}} de {{total}}",
+      "firstname_label": "Primeiro nome",
+      "firstname_placeholder": "Seu primeiro nome",
+      "phone_label": "Telefone",
+      "phone_placeholder": "+33 6 12 34 56 78",
+      "phone_error": "Telefone necessário para entrarmos em contato.",
+      "submit": "Continuar",
+      "back": "Voltar",
+      "replay": "Repetir"
     }
   }
 }
