@@ -192,7 +192,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {/* Lead pack summary */}
           <div className="mb-6 space-y-2 rounded-xl border border-border bg-secondary/30 p-4 text-left">
             <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
-              Récapitulatif
+              {ti18n("completion.summary")}
             </h3>
             {leadPackInfo.name && (
               <div className="flex items-center gap-2 text-sm">
