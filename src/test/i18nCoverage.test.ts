@@ -29,7 +29,7 @@ function getByPath(obj: any, path: string): unknown {
 }
 
 // Paths whose value may legitimately match FR (proper nouns, brand, units, very short)
-const ALLOW_SAME_AS_FR = (path: string, value: string): boolean => {
+const ALLOW_SAME_AS_FR = (path: string, value: string, lang: Lang): boolean => {
   const v = value.trim();
   if (v.length <= 2) return true; // single chars / digits
   if (/^[\p{Emoji}\s\d.,:/-]+$/u.test(v)) return true; // emoji-only / numeric
@@ -38,6 +38,8 @@ const ALLOW_SAME_AS_FR = (path: string, value: string): boolean => {
   if (/^[<>≤≥]?\s*\d+([.,]\d+)?(\s*[-–]\s*\d+([.,]\d+)?)?\s*(km|m|h|€|%)?$/i.test(v)) return true;
   // Brand / proper nouns commonly identical across languages
   if (/^(ToFrance|France|Marianne|Lyon|Paris|Marseille|Stripe|WhatsApp|HubSpot|Email|OK)$/i.test(v)) return true;
+  // For Latin-script languages, single-word cognates are legitimate (Transport, Logistique…)
+  if ((lang === "en" || lang === "es" || lang === "pt") && /^\p{Lu}[\p{L}'-]*$/u.test(v)) return true;
   return false;
 };
 
