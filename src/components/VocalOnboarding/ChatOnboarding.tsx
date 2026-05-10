@@ -925,10 +925,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                 size="lg"
               >
                 <Send className="h-4 w-4 mr-2" />
-                {language === "ar" ? "تأكيد" :
-                 language === "en" ? "Confirm" :
-                 language === "es" ? "Confirmar" :
-                 "Confirmer"}
+                {tr("confirm", language)}
               </Button>
             </motion.div>
           )}
@@ -977,9 +974,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                   animate={{ opacity: 1, y: 0 }}
                   className="mt-2 text-xs text-destructive font-medium"
                 >
-                  {language === "ar" ? "يُرجى إدخال 5 أرقام" :
-                   language === "en" ? "Please enter 5 digits" :
-                   "Veuillez entrer 5 chiffres"}
+                  {tr("fiveDigits", language)}
                 </motion.p>
               )}
               <Button
@@ -989,10 +984,7 @@ export function ChatOnboarding({ onComplete, initialAnswers, resumeFromQuestion,
                 size="lg"
               >
                 <Send className="h-4 w-4 mr-2" />
-                {language === "ar" ? "تأكيد" :
-                 language === "en" ? "Confirm" :
-                 language === "es" ? "Confirmar" :
-                 "Confirmer"}
+                {tr("confirm", language)}
               </Button>
             </motion.div>
           )}
