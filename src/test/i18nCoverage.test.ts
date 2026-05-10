@@ -69,7 +69,7 @@ describe("i18n locale files — no FR fallback strings leaking into other langua
       for (const { path, value: frValue } of frLeaves) {
         const v = getByPath(LOCALES[lang], path);
         if (typeof v !== "string") continue;
-        if (v === frValue && !ALLOW_SAME_AS_FR(path, frValue)) {
+        if (v === frValue && !ALLOW_SAME_AS_FR(path, frValue, lang)) {
           leaks.push(`${path} = "${frValue}"`);
         }
       }
@@ -111,15 +111,15 @@ describe("Decision tree — every question, subtitle and choice is translated fo
       for (const [qid, q] of Object.entries(ONBOARDING_TREE.questions)) {
         const frText = q.question?.fr;
         const langText = q.question?.[lang];
-        if (frText && langText && frText === langText && !ALLOW_SAME_AS_FR(qid, frText)) {
+        if (frText && langText && frText === langText && !ALLOW_SAME_AS_FR(qid, frText, lang)) {
           fallbacks.push(`${qid}.question`);
         }
-        if (q.subtitle?.fr && q.subtitle?.[lang] === q.subtitle.fr && !ALLOW_SAME_AS_FR(qid, q.subtitle.fr)) {
+        if (q.subtitle?.fr && q.subtitle?.[lang] === q.subtitle.fr && !ALLOW_SAME_AS_FR(qid, q.subtitle.fr, lang)) {
           fallbacks.push(`${qid}.subtitle`);
         }
         if (q.choices) {
           for (const c of q.choices) {
-            if (c.label?.fr && c.label?.[lang] === c.label.fr && !ALLOW_SAME_AS_FR(c.id, c.label.fr)) {
+            if (c.label?.fr && c.label?.[lang] === c.label.fr && !ALLOW_SAME_AS_FR(c.id, c.label.fr, lang)) {
               fallbacks.push(`${qid}.choices.${c.id}.label`);
             }
           }
@@ -168,7 +168,7 @@ describe("Validation & error strings — translated in every supported language"
       for (const path of REQUIRED_ERROR_PATHS) {
         const frVal = getByPath(LOCALES.fr, path) as string;
         const v = getByPath(LOCALES[lang], path) as string;
-        if (typeof v === "string" && typeof frVal === "string" && v === frVal && !ALLOW_SAME_AS_FR(path, frVal)) {
+        if (typeof v === "string" && typeof frVal === "string" && v === frVal && !ALLOW_SAME_AS_FR(path, frVal, lang)) {
           leaks.push(path);
         }
       }
