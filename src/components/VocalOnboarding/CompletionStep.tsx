@@ -241,7 +241,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
             {isLoading ? (
               <>
                 <Loader2 className="h-5 w-5 animate-spin" />
-                Finalisation...
+                {ti18n("completion.finalizing")}
               </>
             ) : (
               <>
