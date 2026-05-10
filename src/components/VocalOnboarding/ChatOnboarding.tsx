@@ -27,6 +27,58 @@ import {
 
 const emailSchema = z.string().trim().email().max(255);
 
+// UI strings translated for the 6 supported languages
+const UI = {
+  confirm: { fr: "Confirmer", en: "Confirm", ar: "تأكيد", es: "Confirmar", pt: "Confirmar", ru: "Подтвердить" },
+  thanks: { fr: "Merci !", en: "Thank you!", ar: "شكرًا لكم!", es: "¡Gracias!", pt: "Obrigado!", ru: "Спасибо!" },
+  emailInvalid: { fr: "Format email invalide", en: "Invalid email format", ar: "صيغة البريد الإلكتروني غير صحيحة", es: "Formato de correo inválido", pt: "Formato de email inválido", ru: "Неверный формат email" },
+  micHint: {
+    fr: "Pour l’adresse et le code postal, le micro reste coupé pendant la saisie.",
+    en: "For address and postal code, the microphone stays off while you type.",
+    ar: "في خطوة العنوان والرمز البريدي، يبقى الميكروفون متوقفًا أثناء الكتابة.",
+    es: "Para la dirección y el código postal, el micrófono permanece apagado mientras escribes.",
+    pt: "Para o endereço e o código postal, o microfone permanece desligado durante a digitação.",
+    ru: "Для адреса и почтового индекса микрофон остаётся выключенным во время ввода.",
+  },
+  fiveDigits: { fr: "Veuillez entrer 5 chiffres", en: "Please enter 5 digits", ar: "يُرجى إدخال 5 أرقام", es: "Por favor, ingresa 5 dígitos", pt: "Por favor, insira 5 dígitos", ru: "Пожалуйста, введите 5 цифр" },
+  listening: { fr: "🎤 Je vous écoute...", en: "🎤 I'm listening...", ar: "🎤 أستمع إليكم...", es: "🎤 Te escucho...", pt: "🎤 Estou a ouvir...", ru: "🎤 Я вас слушаю..." },
+  speaking: { fr: "🔊 Marianne parle...", en: "🔊 Marianne is speaking...", ar: "🔊 ماريان تتحدّث...", es: "🔊 Marianne está hablando...", pt: "🔊 Marianne está a falar...", ru: "🔊 Марианна говорит..." },
+  typeAnswer: { fr: "Ou tapez votre réponse ici...", en: "Or type your answer here...", ar: "أو اكتبوا إجابتكم هنا...", es: "O escribe tu respuesta aquí...", pt: "Ou escreva a sua resposta aqui...", ru: "Или введите ваш ответ здесь..." },
+  typeAnswerShort: { fr: "Tapez votre réponse...", en: "Type your answer...", ar: "اكتبوا إجابتكم...", es: "Escribe tu respuesta...", pt: "Escreva a sua resposta...", ru: "Введите ваш ответ..." },
+  firstNamePh: { fr: "Votre prénom...", en: "Your first name...", ar: "اسمكم الأوّل...", es: "Tu nombre...", pt: "Seu primeiro nome...", ru: "Ваше имя..." },
+  lastNamePh: { fr: "Votre nom de famille...", en: "Your last name...", ar: "اسم عائلتكم...", es: "Tu apellido...", pt: "Seu sobrenome...", ru: "Ваша фамилия..." },
+  rgpd: {
+    fr: "J'accepte le traitement de mes données conformément à la politique de confidentialité",
+    en: "I consent to the processing of my personal data according to the privacy policy",
+    ar: "أوافق على معالجة بياناتي الشخصية وفقًا لسياسة الخصوصية",
+    es: "Acepto el tratamiento de mis datos personales conforme a la política de privacidad",
+    pt: "Aceito o tratamento dos meus dados pessoais de acordo com a política de privacidade",
+    ru: "Я согласен(на) на обработку моих персональных данных в соответствии с политикой конфиденциальности",
+  },
+  completing: {
+    fr: "🎉 Merci ! Analyse de votre profil en cours...",
+    en: "🎉 Thank you! Analyzing your profile...",
+    ar: "🎉 شكرًا لكم! جارٍ تحليل ملفكم الشخصي...",
+    es: "🎉 ¡Gracias! Analizando tu perfil...",
+    pt: "🎉 Obrigado! A analisar o seu perfil...",
+    ru: "🎉 Спасибо! Анализ вашего профиля...",
+  },
+  emailRetry: {
+    fr: "Cet email ne semble pas correct. Pouvez-vous réessayer ?",
+    en: "This email doesn't look right. Could you try again?",
+    ar: "يبدو أنَّ هذا البريد الإلكتروني غير صحيح. هل يمكنكم المحاولة مرّةً أخرى؟",
+    es: "Este correo no parece correcto. ¿Puedes intentarlo de nuevo?",
+    pt: "Este email não parece correto. Pode tentar novamente?",
+    ru: "Этот email выглядит неверно. Попробуйте ещё раз?",
+  },
+  replay: { fr: "Réécouter Marianne", en: "Replay Marianne", ar: "إعادة تشغيل ماريان", es: "Volver a escuchar a Marianne", pt: "Ouvir Marianne novamente", ru: "Прослушать Марианну ещё раз" },
+} as const;
+
+const tr = (key: keyof typeof UI, lang: string): string => {
+  const entry = UI[key] as Record<string, string>;
+  return entry[lang] ?? entry.fr;
+};
+
 // Validates that a city name has at least 2 characters
 function isValidCity(value: string): boolean {
   return value.trim().length >= 2;
