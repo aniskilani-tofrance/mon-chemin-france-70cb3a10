@@ -54,7 +54,30 @@ const jsonLd = {
 
 const Index = () => {
   const { language } = useLanguage();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [roleChecked, setRoleChecked] = useState(false);
   const meta = SEO_BY_LANG[language] ?? SEO_BY_LANG.fr;
+
+  useEffect(() => {
+    if (authLoading) return;
+    if (!user) { setRoleChecked(true); return; }
+    let cancelled = false;
+    (async () => {
+      const role = await detectUserRole(user.id);
+      if (cancelled) return;
+      if (isStaffRole(role)) {
+        navigate(getRoleDashboardPath(role), { replace: true });
+      } else {
+        setRoleChecked(true);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [user, authLoading, navigate]);
+
+  if (authLoading || (user && !roleChecked)) {
+    return <LoadingScreen />;
+  }
 
   return (
     <div className="min-h-screen bg-background">
