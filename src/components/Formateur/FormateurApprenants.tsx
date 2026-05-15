@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, FileText, Copy, Sparkles } from "lucide-react";
+import { Loader2, User, FileText, Copy, Sparkles, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
 import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
