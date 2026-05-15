@@ -131,7 +131,7 @@ export function FormateurAFEST() {
                     <SelectContent>
                       {learnerIds.map((id) => (
                         <SelectItem key={id} value={id}>
-                          {learnerProfiles[id] || id.slice(0, 8)}
+                          {learnerProfiles[id] || "Apprenant sans nom"}
                         </SelectItem>
                       ))}
                     </SelectContent>
