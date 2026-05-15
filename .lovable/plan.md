@@ -1,47 +1,138 @@
-## Phase 1 — implémentation sans bloquer sur l'email
+## Email de résultats — maquettes HTML et schéma de données
 
-Je pars sur les 4 chantiers qui ne dépendent pas de la config domaine email. L'email résultats sera branché dès que le domaine est validé (template + trigger déjà prévus, c'est juste l'envoi qui attend).
+Email transactionnel envoyé automatiquement à `candidate_email` juste après la soumission du test (idempotent : un seul envoi par `test_results.id`). Un bouton "Recevoir par email" sur la page résultats déclenche aussi un renvoi (même payload).
 
-### 1. PDF résultats sobre (`PlacementTestResults.tsx`)
-- Lib : `jspdf` + `jspdf-autotable` (ajout dépendance)
-- Contenu : logo PEF, nom candidat, date, niveau CECRL + libellé, score global, analyse par compétence (barres simples), 3 recommandations
-- Footer : "Document généré par PEF — ToFrance" (pas de SIRET, pas de watermark "officiel", pas de tableau question-par-question)
-- Bouton "Télécharger le PDF" à côté du bouton existant
+### Schéma de données (payload du template)
 
-### 2. Dashboard admin analytics test de positionnement
-- Nouveau composant `AdminPlacementTestAnalytics.tsx` monté dans la page admin existante
-- Données : `test_results` + `placement_test_sessions` via `useQuery`
-- KPIs : nb tests 30j, score moyen, taux de complétion, durée moyenne
-- Charts (`recharts` déjà présent) : pie par niveau CECRL, line 30j volume, bar par catégorie d'erreurs
-- Export CSV uniquement (pas de Google Sheets)
+Données passées en `templateData` à `send-transactional-email` (template `placement-test-results`) :
 
-### 3. Responsive mobile sur le parcours test
-Fichiers : `PlacementTestHome.tsx`, `PlacementTestLegal.tsx`, `PlacementTest.tsx`, `QuestionCard.tsx`, `PlacementTestResults.tsx`
-- Conteneurs : `px-3 sm:px-4`, `max-w-2xl`
-- Boutons nav : `flex-col sm:flex-row`, `w-full sm:w-auto`, `min-h-11` (tap target ≥44px)
-- Inputs : `text-base` (évite le zoom iOS)
-- Timer/progress : tailles fluides `text-sm sm:text-base`
-- Tokens sémantiques : ajout `--placement-primary`, `--placement-accent` dans `index.css` (HSL) pour remplacer les couleurs en dur éventuelles
+```ts
+type PlacementResultsEmailData = {
+  // Identité candidat
+  candidateName: string;            // "Marie Dupont"
+  candidateEmail: string;           // destinataire (déjà dans recipientEmail)
 
-### 4. Accessibilité WCAG 2.1 AA
-Mêmes fichiers + `Header.tsx` du parcours test
-- `<main>` + hiérarchie H1/H2 correcte
-- `aria-label` sur tous les boutons icônes
-- Timer : `role="timer"` + `aria-live="polite"` + `aria-atomic="true"`
-- Progress : `role="progressbar"` + `aria-valuenow/min/max`
-- Questions : annonce changement via `aria-live="polite"` sur le conteneur de question
-- Champs : `aria-describedby` reliant erreurs et hints
-- Navigation clavier : focus visible (`focus-visible:ring-2`), Escape pour fermer modales, Enter pour valider
-- Contraste : vérifier `--placement-primary` (#00504e) vs blanc → ratio AA ok
+  // Résultat principal
+  level: "A1" | "A2" | "B1" | "B2"; // niveau CECRL atteint
+  levelLabel: string;               // "Élémentaire", "Intermédiaire"…
+  levelDescription: string;         // phrase pédagogique courte
+  score: number;                    // 0-100
+  durationMinutes: number;          // arrondi minute
+  completedAt: string;              // ISO ou "12 mai 2026 à 14h32"
 
-### 5. Email résultats (différé jusqu'à validation domaine)
-- Une fois le domaine ajouté : scaffold infra emails + template `placement-test-results` + trigger dans `handleSubmit` (idempotent via clé `test-result-${id}`) + bouton "Renvoyer par email" sur la page résultats
+  // Détail par compétence (4-5 catégories agrégées)
+  competences: Array<{
+    label: string;                  // "Compréhension écrite"
+    score: number;                  // 0-100
+  }>;
 
-### Hors scope Phase 1 (confirmé)
-Anti-fraude, lien session unique complet, notif formateur, CMS questions, emails marketing, refonte auth, watermark "officiel", tableau question-par-question dans le PDF.
+  // Recommandations pédagogiques (3 items max, déjà mappés au niveau)
+  recommendations: string[];        // ex: "Pratiquer la lecture quotidienne"
 
-### Détails techniques
-- Pas de migration DB (toutes les données existent déjà)
-- Dépendances à ajouter : `jspdf`, `jspdf-autotable`
-- `recharts` déjà installé
-- Aucun changement de logique métier (`test_results`, `placement_test_sessions`, scoring intacts)
+  // Liens utiles
+  resultsUrl: string;               // /placement-test/results?id=<uuid> (relecture en ligne)
+  pdfUrl?: string;                  // optionnel — sinon bouton "télécharger" dans l'app
+  trainerName?: string;             // si test lancé par un formateur
+
+  // Footer
+  siteName: string;                 // baked-in côté template ("PEF — ToFrance")
+};
+```
+
+Clé d'idempotence : `placement-results-${test_results.id}`. Pas besoin de nouvelle table — l'envoi est tracé dans `email_send_log` (créé par l'infra emails).
+
+### Maquette HTML — version desktop/mobile (responsive single-column)
+
+Structure React Email (`_shared/transactional-email-templates/placement-test-results.tsx`), rendu en HTML inline-style. Aperçu visuel :
+
+```text
+┌───────────────────────────────────────────────┐
+│                  [Logo PEF]                   │
+├───────────────────────────────────────────────┤
+│                                               │
+│   Bonjour Marie,                              │
+│                                               │
+│   Voici les résultats de votre test           │
+│   de positionnement.                          │
+│                                               │
+│   ┌─────────────────────────────────────┐    │
+│   │            NIVEAU CECRL              │    │
+│   │                                      │    │
+│   │             ┌─────┐                  │    │
+│   │             │ B1  │                  │    │
+│   │             └─────┘                  │    │
+│   │          Intermédiaire               │    │
+│   │                                      │    │
+│   │   Vous pouvez vous débrouiller       │    │
+│   │   dans la plupart des situations…    │    │
+│   └─────────────────────────────────────┘    │
+│                                               │
+│   Score global :  72 / 100                    │
+│   Durée :         18 min                      │
+│   Passé le :      12 mai 2026                 │
+│                                               │
+│   ─── Détail par compétence ───               │
+│                                               │
+│   Compréhension orale     ████████░░  78 %   │
+│   Compréhension écrite    ███████░░░  70 %   │
+│   Production écrite       ██████░░░░  65 %   │
+│   Grammaire / lexique     ███████░░░  72 %   │
+│                                               │
+│   ─── Nos recommandations ───                 │
+│                                               │
+│   •  Pratiquer la lecture quotidienne         │
+│   •  Suivre un module FLE niveau B1           │
+│   •  Échanger à l'oral 15 min / jour          │
+│                                               │
+│   ┌────────────────────────────────┐         │
+│   │   Voir mes résultats en ligne  │         │
+│   └────────────────────────────────┘         │
+│                                               │
+│   Test lancé par : Sophie Martin              │
+│                                               │
+│   ─────────────────────────────────────       │
+│   PEF — Plateforme d'Évaluation du Français   │
+│   Document non officiel à valeur indicative   │
+│   [unsubscribe — ajouté automatiquement]      │
+└───────────────────────────────────────────────┘
+```
+
+### Choix visuels
+
+- **Fond Body** : `#ffffff` (règle email).
+- **Conteneur** : largeur max 600 px, padding 32 px, fond `#f8fafa` (cohérent avec l'app).
+- **Couleurs marque** : `#00504e` (titres/CTA), `#17c3b2` (accent badge niveau, barres compétences).
+- **Police** : `Arial, Helvetica, sans-serif` (compat clients email — pas de fonts custom).
+- **Badge niveau CECRL** : carré arrondi 80×80, fond gradient `#00504e → #17c3b2`, texte blanc 32 px bold.
+- **Barres compétences** : `<table>` 2 colonnes (label / barre + %) — pas de flexbox (Outlook).
+- **Bouton CTA** : padding 14×28, fond `#00504e`, texte blanc, radius 8.
+- **Pas inclus** : pas de tableau question-par-question, pas de logo SIRET, pas de watermark "officiel" (cohérent décisions Phase 1).
+- **Footer système** : unsubscribe ajouté automatiquement par l'infra, ne pas le coder.
+
+### Sujet d'email
+
+Fonction subject :
+```ts
+subject: (d) => `Votre niveau de français : ${d.level} (${d.levelLabel})`
+```
+
+Fallback statique : `"Vos résultats du test de positionnement PEF"`.
+
+### Preview text (Preview component)
+
+`Niveau ${level} — score ${score}/100. Voici vos recommandations.`
+
+### Trigger côté app
+
+1. **Auto-envoi** dans `PlacementTest.tsx` → `handleSubmit`, juste après insertion dans `test_results`, avec `idempotencyKey: placement-results-${data.id}`.
+2. **Renvoi manuel** depuis le bouton existant "Recevoir par email" de `PlacementTestResults.tsx` (même payload, même clé → pas de doublon).
+
+### Pré-requis bloquant
+
+L'envoi nécessite un domaine email validé. Une fois le domaine ajouté :
+1. `setup_email_infra` (création queues + log)
+2. `scaffold_transactional_email` (génère `send-transactional-email`)
+3. Création du template `placement-test-results.tsx` avec ce schéma
+4. Déploiement edge function + branchement des deux triggers
+
+Cette plan ne touche à aucun code tant que le domaine n'est pas configuré — il fige la spec maquette + schéma pour validation.
