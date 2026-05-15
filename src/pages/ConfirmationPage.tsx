@@ -216,7 +216,7 @@ const ConfirmationPage = () => {
             </Card>
           </motion.div>
 
-          {/* ── Recommended route ── */}
+          {/* ── Recommended primary path ── */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -225,22 +225,30 @@ const ConfirmationPage = () => {
             <Card>
               <CardContent className="p-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {texts.yourRoute}
+                  {texts.primaryHeader}
                 </p>
-                <div className={`rounded-xl bg-gradient-to-br ${routeInfo.bgGradient} p-4`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm ${routeInfo.color}`}>
-                      {routeInfo.icon}
-                    </div>
-                    <div>
-                      <p className={`text-lg font-bold ${routeInfo.color}`}>{routeInfo.label}</p>
-                      <p className="text-sm text-muted-foreground">{routeInfo.description}</p>
-                    </div>
-                  </div>
-                </div>
+                <PathCard content={primaryContent} />
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* ── Secondary path (also relevant) ── */}
+          {secondaryContent && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card>
+                <CardContent className="p-5">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {texts.secondaryHeader}
+                  </p>
+                  <PathCard content={secondaryContent} compact />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* ── Profile summary ── */}
           {(profileItems.length > 0 || fullName || storedAnswers.contact_email || storedAnswers.location) && (
