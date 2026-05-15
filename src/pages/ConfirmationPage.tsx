@@ -200,13 +200,15 @@ const ConfirmationPage = () => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                      Un conseiller vous rappelle sous 48h
+                      {texts.callbackBadge}
                     </p>
                     <p className="text-base font-semibold text-foreground leading-snug">
-                      Merci{storedAnswers.contact_firstname ? `, ${storedAnswers.contact_firstname}` : ""}. Votre demande a bien été reçue.
+                      {storedAnswers.contact_firstname
+                        ? texts.callbackThanks.replace(/^(\S+)/, `$1, ${storedAnswers.contact_firstname}`)
+                        : texts.callbackThanks}
                     </p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Un conseiller parlant votre langue vous rappellera dans les <strong className="text-foreground">48 heures</strong> au numéro <strong className="text-foreground">{storedAnswers.contact_phone || "que vous avez indiqué"}</strong> pour vous aider à avancer vers le bon parcours. Vous n'êtes pas seul·e.
+                      {texts.callbackBody(storedAnswers.contact_phone || "—")}
                     </p>
                   </div>
                 </div>
