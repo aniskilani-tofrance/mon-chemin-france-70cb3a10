@@ -434,4 +434,20 @@ const ConfirmationPage = () => {
   );
 };
 
+function PathCard({ content, compact }: { content: PathContent; compact?: boolean }) {
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${content.bgGradient} p-4`}>
+      <div className="flex items-center gap-4">
+        <div className={`flex ${compact ? "h-12 w-12" : "h-14 w-14"} shrink-0 items-center justify-center rounded-xl bg-background shadow-sm ${content.color}`}>
+          {PATH_ICON[content.iconKey]}
+        </div>
+        <div>
+          <p className={`${compact ? "text-base" : "text-lg"} font-bold ${content.color}`}>{content.label}</p>
+          <p className="text-sm text-muted-foreground">{content.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default ConfirmationPage;
