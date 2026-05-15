@@ -59,6 +59,9 @@ const PlacementTestLegal = lazy(() => import("./pages/PlacementTestLegal"));
 
 const Recrutement = lazy(() => import("./pages/Recrutement"));
 
+const Orientation = lazy(() => import("./pages/Orientation"));
+const ConseillerDashboard = lazy(() => import("./pages/ConseillerDashboard"));
+
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -94,6 +97,8 @@ const App = () => (
               <Route path="/signup" element={<Signup />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/orientation" element={<Orientation />} />
+              <Route path="/conseiller" element={<ProtectedRoute><ConseillerDashboard /></ProtectedRoute>} />
               <Route path="/to/:sourceSlug" element={<ToSourceRedirect />} />
               <Route path="/confirmation" element={<ConfirmationPage />} />
               <Route path="/partners" element={<AdminRoute><Partners /></AdminRoute>} />
