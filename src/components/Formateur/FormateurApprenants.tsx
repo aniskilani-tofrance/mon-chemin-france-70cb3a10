@@ -87,8 +87,7 @@ export function FormateurApprenants() {
       if (!user) return;
 
       // Generate access code
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { data: diag, error } = await supabase
         .from("shared_diagnostics")
@@ -118,8 +117,7 @@ export function FormateurApprenants() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { data: diag, error } = await supabase
         .from("shared_diagnostics")
@@ -151,8 +149,7 @@ export function FormateurApprenants() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { error } = await supabase
         .from("placement_test_sessions")
