@@ -40,13 +40,13 @@ export function FormateurAFEST() {
     const ids = links?.map((l) => l.learner_id) || [];
     setLearnerIds(ids);
 
+    const map: Record<string, string> = {};
     if (ids.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, full_name, email")
         .in("user_id", ids);
-      const map: Record<string, string> = {};
-      profiles?.forEach((p) => { map[p.user_id!] = p.full_name || p.email || "—"; });
+      profiles?.forEach((p) => { map[p.user_id!] = p.full_name || p.email || "Apprenant sans nom"; });
       setLearnerProfiles(map);
     }
 
@@ -59,7 +59,7 @@ export function FormateurAFEST() {
     setObservations(
       (obs || []).map((o) => ({
         ...o,
-        learner_name: learnerProfiles[o.learner_id] || "—",
+        learner_name: map[o.learner_id] || "Apprenant sans nom",
       }))
     );
     setLoading(false);
