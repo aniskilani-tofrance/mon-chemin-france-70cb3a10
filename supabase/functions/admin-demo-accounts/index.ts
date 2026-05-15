@@ -79,6 +79,29 @@ Deno.serve(async (req) => {
         extraIds.push(id);
       }
 
+      // 2.b Demo establishment "Association de démo" (owned by directeur)
+      const providerId = await ensureDemoProvider(supabaseAdmin, created.directeur);
+
+      // Affiliate staff demo accounts as members of the demo establishment
+      const memberSeeds: Array<{ user_id: string; role: string; email: string; full_name: string }> = [
+        { user_id: created.formateur, role: "formateur", email: "demo.formateur@tofrance.fr", full_name: "Marc Petit (démo)" },
+        { user_id: created.cip, role: "cip", email: "demo.cip@tofrance.fr", full_name: "Karim Benali (démo CIP)" },
+        { user_id: created.benevole, role: "benevole", email: "demo.benevole@tofrance.fr", full_name: "Claire Moreau (démo bénévole)" },
+      ];
+      for (const m of memberSeeds) {
+        await supabaseAdmin.from("provider_members").upsert({
+          provider_id: providerId,
+          user_id: m.user_id,
+          email: m.email,
+          full_name: m.full_name,
+          role: m.role,
+          status: "active",
+          invited_by: created.directeur,
+          accepted_at: new Date().toISOString(),
+        }, { onConflict: "provider_id,user_id" });
+      }
+
+
       // 3. Link learners to formateur
       const formateurId = created.formateur;
       const allLearners = [created.apprenant, ...extraIds];
