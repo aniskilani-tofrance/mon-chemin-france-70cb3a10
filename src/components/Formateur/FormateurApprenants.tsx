@@ -185,7 +185,17 @@ export function FormateurApprenants() {
           <User className="h-5 w-5" />
           Mes apprenants ({learners.length})
         </CardTitle>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleCreatePlacement(null)}
+            disabled={creatingPlacement === "quick"}
+          >
+            {creatingPlacement === "quick"
+              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              : <GraduationCap className="mr-2 h-4 w-4" />}
+            Positionnement rapide (avec code)
+          </Button>
           <Button
             variant="outline"
             onClick={handleQuickDiagnostic}
