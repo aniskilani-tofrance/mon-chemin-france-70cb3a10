@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         extraIds.push(id);
       }
 
-      // 2.b Demo establishment "Association de démo" (owned by directeur)
+      // 2.b Demo establishment "Association Coeur&Vie" (owned by directeur)
       const providerId = await ensureDemoProvider(supabaseAdmin, created.directeur);
 
       // Affiliate staff demo accounts as members of the demo establishment
@@ -168,7 +168,7 @@ Deno.serve(async (req) => {
         accounts: DEMO_ACCOUNTS.map((a) => ({ ...a, password: DEMO_PASSWORD })),
         extra_learners_created: extraIds.length,
         demo_provider_id: providerId,
-        demo_provider_name: "Association de démo",
+        demo_provider_name: "Association Coeur&Vie",
       });
     }
 
@@ -245,7 +245,7 @@ async function ensureDemoProvider(admin: any, ownerId: string): Promise<string> 
   if (existing) {
     await admin.from("training_providers").update({
       user_id: ownerId,
-      name: "Association de démo",
+      name: "Association Coeur&Vie",
       is_active: true,
       city: "Paris",
       postal_code: "75011",
@@ -255,7 +255,7 @@ async function ensureDemoProvider(admin: any, ownerId: string): Promise<string> 
   }
 
   const { data: created, error } = await admin.from("training_providers").insert({
-    name: "Association de démo",
+    name: "Association Coeur&Vie",
     email: demoEmail,
     user_id: ownerId,
     provider_type: "training_org",

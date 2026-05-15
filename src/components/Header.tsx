@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Handshake, Home, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, Handshake, Home, ShieldCheck, LogIn, LogOut, User, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserEstablishment } from "@/hooks/useUserEstablishment";
 import logoTofrance from "@/assets/logo-tofrance.png";
 
 export function Header() {
@@ -14,6 +16,7 @@ export function Header() {
   const { t } = useLanguage();
   const { isAdmin } = useAdminCheck();
   const { user, signOut } = useAuth();
+  const { establishment } = useUserEstablishment();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -53,6 +56,12 @@ export function Header() {
             <LanguageSelector />
             {user ? (
               <>
+                {establishment && (
+                  <Badge variant="secondary" className="gap-1 hidden xl:inline-flex">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {establishment.name}
+                  </Badge>
+                )}
                 {isAdmin && (
                   <Button variant="hero" size="sm" asChild>
                     <Link to="/onboarding">Démarrer Marianne</Link>

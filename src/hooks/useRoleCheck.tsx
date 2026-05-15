@@ -68,7 +68,7 @@ export function useRoleCheck(role: AppRole) {
  * Priority: admin > directeur > formateur > default
  */
 export async function detectUserRole(userId: string): Promise<string> {
-  const roles: AppRole[] = ["admin", "directeur", "formateur"];
+  const roles: AppRole[] = ["admin", "directeur", "conseiller", "cip", "formateur", "benevole"];
   for (const role of roles) {
     const { data } = await supabase.rpc("has_role", { _user_id: userId, _role: role });
     if (data) return role;
@@ -80,7 +80,14 @@ export function getRoleDashboardPath(role: string): string {
   switch (role) {
     case "admin": return "/admin";
     case "directeur": return "/directeur";
+    case "conseiller": return "/conseiller";
+    case "cip": return "/cip";
     case "formateur": return "/formateur";
+    case "benevole": return "/partner-dashboard";
     default: return "/dashboard";
   }
+}
+
+export function isStaffRole(role: string): boolean {
+  return ["admin", "directeur", "conseiller", "cip", "formateur", "benevole"].includes(role);
 }
