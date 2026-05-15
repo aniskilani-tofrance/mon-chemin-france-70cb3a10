@@ -54,13 +54,13 @@ export function FormateurAssignations() {
     setLearnerIds(ids);
 
     // Get profiles for names
+    const map: Record<string, string> = {};
     if (ids.length > 0) {
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, full_name, email")
         .in("user_id", ids);
-      const map: Record<string, string> = {};
-      profiles?.forEach((p) => { map[p.user_id!] = p.full_name || p.email || "—"; });
+      profiles?.forEach((p) => { map[p.user_id!] = p.full_name || p.email || "Apprenant sans nom"; });
       setLearnerProfiles(map);
     }
 
@@ -86,7 +86,7 @@ export function FormateurAssignations() {
       (assigns || []).map((a) => ({
         ...a,
         module_title: moduleMap[a.module_id] || "—",
-        learner_name: learnerProfiles[a.learner_id] || "—",
+        learner_name: map[a.learner_id] || "Apprenant sans nom",
       }))
     );
     setLoading(false);
