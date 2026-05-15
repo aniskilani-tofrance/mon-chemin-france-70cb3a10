@@ -127,8 +127,8 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           {/* Parcours indicator */}
           <div className="mb-6 rounded-xl bg-secondary/50 p-4">
             <div className="mb-2 text-3xl">{PARCOURS_META[result.parcours].emoji}</div>
-            <p className="text-lg font-semibold text-foreground">{result.parcoursLabel}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{result.parcoursDescription}</p>
+            <p className="text-lg font-semibold text-foreground">{parcoursLabel}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{parcoursDescription}</p>
           </div>
 
           {/* Score badge */}
@@ -147,7 +147,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
               className="text-white"
               style={{ backgroundColor: scoreColor }}
             >
-              {result.scoreLabel}
+              {scoreLabelLocal}
             </Badge>
           </div>
 
@@ -160,9 +160,9 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           )}
 
           {/* Alertes */}
-          {result.alertes.length > 0 && (
+          {localizedAlertes.length > 0 && (
             <div className="mb-6 space-y-2">
-              {result.alertes.map((alerte, i) => (
+              {localizedAlertes.map((alerte, i) => (
                 <div
                   key={i}
                   className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 text-left text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
@@ -175,13 +175,13 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
           )}
 
           {/* Actions recommandées */}
-          {result.actionsLabels.length > 0 && (
+          {localizedActions.length > 0 && (
             <div className="mb-6 rounded-xl border border-border bg-secondary/30 p-4 text-left">
               <h3 className="mb-3 text-sm font-semibold uppercase text-muted-foreground">
                 {ti18n("completion.nextSteps")}
               </h3>
               <ul className="space-y-2">
-                {result.actionsLabels.map((action, i) => (
+                {localizedActions.map((action, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm">
                     <CheckCircle className="h-4 w-4 flex-shrink-0 text-primary" />
                     <span>{action}</span>
@@ -197,7 +197,7 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
               <h3 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
                 {ti18n("completion.recommendedJob")}
               </h3>
-              <p className="font-semibold text-foreground">{result.metier.label}</p>
+              <p className="font-semibold text-foreground">{localizedMetierLabel}</p>
               <p className="text-sm text-muted-foreground">
                 {result.metier.certification} · {result.metier.duree}
               </p>
