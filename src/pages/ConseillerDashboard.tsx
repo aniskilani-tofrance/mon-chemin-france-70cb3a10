@@ -165,7 +165,7 @@ const ConseillerDashboard = () => {
       to_status: payload.to_status ?? null,
       note: payload.note ?? null,
       metadata: payload.metadata ?? {},
-    });
+    } as never);
     if (error) console.error("Failed to log event", error);
   }, []);
 
