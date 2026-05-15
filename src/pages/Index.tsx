@@ -13,6 +13,7 @@ import { useLanguage } from "@/hooks/useLanguage";
 import { useAuth } from "@/hooks/useAuth";
 import { detectUserRole, getRoleDashboardPath, isStaffRole } from "@/hooks/useRoleCheck";
 import { LoadingScreen } from "@/components/LoadingScreen";
+import type { LanguageCode } from "@/lib/translations";
 
 const SEO_BY_LANG: Record<LanguageCode, { title: string; description: string }> = {
   fr: {
