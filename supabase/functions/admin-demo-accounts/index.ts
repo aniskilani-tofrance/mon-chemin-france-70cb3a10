@@ -232,6 +232,40 @@ async function ensureProfile(admin: any, user_id: string, email: string, full_na
   }
 }
 
+async function ensureDemoProvider(admin: any, ownerId: string): Promise<string> {
+  const demoEmail = "demo.association@tofrance.fr";
+  const { data: existing } = await admin
+    .from("training_providers")
+    .select("id")
+    .eq("email", demoEmail)
+    .maybeSingle();
+
+  if (existing) {
+    await admin.from("training_providers").update({
+      user_id: ownerId,
+      name: "Association de démo",
+      is_active: true,
+      city: "Paris",
+      postal_code: "75011",
+      description: "Établissement de démonstration ToFrance — regroupe tous les comptes démo.",
+    }).eq("id", existing.id);
+    return existing.id;
+  }
+
+  const { data: created, error } = await admin.from("training_providers").insert({
+    name: "Association de démo",
+    email: demoEmail,
+    user_id: ownerId,
+    provider_type: "training_org",
+    is_active: true,
+    city: "Paris",
+    postal_code: "75011",
+    description: "Établissement de démonstration ToFrance — regroupe tous les comptes démo.",
+  }).select("id").single();
+  if (error) throw error;
+  return created.id;
+}
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
     status,
