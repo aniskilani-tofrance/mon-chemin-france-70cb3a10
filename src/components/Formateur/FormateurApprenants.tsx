@@ -165,9 +165,10 @@ export function FormateurApprenants() {
       if (error) throw error;
 
       await navigator.clipboard.writeText(accessCode).catch(() => {});
+      const who = learner ? (learner.full_name || learner.email || "l'apprenant") : null;
       toast.success(
-        learner
-          ? `Test de positionnement assigné à ${learner.full_name || learner.email} — code : ${accessCode} (copié)`
+        who
+          ? `Test de positionnement assigné à ${who} — code : ${accessCode} (copié)`
           : `Code de positionnement généré : ${accessCode} (copié)`
       );
     } catch (err: any) {
