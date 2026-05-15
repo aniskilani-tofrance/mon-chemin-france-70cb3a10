@@ -13,6 +13,14 @@ import {
   PARCOURS_META,
   SCORE_COLORS,
 } from "@/lib/orientationEngine";
+import {
+  tParcoursLabel,
+  tParcoursDescription,
+  tAction,
+  tAlerte,
+  tScoreLabel,
+  tMetierLabel,
+} from "@/lib/orientationI18n";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
 
@@ -23,7 +31,7 @@ interface CompletionStepProps {
 }
 
 export function CompletionStep({ answers, onComplete, isLoading = false }: CompletionStepProps) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { t: ti18n } = useTranslation();
   const [copied, setCopied] = useState(false);
 
@@ -33,6 +41,16 @@ export function CompletionStep({ answers, onComplete, isLoading = false }: Compl
     const v2Responses = mapAnswersToV2(parsedAnswers);
     return computeOrientation(v2Responses);
   }, [answers]);
+
+  // Localized derived values
+  const parcoursLabel = tParcoursLabel(language, result.parcours);
+  const parcoursDescription = tParcoursDescription(language, result.parcours);
+  const scoreLabelLocal = tScoreLabel(language, result.scoreLabel);
+  const localizedActions = result.actions.map((a) => tAction(language, a));
+  const localizedAlertes = result.alerteCodes.map((c) => tAlerte(language, c));
+  const localizedMetierLabel = result.metier
+    ? tMetierLabel(language, result.secteur, result.metier.label)
+    : null;
 
   // Lead pack info
   const leadPackInfo = {
