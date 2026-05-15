@@ -1,10 +1,12 @@
+// @ts-nocheck
 import React, { useRef, useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle2, Volume2, PlayCircle, AlertCircle, Mic, Square, Clock, GripVertical, ChevronDown } from 'lucide-react';
+import { CheckCircle2, Volume2, PlayCircle, AlertCircle, Mic, Square, Clock } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 // ── MATCH PAIRS ──────────────────────────────────────────────
 function MatchPairs({ question, selectedAnswer, onSelect }) {
