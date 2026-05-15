@@ -94,10 +94,28 @@ export interface MetierMatch {
   financements: string[];
 }
 
+export type AlerteCode =
+  | "LOGEMENT_NO_DOMICILIATION"
+  | "ADMIN_WORK_RIGHT_NONE"
+  | "ADMIN_WORK_RIGHT_UNCERTAIN"
+  | "BPI_DETECTED"
+  | "RECONNAISSANCE_DIPLOMA"
+  | "RECONNAISSANCE_RECONVERSION"
+  | "FRANCE_TRAVAIL_REQUIRED"
+  | "LEVEL_ALPHA"
+  | "LEVEL_A0A1"
+  | "OFII_AVAILABLE"
+  | "SANTE_MENTALE_NEEDED"
+  | "CONSTRAINTS_MULTIPLE"
+  | "FEMALE_TRAINER_PREF"
+  | "NO_CHILDCARE";
+
 export interface OrientationResult {
   parcours: ParcoursId;
   parcoursLabel: string;
   parcoursDescription: string;
+  /** Secteur sélectionné (clé pour i18n du métier) */
+  secteur: Secteur;
   metier: MetierMatch | null;
   actions: ActionId[];
   actionsLabels: string[];
@@ -105,9 +123,28 @@ export interface OrientationResult {
   score: number;
   scoreLabel: "Froid" | "Tiède" | "Chaud" | "Très chaud";
   messageWhatsapp: string;
-  /** Alertes bloquantes ou prioritaires à afficher dans l'UI */
+  /** Alertes bloquantes ou prioritaires à afficher dans l'UI (FR par défaut) */
   alertes: string[];
+  /** Codes d'alertes pour i18n côté UI */
+  alerteCodes: AlerteCode[];
 }
+
+export const ALERTE_FR: Record<AlerteCode, string> = {
+  LOGEMENT_NO_DOMICILIATION: "🏠 Sans domiciliation administrative, l'inscription France Travail / CAF / banque est impossible. Orientation prioritaire vers un CCAS ou une association agréée.",
+  ADMIN_WORK_RIGHT_NONE: "⚠️ Droit de travail non établi — orientation administrative obligatoire avant toute démarche.",
+  ADMIN_WORK_RIGHT_UNCERTAIN: "⚠️ Droit de travail incertain — une vérification est nécessaire avant toute orientation.",
+  BPI_DETECTED: "🛡️ Statut BPI détecté : tu es éligible aux dispositifs renforcés AGIR (24 mois), HOPE (AFPA + OFII) et Accelair. Reconnaissance facilitée des qualifications via France Compétences.",
+  RECONNAISSANCE_DIPLOMA: "🎖️ Reconnaissance de diplôme : démarche ENIC-NARIC à engager. En parallèle, des métiers en tension peuvent être accessibles via une formation courte.",
+  RECONNAISSANCE_RECONVERSION: "🔄 Reconversion souhaitée — accompagnement orientation prioritaire.",
+  FRANCE_TRAVAIL_REQUIRED: "📌 Inscription à France Travail requise pour débloquer les financements formation.",
+  LEVEL_ALPHA: "📚 Niveau Alpha détecté (alphabétisation) : un parcours dédié est indispensable AVANT tout FLE classique. Les cours FLE A1 ne sont pas adaptés aux personnes non lectrices dans leur langue d'origine.",
+  LEVEL_A0A1: "📌 Niveau A0/A1 détecté : un parcours FLE/FOS est indispensable avant toute formation métier.",
+  OFII_AVAILABLE: "🇫🇷 Heures OFII disponibles : à utiliser EN PRIORITÉ avant tout FLE payant CPF (gratuit, déjà financé, conditionne ta carte de séjour pluriannuelle).",
+  SANTE_MENTALE_NEEDED: "💚 Besoin de soutien psychologique signalé : orientation vers COMEDE / Primo Levi / PASS (gratuit, sans avance de frais).",
+  CONSTRAINTS_MULTIPLE: "ℹ️ Contraintes multiples identifiées (mobilité, garde d'enfants…) — à prendre en compte lors de la mise en relation.",
+  FEMALE_TRAINER_PREF: "👩 Préférence formatrice femme indiquée — à respecter dans la mise en relation.",
+  NO_CHILDCARE: "👶 Pas de mode de garde — frein majeur à la formation. Orientation vers crèches AVIP / haltes-garderies partenaires.",
+};
 
 // ─── Référentiel métiers ──────────────────────────────────────
 
