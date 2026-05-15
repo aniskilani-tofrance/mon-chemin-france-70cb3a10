@@ -1059,13 +1059,19 @@ export type Database = {
       }
       onboarding_results: {
         Row: {
+          advisor_notes: string | null
           answers: Json
+          assigned_advisor_id: string | null
           barriers: string[] | null
+          callback_consent: boolean
+          callback_done_at: string | null
+          callback_requested_at: string | null
           completed_at: string | null
           created_at: string
           distance_to_job: number | null
           email: string | null
           first_name: string | null
+          follow_up_status: Database["public"]["Enums"]["follow_up_status"]
           french_level_cecrl: string | null
           hubspot_contact_id: string | null
           hubspot_deal_id: string | null
@@ -1076,6 +1082,10 @@ export type Database = {
           literacy: string | null
           main_goal: string | null
           phone: string | null
+          recommended_path:
+            | Database["public"]["Enums"]["recommended_path"]
+            | null
+          secondary_path: Database["public"]["Enums"]["recommended_path"] | null
           source_campaign: string | null
           source_location_id: string | null
           source_name: string | null
@@ -1088,13 +1098,19 @@ export type Database = {
           work_right: string | null
         }
         Insert: {
+          advisor_notes?: string | null
           answers?: Json
+          assigned_advisor_id?: string | null
           barriers?: string[] | null
+          callback_consent?: boolean
+          callback_done_at?: string | null
+          callback_requested_at?: string | null
           completed_at?: string | null
           created_at?: string
           distance_to_job?: number | null
           email?: string | null
           first_name?: string | null
+          follow_up_status?: Database["public"]["Enums"]["follow_up_status"]
           french_level_cecrl?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
@@ -1105,6 +1121,12 @@ export type Database = {
           literacy?: string | null
           main_goal?: string | null
           phone?: string | null
+          recommended_path?:
+            | Database["public"]["Enums"]["recommended_path"]
+            | null
+          secondary_path?:
+            | Database["public"]["Enums"]["recommended_path"]
+            | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null
@@ -1117,13 +1139,19 @@ export type Database = {
           work_right?: string | null
         }
         Update: {
+          advisor_notes?: string | null
           answers?: Json
+          assigned_advisor_id?: string | null
           barriers?: string[] | null
+          callback_consent?: boolean
+          callback_done_at?: string | null
+          callback_requested_at?: string | null
           completed_at?: string | null
           created_at?: string
           distance_to_job?: number | null
           email?: string | null
           first_name?: string | null
+          follow_up_status?: Database["public"]["Enums"]["follow_up_status"]
           french_level_cecrl?: string | null
           hubspot_contact_id?: string | null
           hubspot_deal_id?: string | null
@@ -1134,6 +1162,12 @@ export type Database = {
           literacy?: string | null
           main_goal?: string | null
           phone?: string | null
+          recommended_path?:
+            | Database["public"]["Enums"]["recommended_path"]
+            | null
+          secondary_path?:
+            | Database["public"]["Enums"]["recommended_path"]
+            | null
           source_campaign?: string | null
           source_location_id?: string | null
           source_name?: string | null
@@ -2049,6 +2083,7 @@ export type Database = {
         | "benevole"
         | "cip"
         | "accueil"
+        | "conseiller"
       assignment_status: "a_faire" | "en_cours" | "termine" | "en_retard"
       audio_review_status: "pending" | "validated" | "rework"
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
@@ -2070,6 +2105,21 @@ export type Database = {
         | "scenario_tree"
         | "drag_match"
         | "fill_in_blank"
+      follow_up_status:
+        | "nouveau_diagnostic"
+        | "a_rappeler"
+        | "contacte"
+        | "besoin_confirme"
+        | "oriente"
+        | "rdv_propose"
+        | "inscrit"
+        | "en_formation"
+        | "en_accompagnement"
+        | "en_emploi"
+        | "a_relancer"
+        | "frein_identifie"
+        | "sortie_positive"
+        | "dossier_cloture"
       lead_status:
         | "pending"
         | "contacted"
@@ -2086,6 +2136,13 @@ export type Database = {
         | "recrute"
         | "perdu_injoignable"
       provider_type: "employer" | "training_org"
+      recommended_path:
+        | "francais"
+        | "emploi"
+        | "formation"
+        | "diplome"
+        | "social"
+        | "numerique"
       training_type: "language" | "professional" | "both"
     }
     CompositeTypes: {
@@ -2223,6 +2280,7 @@ export const Constants = {
         "benevole",
         "cip",
         "accueil",
+        "conseiller",
       ],
       assignment_status: ["a_faire", "en_cours", "termine", "en_retard"],
       audio_review_status: ["pending", "validated", "rework"],
@@ -2246,6 +2304,22 @@ export const Constants = {
         "drag_match",
         "fill_in_blank",
       ],
+      follow_up_status: [
+        "nouveau_diagnostic",
+        "a_rappeler",
+        "contacte",
+        "besoin_confirme",
+        "oriente",
+        "rdv_propose",
+        "inscrit",
+        "en_formation",
+        "en_accompagnement",
+        "en_emploi",
+        "a_relancer",
+        "frein_identifie",
+        "sortie_positive",
+        "dossier_cloture",
+      ],
       lead_status: [
         "pending",
         "contacted",
@@ -2263,6 +2337,14 @@ export const Constants = {
         "perdu_injoignable",
       ],
       provider_type: ["employer", "training_org"],
+      recommended_path: [
+        "francais",
+        "emploi",
+        "formation",
+        "diplome",
+        "social",
+        "numerique",
+      ],
       training_type: ["language", "professional", "both"],
     },
   },
