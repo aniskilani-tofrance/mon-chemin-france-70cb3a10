@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { 
-  Check, Sparkles, ArrowRight, MapPin, Mail, User, Languages, 
+import {
+  Check, Sparkles, MapPin, Mail, User, Languages,
   GraduationCap, Briefcase, Users, Clock, MessageCircle, UserPlus,
   Globe, Shield, Target, Wrench, Car, Banknote, CalendarCheck,
-  BookOpen, Phone, ChevronRight, Download
+  BookOpen, Phone, ChevronRight, Download, Award, Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateOnboardingPDF } from "@/lib/generateOnboardingPDF";
@@ -12,67 +12,19 @@ import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigate } from "react-router-dom";
+import { computeRecommendedPath } from "@/lib/orientationRouter";
+import { getPathContent, getConfirmationTexts, type PathIconKey, type PathContent } from "@/lib/recommendedPathContent";
 
-// ── Route display config ──
-const ROUTE_DISPLAY: Record<string, { label: string; icon: React.ReactNode; color: string; bgGradient: string; description: string; nextSteps: { title: string; desc: string; delay: string }[] }> = {
-  route_a: {
-    label: "Parcours FLE",
-    icon: <Languages className="h-6 w-6" />,
-    color: "text-blue-700 dark:text-blue-300",
-    bgGradient: "from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20",
-    description: "Formation en français langue étrangère",
-    nextSteps: [
-      { title: "Mise en relation", desc: "Un organisme de formation FLE proche de chez vous sera identifié", delay: "Sous 24h" },
-      { title: "Évaluation de niveau", desc: "Un conseiller vous contactera pour évaluer votre niveau de français", delay: "Sous 48h" },
-      { title: "Début des cours", desc: "Vous démarrerez vos cours de français adaptés à votre niveau", delay: "Sous 2 semaines" },
-    ],
-  },
-  route_b: {
-    label: "Parcours Formation",
-    icon: <GraduationCap className="h-6 w-6" />,
-    color: "text-purple-700 dark:text-purple-300",
-    bgGradient: "from-purple-50 to-purple-100/50 dark:from-purple-950/40 dark:to-purple-900/20",
-    description: "Formation professionnelle qualifiante",
-    nextSteps: [
-      { title: "Analyse de votre profil", desc: "Nous identifions les formations adaptées à votre secteur et votre niveau", delay: "Sous 24h" },
-      { title: "Entretien d'orientation", desc: "Un organisme partenaire vous contactera pour un entretien personnalisé", delay: "Sous 48h" },
-      { title: "Entrée en formation", desc: "Vous pourrez démarrer une formation qualifiante ou certifiante", delay: "Sous 1 mois" },
-    ],
-  },
-  route_c: {
-    label: "Parcours Emploi",
-    icon: <Briefcase className="h-6 w-6" />,
-    color: "text-green-700 dark:text-green-300",
-    bgGradient: "from-green-50 to-green-100/50 dark:from-green-950/40 dark:to-green-900/20",
-    description: "Accès direct au marché du travail",
-    nextSteps: [
-      { title: "Transmission du profil", desc: "Votre profil sera partagé avec les employeurs de votre secteur", delay: "Sous 24h" },
-      { title: "Prise de contact", desc: "Un employeur ou recruteur vous contactera pour un entretien", delay: "Sous 1 semaine" },
-      { title: "Accompagnement à la prise de poste", desc: "Un suivi sera mis en place pour faciliter votre intégration", delay: "Dès l'embauche" },
-    ],
-  },
-  sas: {
-    label: "Accompagnement personnalisé",
-    icon: <Users className="h-6 w-6" />,
-    color: "text-amber-700 dark:text-amber-300",
-    bgGradient: "from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20",
-    description: "Orientation et accompagnement sur mesure",
-    nextSteps: [
-      { title: "Analyse approfondie", desc: "Un conseiller dédié analysera votre situation en détail", delay: "Sous 48h" },
-      { title: "Plan d'action personnalisé", desc: "Vous recevrez un plan adapté à vos besoins spécifiques", delay: "Sous 1 semaine" },
-      { title: "Mise en relation ciblée", desc: "Nous vous orienterons vers les dispositifs les plus pertinents", delay: "En continu" },
-    ],
-  },
+// ── Icon mapping for paths ──
+const PATH_ICON: Record<PathIconKey, React.ReactNode> = {
+  francais: <Languages className="h-6 w-6" />,
+  emploi: <Briefcase className="h-6 w-6" />,
+  formation: <GraduationCap className="h-6 w-6" />,
+  diplome: <Award className="h-6 w-6" />,
+  social: <Users className="h-6 w-6" />,
+  numerique: <Smartphone className="h-6 w-6" />,
 };
 
-// ── i18n texts ──
-const TEXTS: Record<string, Record<string, string>> = {
-  fr: { title: "Votre parcours est prêt !", subtitle: "Nous avons analysé vos réponses et identifié le meilleur parcours pour vous.", cta: "Retour à l'accueil", nextStepsTitle: "Prochaines étapes", signupCta: "Créer mon compte pour suivre mon dossier", contactTitle: "Besoin d'aide ?", profileTitle: "Votre profil", yourRoute: "Votre parcours recommandé" },
-  en: { title: "Your path is ready!", subtitle: "We've analyzed your answers and identified the best path for you.", cta: "Back to home", nextStepsTitle: "Next steps", signupCta: "Create my account to track my case", contactTitle: "Need help?", profileTitle: "Your profile", yourRoute: "Your recommended path" },
-  ar: { title: "مسارك جاهز!", subtitle: "لقد حللنا إجاباتك وحددنا أفضل مسار لك.", cta: "العودة للرئيسية", nextStepsTitle: "الخطوات التالية", signupCta: "إنشاء حسابي لمتابعة ملفي", contactTitle: "تحتاج مساعدة؟", profileTitle: "ملفك الشخصي", yourRoute: "مسارك المقترح" },
-  es: { title: "¡Tu recorrido está listo!", subtitle: "Hemos analizado tus respuestas e identificado el mejor camino para ti.", cta: "Volver al inicio", nextStepsTitle: "Próximos pasos", signupCta: "Crear mi cuenta", contactTitle: "¿Necesitas ayuda?", profileTitle: "Tu perfil", yourRoute: "Tu recorrido recomendado" },
-  pt: { title: "Seu percurso está pronto!", subtitle: "Analisamos suas respostas e identificamos o melhor caminho para você.", cta: "Voltar ao início", nextStepsTitle: "Próximos passos", signupCta: "Criar minha conta", contactTitle: "Precisa de ajuda?", profileTitle: "Seu perfil", yourRoute: "Seu percurso recomendado" },
-};
 
 // ── Profile field labels ──
 const FIELD_LABELS: Record<string, { icon: React.ReactNode; label: string }> = {
