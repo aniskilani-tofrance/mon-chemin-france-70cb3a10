@@ -167,6 +167,8 @@ Deno.serve(async (req) => {
         success: true,
         accounts: DEMO_ACCOUNTS.map((a) => ({ ...a, password: DEMO_PASSWORD })),
         extra_learners_created: extraIds.length,
+        demo_provider_id: providerId,
+        demo_provider_name: "Association de démo",
       });
     }
 
