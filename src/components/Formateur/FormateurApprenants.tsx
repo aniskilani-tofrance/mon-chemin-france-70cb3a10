@@ -25,6 +25,7 @@ export function FormateurApprenants() {
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
+  const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
   const fetchLearners = useCallback(async () => {
     setLoading(true);
