@@ -395,7 +395,7 @@ const ConfirmationPage = () => {
               onClick={() => generateOnboardingPDF(storedAnswers)}
             >
               <Download className="h-5 w-5" />
-              Télécharger le récapitulatif PDF
+              {texts.downloadPdf}
             </Button>
 
             <div className="grid grid-cols-2 gap-3">
