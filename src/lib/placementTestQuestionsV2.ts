@@ -23,7 +23,8 @@
 // timeLimit (secondes) : défini par question — null = sans limite
 // ============================================================
 
-export const questions = [
+export type PlacementQuestionV2 = any;
+export const questions: PlacementQuestionV2[] = [
 
   // ─── BLOC 1 : COMPRÉHENSION ORALE (A1–B1) ──────────────
   {
