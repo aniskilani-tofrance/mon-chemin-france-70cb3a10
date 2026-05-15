@@ -347,7 +347,7 @@ const ConfirmationPage = () => {
                       className="relative flex gap-4 pb-6 last:pb-0"
                     >
                       {/* Timeline line */}
-                      {i < routeInfo.nextSteps.length - 1 && (
+                      {i < primaryContent.nextSteps.length - 1 && (
                         <div className="absolute left-[15px] top-8 h-[calc(100%-16px)] w-0.5 bg-border" />
                       )}
 
