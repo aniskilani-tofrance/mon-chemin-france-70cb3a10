@@ -250,17 +250,32 @@ export function FormateurApprenants() {
                       : "—"}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleCreateDiagnostic(l)}
-                      disabled={creatingDiagnostic === l.learner_id}
-                    >
-                      {creatingDiagnostic === l.learner_id
-                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                        : <FileText className="h-4 w-4" />}
-                      <span className="ml-2">Diagnostic</span>
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCreatePlacement(l)}
+                        disabled={creatingPlacement === l.learner_id}
+                        title="Assigner un test de positionnement"
+                      >
+                        {creatingPlacement === l.learner_id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <GraduationCap className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Positionnement</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCreateDiagnostic(l)}
+                        disabled={creatingDiagnostic === l.learner_id}
+                        title="Créer un diagnostic partagé"
+                      >
+                        {creatingDiagnostic === l.learner_id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <FileText className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Diagnostic</span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
