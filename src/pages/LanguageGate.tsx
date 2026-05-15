@@ -117,7 +117,7 @@ export default function LanguageGate() {
       <button
         onClick={() => {
           setLanguage("fr");
-          navigate("/home");
+          navigate("/home", { replace: true });
         }}
         className="mt-10 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
       >
