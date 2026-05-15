@@ -2049,6 +2049,7 @@ export type Database = {
         | "benevole"
         | "cip"
         | "accueil"
+        | "conseiller"
       assignment_status: "a_faire" | "en_cours" | "termine" | "en_retard"
       audio_review_status: "pending" | "validated" | "rework"
       cecrl_level: "alpha" | "post_alpha" | "a1" | "a2" | "b1"
@@ -2223,6 +2224,7 @@ export const Constants = {
         "benevole",
         "cip",
         "accueil",
+        "conseiller",
       ],
       assignment_status: ["a_faire", "en_cours", "termine", "en_retard"],
       audio_review_status: ["pending", "validated", "rework"],
