@@ -338,7 +338,7 @@ const ConfirmationPage = () => {
                 </h2>
 
                 <div className="relative space-y-0">
-                  {routeInfo.nextSteps.map((step, i) => (
+                  {primaryContent.nextSteps.map((step, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
