@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, FileText, Copy, Sparkles } from "lucide-react";
+import { Loader2, User, FileText, Copy, Sparkles, GraduationCap } from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
 import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
@@ -25,6 +25,7 @@ export function FormateurApprenants() {
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
+  const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
   const fetchLearners = useCallback(async () => {
     setLoading(true);
@@ -133,6 +134,42 @@ export function FormateurApprenants() {
     }
   };
 
+  const handleCreatePlacement = async (learner: Learner | null) => {
+    const key = learner?.learner_id ?? "quick";
+    setCreatingPlacement(key);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: codeData } = await supabase.rpc("generate_access_code");
+      const accessCode = codeData as string;
+
+      const { error } = await supabase
+        .from("placement_test_sessions")
+        .insert({
+          formateur_id: user.id,
+          learner_id: learner?.learner_id ?? null,
+          candidate_name: learner?.full_name ?? null,
+          candidate_email: learner?.email ?? null,
+          access_code: accessCode,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      await navigator.clipboard.writeText(accessCode).catch(() => {});
+      toast.success(
+        learner
+          ? `Test de positionnement assigné à ${learner.full_name || learner.email} — code : ${accessCode} (copié)`
+          : `Code de positionnement généré : ${accessCode} (copié)`
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la création du test");
+    } finally {
+      setCreatingPlacement(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -148,7 +185,17 @@ export function FormateurApprenants() {
           <User className="h-5 w-5" />
           Mes apprenants ({learners.length})
         </CardTitle>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleCreatePlacement(null)}
+            disabled={creatingPlacement === "quick"}
+          >
+            {creatingPlacement === "quick"
+              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              : <GraduationCap className="mr-2 h-4 w-4" />}
+            Positionnement rapide (avec code)
+          </Button>
           <Button
             variant="outline"
             onClick={handleQuickDiagnostic}
@@ -203,17 +250,32 @@ export function FormateurApprenants() {
                       : "—"}
                   </TableCell>
                   <TableCell className="text-right">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => handleCreateDiagnostic(l)}
-                      disabled={creatingDiagnostic === l.learner_id}
-                    >
-                      {creatingDiagnostic === l.learner_id
-                        ? <Loader2 className="h-4 w-4 animate-spin" />
-                        : <FileText className="h-4 w-4" />}
-                      <span className="ml-2">Diagnostic</span>
-                    </Button>
+                    <div className="flex justify-end gap-1">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCreatePlacement(l)}
+                        disabled={creatingPlacement === l.learner_id}
+                        title="Assigner un test de positionnement"
+                      >
+                        {creatingPlacement === l.learner_id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <GraduationCap className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Positionnement</span>
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleCreateDiagnostic(l)}
+                        disabled={creatingDiagnostic === l.learner_id}
+                        title="Créer un diagnostic partagé"
+                      >
+                        {creatingDiagnostic === l.learner_id
+                          ? <Loader2 className="h-4 w-4 animate-spin" />
+                          : <FileText className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Diagnostic</span>
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
