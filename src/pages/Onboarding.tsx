@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { LanguageCode } from "@/lib/translations";
 import { VISUAL_QUESTIONS, getProgressPercent } from "@/lib/visualQuestions";
 import { computeOrientation } from "@/lib/orientationEngine";
+import { computeRecommendedPath } from "@/lib/orientationRouter";
 import { calculateUnifiedLeadScore } from "@/lib/leadScoring";
 import { getLeadSourcePrefill, resolveLeadSource } from "@/lib/leadSources";
 import { mapAnswersToV2 } from "@/lib/mapAnswersToV2";
@@ -322,6 +323,13 @@ const Onboarding = () => {
       track("onboarding_completed", { route: orientation.parcours, score: leadScore, source: leadSource.slug }, "/onboarding", language);
 
       try {
+        const recoPath = computeRecommendedPath({
+          leadRoute: orientation.parcours,
+          main_goal: typeof flat.main_goal === "string" ? flat.main_goal : null,
+          french_level_cecrl: typeof flat.french_level_cecrl === "string" ? flat.french_level_cecrl : null,
+          barriers: Array.isArray(flat.barriers) ? (flat.barriers as string[]) : null,
+        });
+
         const { data: insertedResult, error: resultError } = await supabase.from("onboarding_results").insert([
           {
             user_id: user?.id ?? null,
@@ -347,6 +355,11 @@ const Onboarding = () => {
             source_name: leadSource.name,
             source_type: leadSource.type,
             source_campaign: leadSource.campaign,
+            recommended_path: recoPath.primary,
+            secondary_path: recoPath.secondary,
+            follow_up_status: "a_rappeler",
+            callback_consent: true,
+            callback_requested_at: new Date().toISOString(),
           } as any,
         ]).select("id").single();
         if (resultError) throw resultError;
