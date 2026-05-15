@@ -5,6 +5,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { detectUserRole, getRoleDashboardPath } from "@/hooks/useRoleCheck";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
