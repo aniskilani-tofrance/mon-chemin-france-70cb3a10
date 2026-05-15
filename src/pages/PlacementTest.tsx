@@ -77,6 +77,23 @@ export default function PlacementTest() {
   const [startTime] = useState(Date.now());
   const [submitting, setSubmitting] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const tabSwitchCountRef = useRef(0);
+
+  // Anti-fraude log-only : compte les changements d'onglet, sans soumettre automatiquement
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") {
+        tabSwitchCountRef.current += 1;
+        if (tabSwitchCountRef.current === 1) {
+          toast.warning("Restez sur la page du test pour de meilleurs résultats.");
+        } else if (tabSwitchCountRef.current === 3) {
+          toast.warning("Plusieurs sorties détectées — votre formateur en sera informé.");
+        }
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => document.removeEventListener("visibilitychange", onVisibility);
+  }, []);
 
   const currentQuestion: any = questions[currentIndex];
   const progress = ((currentIndex + 1) / questions.length) * 100;
@@ -201,6 +218,21 @@ export default function PlacementTest() {
     }
 
     sessionStorage.setItem("placement_result", JSON.stringify({ id: data.id, ...resultData }));
+
+    // Met à jour la session de positionnement (si lancée via un code) : statut, lien résultat, anti-fraude
+    const sessionId = candidate.session_id as string | undefined;
+    if (sessionId) {
+      await supabase
+        .from("placement_test_sessions")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          test_result_id: data.id,
+          tab_switch_count: tabSwitchCountRef.current,
+        })
+        .eq("id", sessionId);
+    }
+
     navigate("/placement-test/results");
   };
 
