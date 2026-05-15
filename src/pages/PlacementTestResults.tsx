@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Download, RotateCcw, MessageCircle, CheckCircle2, XCircle, GraduationCap } from "lucide-react";
-import { questions } from "@/lib/placementTestQuestions";
+import { questions } from "@/lib/placementTestQuestionsV2";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
