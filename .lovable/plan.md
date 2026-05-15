@@ -1,102 +1,47 @@
-# Phase 1 — Test de positionnement : mobile, a11y, email, dashboard, PDF
+## Phase 1 — implémentation sans bloquer sur l'email
 
-5 chantiers indépendants livrables incrémentalement. Périmètre strict : parcours du test de positionnement uniquement.
+Je pars sur les 4 chantiers qui ne dépendent pas de la config domaine email. L'email résultats sera branché dès que le domaine est validé (template + trigger déjà prévus, c'est juste l'envoi qui attend).
 
----
+### 1. PDF résultats sobre (`PlacementTestResults.tsx`)
+- Lib : `jspdf` + `jspdf-autotable` (ajout dépendance)
+- Contenu : logo PEF, nom candidat, date, niveau CECRL + libellé, score global, analyse par compétence (barres simples), 3 recommandations
+- Footer : "Document généré par PEF — ToFrance" (pas de SIRET, pas de watermark "officiel", pas de tableau question-par-question)
+- Bouton "Télécharger le PDF" à côté du bouton existant
 
-## 1. Responsive mobile (parcours candidat)
+### 2. Dashboard admin analytics test de positionnement
+- Nouveau composant `AdminPlacementTestAnalytics.tsx` monté dans la page admin existante
+- Données : `test_results` + `placement_test_sessions` via `useQuery`
+- KPIs : nb tests 30j, score moyen, taux de complétion, durée moyenne
+- Charts (`recharts` déjà présent) : pie par niveau CECRL, line 30j volume, bar par catégorie d'erreurs
+- Export CSV uniquement (pas de Google Sheets)
 
-**Pages**: `PlacementTestHome.tsx`, `PlacementTestLegal.tsx`, `PlacementTest.tsx`, `PlacementTestResults.tsx`, `components/PlacementTest/QuestionCard.tsx`.
+### 3. Responsive mobile sur le parcours test
+Fichiers : `PlacementTestHome.tsx`, `PlacementTestLegal.tsx`, `PlacementTest.tsx`, `QuestionCard.tsx`, `PlacementTestResults.tsx`
+- Conteneurs : `px-3 sm:px-4`, `max-w-2xl`
+- Boutons nav : `flex-col sm:flex-row`, `w-full sm:w-auto`, `min-h-11` (tap target ≥44px)
+- Inputs : `text-base` (évite le zoom iOS)
+- Timer/progress : tailles fluides `text-sm sm:text-base`
+- Tokens sémantiques : ajout `--placement-primary`, `--placement-accent` dans `index.css` (HSL) pour remplacer les couleurs en dur éventuelles
 
-- Layout : `max-w-2xl` → conserver, mais padding `px-3 sm:px-4`, header `h-14` ok.
-- Boutons navigation (Précédent / Passer / Suivant) : passer en `flex-col sm:flex-row` sur très petits écrans, tap-targets `min-h-11`.
-- `QuestionCard` : audit des sous-types interactifs (drag, match_pairs, order_sentences, sentence_builder, complete_form) — vérifier qu'ils sont utilisables au doigt (espacement vertical, pas de hover-only).
-- Inputs texte : `text-base` (évite zoom iOS), `inputMode` adapté.
-- Timer : taille lisible, position non-recouvrante en mobile.
+### 4. Accessibilité WCAG 2.1 AA
+Mêmes fichiers + `Header.tsx` du parcours test
+- `<main>` + hiérarchie H1/H2 correcte
+- `aria-label` sur tous les boutons icônes
+- Timer : `role="timer"` + `aria-live="polite"` + `aria-atomic="true"`
+- Progress : `role="progressbar"` + `aria-valuenow/min/max`
+- Questions : annonce changement via `aria-live="polite"` sur le conteneur de question
+- Champs : `aria-describedby` reliant erreurs et hints
+- Navigation clavier : focus visible (`focus-visible:ring-2`), Escape pour fermer modales, Enter pour valider
+- Contraste : vérifier `--placement-primary` (#00504e) vs blanc → ratio AA ok
 
-## 2. Accessibilité WCAG 2.1 AA
+### 5. Email résultats (différé jusqu'à validation domaine)
+- Une fois le domaine ajouté : scaffold infra emails + template `placement-test-results` + trigger dans `handleSubmit` (idempotent via clé `test-result-${id}`) + bouton "Renvoyer par email" sur la page résultats
 
-Sur les 4 pages + `QuestionCard` :
-- `aria-label` sur tous les boutons icône (`ChevronLeft`, `ChevronRight`, `SkipForward`, X de fermeture).
-- `<main>` unique par page, hiérarchie `h1` → `h2`.
-- Timer : `role="timer" aria-live="polite" aria-atomic="true"`.
-- Changement de question : `aria-live="polite"` annonçant "Question N sur total".
-- Progress : `role="progressbar" aria-valuenow/min/max`.
-- Couleurs : remplacer les valeurs hardcodées (`#00504e`, `#17c3b2`, `text-gray-400`) par des tokens sémantiques dans `index.css` + `tailwind.config.ts` (ajout `--placement-primary`, `--placement-accent`).
-- Navigation clavier : Tab + Enter + Escape, focus visible, pas de focus-trap involontaire.
-- Champs : `aria-describedby` pour les messages d'aide/erreur.
+### Hors scope Phase 1 (confirmé)
+Anti-fraude, lien session unique complet, notif formateur, CMS questions, emails marketing, refonte auth, watermark "officiel", tableau question-par-question dans le PDF.
 
-## 3. Email de résultats au candidat
-
-**Infra** : Lovable Emails (à provisionner — aucune fonction transactional en place actuellement).
-
-Étapes :
-1. Vérifier le domaine email via `email_domain--check_email_domain_status`. Si absent, déclencher le dialog setup.
-2. `email_domain--setup_email_infra` puis `email_domain--scaffold_transactional_email`.
-3. Créer template `placement-test-results.tsx` dans `_shared/transactional-email-templates/` :
-   - Props : `candidateName`, `level` (A1..B2), `score`, `levelLabel`, `resultsUrl` (lien vers `/placement-test/results?id=...`).
-   - Style sobre, brand PEF (vert `#00504e`).
-4. Trigger : dans `PlacementTest.tsx` `handleSubmit`, après insert `test_results`, appel `supabase.functions.invoke('send-transactional-email', { body: { templateName: 'placement-test-results', recipientEmail: candidate.email, idempotencyKey: \`test-result-${data.id}\`, templateData: {...} } })`. Best-effort (ne bloque pas la navigation si échec).
-5. Bouton "Renvoyer par email" sur `PlacementTestResults.tsx`.
-
-## 4. Dashboard admin enrichi
-
-Nouveau composant `AdminPlacementTestAnalytics.tsx` (sur le modèle de `AdminAnalytics.tsx`), monté dans `AdminDashboard.tsx` (nouvel onglet "Tests de positionnement").
-
-KPIs (lecture `test_results`) :
-- Total tests passés (30 derniers jours + total).
-- Taux de complétion (sessions créées vs résultats finaux — joindre `placement_test_sessions`).
-- Niveau CECRL moyen / médian.
-- Durée moyenne.
-
-Visualisations (recharts) :
-- Pie chart : répartition par niveau A1/A2/B1/B2.
-- Line chart : tests passés par jour sur 30j.
-- Bar chart : top catégories d'erreurs.
-
-Actions :
-- Export CSV (toutes colonnes pertinentes, RGPD-aware : email anonymisable selon flag).
-- Pas d'export Google Sheets.
-
-## 5. PDF résultats sobre
-
-Bouton "Télécharger le PDF" sur `PlacementTestResults.tsx`.
-
-Génération côté client (`jspdf` + `jspdf-autotable` déjà utilisés dans le projet — à vérifier, sinon `pdf-lib`).
-
-Contenu :
-- Logo PEF, date.
-- Nom + email candidat.
-- **Niveau CECRL** + libellé (ex : "B1 — Utilisateur indépendant, niveau seuil").
-- Score global.
-- Analyse par compétence (compréhension écrite/orale/expression — agrégation via `level` et `category` des records).
-- Recommandations qualitatives (3-4 lignes selon niveau).
-- Pied de page : "Document généré par PEF — ToFrance" (PAS de mention "officiel", PAS de SIRET, PAS de filigrane).
-
-**Exclu** : tableau question-par-question (protection de la grille).
-
-QA : ouvrir le PDF généré, inspection visuelle obligatoire sur chaque page.
-
----
-
-## Détails techniques
-
-```text
-Ordre d'implémentation suggéré (indépendants) :
-  1) Mobile + a11y (même PR — touche les mêmes fichiers)
-  2) Dashboard admin (isolé)
-  3) PDF sobre (isolé)
-  4) Email résultats (dépend du setup domaine)
-```
-
-**Tokens CSS à ajouter** (`index.css`) :
-```
---placement-primary: 178 100% 16%;   /* #00504e */
---placement-accent:  171 70% 43%;    /* #17c3b2 */
-```
-
-**Données utilisées** : `test_results` (existant), `placement_test_sessions` (existant). Aucune migration nécessaire pour la Phase 1.
-
-**Dépendances à confirmer présentes** : `recharts` (oui), lib PDF (à vérifier).
-
-**Hors scope explicite** : anti-fraude, refonte auth formateur, CMS questions, lien session complet, notif formateur, emails marketing.
+### Détails techniques
+- Pas de migration DB (toutes les données existent déjà)
+- Dépendances à ajouter : `jspdf`, `jspdf-autotable`
+- `recharts` déjà installé
+- Aucun changement de logique métier (`test_results`, `placement_test_sessions`, scoring intacts)
