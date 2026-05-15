@@ -218,6 +218,21 @@ export default function PlacementTest() {
     }
 
     sessionStorage.setItem("placement_result", JSON.stringify({ id: data.id, ...resultData }));
+
+    // Met à jour la session de positionnement (si lancée via un code) : statut, lien résultat, anti-fraude
+    const sessionId = candidate.session_id as string | undefined;
+    if (sessionId) {
+      await supabase
+        .from("placement_test_sessions")
+        .update({
+          status: "completed",
+          completed_at: new Date().toISOString(),
+          test_result_id: data.id,
+          tab_switch_count: tabSwitchCountRef.current,
+        })
+        .eq("id", sessionId);
+    }
+
     navigate("/placement-test/results");
   };
 
