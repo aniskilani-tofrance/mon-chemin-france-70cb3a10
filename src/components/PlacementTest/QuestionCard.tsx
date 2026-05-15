@@ -537,25 +537,28 @@ export default function QuestionCard({ question, selectedAnswer, onSelect, quest
     };
   }, []);
 
-  const playAudio = () => {
-    if (!question.audioText) return;
+  const playAudio = async () => {
+    if (!question.audioText || isPlaying) return;
     setIsPlaying(true);
-    let text = question.audioText.replace(/\?/g, ' ?').replace(/!/g, ' !').replace(/,/g, ', ').replace(/\./g, '. ');
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 0.8;
-    utterance.pitch = 1.15;
-    const voices = window.speechSynthesis.getVoices();
-    const frVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Enhanced') || v.name.includes('Google') || v.name.includes('Thomas')))
-      || voices.find(v => v.lang.startsWith('fr'));
-    if (frVoice) utterance.voice = frVoice;
-    utterance.onend = () => {
+    try {
+      const { data, error: ttsError } = await supabase.functions.invoke("openai-tts", {
+        body: { text: question.audioText, voice: "nova", speed: 0.9 },
+      });
+      if (ttsError) throw ttsError;
+      if (data?.audioContent) {
+        const audio = new Audio(`data:audio/mp3;base64,${data.audioContent}`);
+        audio.onended = () => {
+          setIsPlaying(false);
+          if (question.type === 'oral' && onStartTimer) onStartTimer();
+        };
+        audio.onerror = () => setIsPlaying(false);
+        await audio.play();
+      } else {
+        setIsPlaying(false);
+      }
+    } catch {
       setIsPlaying(false);
-      if (question.type === 'oral' && onStartTimer) onStartTimer();
-    };
-    utterance.onerror = () => setIsPlaying(false);
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
+    }
   };
 
   const startRecording = async () => {
