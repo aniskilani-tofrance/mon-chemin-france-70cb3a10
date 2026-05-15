@@ -301,6 +301,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
     badge: string;
     availableIn: string;
   };
+  hero: {
+    availableBadge: string;
+    title: string;
+    description: string;
+    descriptionStrong: string;
+    cta: string;
+    reassurance: string;
+    card1Title: string;
+    card1Desc: string;
+    card2Title: string;
+    card2Desc: string;
+    card3Title: string;
+    card3Desc: string;
+  };
   onboarding: typeof ONBOARDING_FR;
 }> = {
   fr: {
@@ -338,6 +352,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       subtitle: "Discutez avec Marianne et recevez votre orientation personnalisée en 5 minutes.",
       badge: "Gratuit · Sans inscription · 5 minutes",
       availableIn: "Disponible en",
+    },
+    hero: {
+      availableBadge: "Disponible en français, العربية, English, español, português, русский",
+      title: "Vous ne savez pas par où commencer en France ?",
+      description: "ToFrance vous aide à comprendre votre besoin, dans votre langue. Puis un conseiller vous rappelle",
+      descriptionStrong: "sous 48h",
+      cta: "Commencer mon orientation",
+      reassurance: "Vous n'êtes pas seul·e. Après votre diagnostic, une personne vous rappelle pour vous accompagner.",
+      card1Title: "Diagnostic 5 minutes",
+      card1Desc: "Quelques questions simples, dans votre langue.",
+      card2Title: "Rappel humain sous 48h",
+      card2Desc: "Un conseiller parlant votre langue vous rappelle.",
+      card3Title: "Gratuit et confidentiel",
+      card3Desc: "Vos informations restent protégées.",
     },
     onboarding: ONBOARDING_FR,
   },
@@ -377,6 +405,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       badge: "Free · No sign-up · 5 minutes",
       availableIn: "Available in",
     },
+    hero: {
+      availableBadge: "Available in français, العربية, English, español, português, русский",
+      title: "Don't know where to start in France?",
+      description: "ToFrance helps you understand your need, in your language. Then an advisor calls you back",
+      descriptionStrong: "within 48h",
+      cta: "Start my orientation",
+      reassurance: "You are not alone. After your diagnosis, a person calls you back to support you.",
+      card1Title: "5-minute diagnosis",
+      card1Desc: "A few simple questions, in your language.",
+      card2Title: "Human callback within 48h",
+      card2Desc: "An advisor speaking your language calls you back.",
+      card3Title: "Free and confidential",
+      card3Desc: "Your information stays protected.",
+    },
     onboarding: ONBOARDING_EN,
   },
   ar: {
@@ -414,6 +456,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       subtitle: "تحدث مع ماريان واحصل على توجيهك الشخصي في 5 دقائق.",
       badge: "مجاني · بدون تسجيل · 5 دقائق",
       availableIn: "متوفر بـ",
+    },
+    hero: {
+      availableBadge: "متوفر بالعربية، الفرنسية، الإنجليزية، الإسبانية، البرتغالية، الروسية",
+      title: "لا تعرف من أين تبدأ في فرنسا؟",
+      description: "تساعدك ToFrance على فهم احتياجك بلغتك. ثم يتصل بك مستشار",
+      descriptionStrong: "خلال 48 ساعة",
+      cta: "ابدأ التوجيه الخاص بي",
+      reassurance: "أنت لست وحدك. بعد التشخيص، يتصل بك شخص لمرافقتك.",
+      card1Title: "تشخيص في 5 دقائق",
+      card1Desc: "بعض الأسئلة البسيطة بلغتك.",
+      card2Title: "اتصال بشري خلال 48 ساعة",
+      card2Desc: "مستشار يتحدث لغتك يتصل بك.",
+      card3Title: "مجاني وسري",
+      card3Desc: "تبقى معلوماتك محمية.",
     },
     onboarding: ONBOARDING_AR,
   },
@@ -453,6 +509,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       badge: "Gratis · Sin registro · 5 minutos",
       availableIn: "Disponible en",
     },
+    hero: {
+      availableBadge: "Disponible en español, français, العربية, English, português, русский",
+      title: "¿No sabes por dónde empezar en Francia?",
+      description: "ToFrance te ayuda a entender tu necesidad, en tu idioma. Luego un asesor te llama",
+      descriptionStrong: "en menos de 48h",
+      cta: "Comenzar mi orientación",
+      reassurance: "No estás solo/a. Tras tu diagnóstico, una persona te llama para acompañarte.",
+      card1Title: "Diagnóstico de 5 minutos",
+      card1Desc: "Algunas preguntas simples, en tu idioma.",
+      card2Title: "Llamada humana en 48h",
+      card2Desc: "Un asesor que habla tu idioma te llama.",
+      card3Title: "Gratis y confidencial",
+      card3Desc: "Tu información permanece protegida.",
+    },
     onboarding: ONBOARDING_ES,
   },
   pt: {
@@ -491,6 +561,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       badge: "Gratuito · Sem cadastro · 5 minutos",
       availableIn: "Disponível em",
     },
+    hero: {
+      availableBadge: "Disponível em português, français, العربية, English, español, русский",
+      title: "Não sabe por onde começar na França?",
+      description: "ToFrance ajuda você a entender sua necessidade, no seu idioma. Depois um conselheiro liga de volta",
+      descriptionStrong: "em até 48h",
+      cta: "Começar minha orientação",
+      reassurance: "Você não está sozinho(a). Após o diagnóstico, uma pessoa liga para te acompanhar.",
+      card1Title: "Diagnóstico em 5 minutos",
+      card1Desc: "Algumas perguntas simples, no seu idioma.",
+      card2Title: "Retorno humano em 48h",
+      card2Desc: "Um conselheiro que fala seu idioma liga de volta.",
+      card3Title: "Gratuito e confidencial",
+      card3Desc: "Suas informações permanecem protegidas.",
+    },
     onboarding: ONBOARDING_PT,
   },
   ru: {
@@ -528,6 +612,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
       subtitle: "Поговорите с Марианной и получите персональную ориентацию за 5 минут.",
       badge: "Бесплатно · Без регистрации · 5 минут",
       availableIn: "Доступно на",
+    },
+    hero: {
+      availableBadge: "Доступно на русском, français, العربية, English, español, português",
+      title: "Не знаете, с чего начать во Франции?",
+      description: "ToFrance помогает понять вашу потребность на вашем языке. Затем консультант перезвонит вам",
+      descriptionStrong: "в течение 48 часов",
+      cta: "Начать мою ориентацию",
+      reassurance: "Вы не одни. После диагностики человек перезвонит, чтобы сопровождать вас.",
+      card1Title: "Диагностика за 5 минут",
+      card1Desc: "Несколько простых вопросов на вашем языке.",
+      card2Title: "Звонок в течение 48 часов",
+      card2Desc: "Консультант, говорящий на вашем языке, перезвонит.",
+      card3Title: "Бесплатно и конфиденциально",
+      card3Desc: "Ваши данные остаются защищёнными.",
     },
     onboarding: ONBOARDING_RU,
   },
