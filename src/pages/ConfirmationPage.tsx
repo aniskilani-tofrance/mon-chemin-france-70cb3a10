@@ -1,9 +1,9 @@
 import { motion } from "framer-motion";
-import { 
-  Check, Sparkles, ArrowRight, MapPin, Mail, User, Languages, 
+import {
+  Check, Sparkles, MapPin, Mail, User, Languages,
   GraduationCap, Briefcase, Users, Clock, MessageCircle, UserPlus,
   Globe, Shield, Target, Wrench, Car, Banknote, CalendarCheck,
-  BookOpen, Phone, ChevronRight, Download
+  BookOpen, Phone, ChevronRight, Download, Award, Smartphone,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateOnboardingPDF } from "@/lib/generateOnboardingPDF";
@@ -12,67 +12,19 @@ import { Badge } from "@/components/ui/badge";
 import { Header } from "@/components/Header";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useNavigate } from "react-router-dom";
+import { computeRecommendedPath } from "@/lib/orientationRouter";
+import { getPathContent, getConfirmationTexts, type PathIconKey, type PathContent } from "@/lib/recommendedPathContent";
 
-// ── Route display config ──
-const ROUTE_DISPLAY: Record<string, { label: string; icon: React.ReactNode; color: string; bgGradient: string; description: string; nextSteps: { title: string; desc: string; delay: string }[] }> = {
-  route_a: {
-    label: "Parcours FLE",
-    icon: <Languages className="h-6 w-6" />,
-    color: "text-blue-700 dark:text-blue-300",
-    bgGradient: "from-blue-50 to-blue-100/50 dark:from-blue-950/40 dark:to-blue-900/20",
-    description: "Formation en français langue étrangère",
-    nextSteps: [
-      { title: "Mise en relation", desc: "Un organisme de formation FLE proche de chez vous sera identifié", delay: "Sous 24h" },
-      { title: "Évaluation de niveau", desc: "Un conseiller vous contactera pour évaluer votre niveau de français", delay: "Sous 48h" },
-      { title: "Début des cours", desc: "Vous démarrerez vos cours de français adaptés à votre niveau", delay: "Sous 2 semaines" },
-    ],
-  },
-  route_b: {
-    label: "Parcours Formation",
-    icon: <GraduationCap className="h-6 w-6" />,
-    color: "text-purple-700 dark:text-purple-300",
-    bgGradient: "from-purple-50 to-purple-100/50 dark:from-purple-950/40 dark:to-purple-900/20",
-    description: "Formation professionnelle qualifiante",
-    nextSteps: [
-      { title: "Analyse de votre profil", desc: "Nous identifions les formations adaptées à votre secteur et votre niveau", delay: "Sous 24h" },
-      { title: "Entretien d'orientation", desc: "Un organisme partenaire vous contactera pour un entretien personnalisé", delay: "Sous 48h" },
-      { title: "Entrée en formation", desc: "Vous pourrez démarrer une formation qualifiante ou certifiante", delay: "Sous 1 mois" },
-    ],
-  },
-  route_c: {
-    label: "Parcours Emploi",
-    icon: <Briefcase className="h-6 w-6" />,
-    color: "text-green-700 dark:text-green-300",
-    bgGradient: "from-green-50 to-green-100/50 dark:from-green-950/40 dark:to-green-900/20",
-    description: "Accès direct au marché du travail",
-    nextSteps: [
-      { title: "Transmission du profil", desc: "Votre profil sera partagé avec les employeurs de votre secteur", delay: "Sous 24h" },
-      { title: "Prise de contact", desc: "Un employeur ou recruteur vous contactera pour un entretien", delay: "Sous 1 semaine" },
-      { title: "Accompagnement à la prise de poste", desc: "Un suivi sera mis en place pour faciliter votre intégration", delay: "Dès l'embauche" },
-    ],
-  },
-  sas: {
-    label: "Accompagnement personnalisé",
-    icon: <Users className="h-6 w-6" />,
-    color: "text-amber-700 dark:text-amber-300",
-    bgGradient: "from-amber-50 to-amber-100/50 dark:from-amber-950/40 dark:to-amber-900/20",
-    description: "Orientation et accompagnement sur mesure",
-    nextSteps: [
-      { title: "Analyse approfondie", desc: "Un conseiller dédié analysera votre situation en détail", delay: "Sous 48h" },
-      { title: "Plan d'action personnalisé", desc: "Vous recevrez un plan adapté à vos besoins spécifiques", delay: "Sous 1 semaine" },
-      { title: "Mise en relation ciblée", desc: "Nous vous orienterons vers les dispositifs les plus pertinents", delay: "En continu" },
-    ],
-  },
+// ── Icon mapping for paths ──
+const PATH_ICON: Record<PathIconKey, React.ReactNode> = {
+  francais: <Languages className="h-6 w-6" />,
+  emploi: <Briefcase className="h-6 w-6" />,
+  formation: <GraduationCap className="h-6 w-6" />,
+  diplome: <Award className="h-6 w-6" />,
+  social: <Users className="h-6 w-6" />,
+  numerique: <Smartphone className="h-6 w-6" />,
 };
 
-// ── i18n texts ──
-const TEXTS: Record<string, Record<string, string>> = {
-  fr: { title: "Votre parcours est prêt !", subtitle: "Nous avons analysé vos réponses et identifié le meilleur parcours pour vous.", cta: "Retour à l'accueil", nextStepsTitle: "Prochaines étapes", signupCta: "Créer mon compte pour suivre mon dossier", contactTitle: "Besoin d'aide ?", profileTitle: "Votre profil", yourRoute: "Votre parcours recommandé" },
-  en: { title: "Your path is ready!", subtitle: "We've analyzed your answers and identified the best path for you.", cta: "Back to home", nextStepsTitle: "Next steps", signupCta: "Create my account to track my case", contactTitle: "Need help?", profileTitle: "Your profile", yourRoute: "Your recommended path" },
-  ar: { title: "مسارك جاهز!", subtitle: "لقد حللنا إجاباتك وحددنا أفضل مسار لك.", cta: "العودة للرئيسية", nextStepsTitle: "الخطوات التالية", signupCta: "إنشاء حسابي لمتابعة ملفي", contactTitle: "تحتاج مساعدة؟", profileTitle: "ملفك الشخصي", yourRoute: "مسارك المقترح" },
-  es: { title: "¡Tu recorrido está listo!", subtitle: "Hemos analizado tus respuestas e identificado el mejor camino para ti.", cta: "Volver al inicio", nextStepsTitle: "Próximos pasos", signupCta: "Crear mi cuenta", contactTitle: "¿Necesitas ayuda?", profileTitle: "Tu perfil", yourRoute: "Tu recorrido recomendado" },
-  pt: { title: "Seu percurso está pronto!", subtitle: "Analisamos suas respostas e identificamos o melhor caminho para você.", cta: "Voltar ao início", nextStepsTitle: "Próximos passos", signupCta: "Criar minha conta", contactTitle: "Precisa de ajuda?", profileTitle: "Seu perfil", yourRoute: "Seu percurso recomendado" },
-};
 
 // ── Profile field labels ──
 const FIELD_LABELS: Record<string, { icon: React.ReactNode; label: string }> = {
@@ -159,9 +111,25 @@ const ConfirmationPage = () => {
   const navigate = useNavigate();
 
   const storedAnswers = JSON.parse(localStorage.getItem("onboarding_answers") || "{}");
-  const route = storedAnswers.leadRoute || storedAnswers.route || "sas";
-  const routeInfo = ROUTE_DISPLAY[route] || ROUTE_DISPLAY.sas;
-  const texts = TEXTS[language] || TEXTS.fr;
+  const texts = getConfirmationTexts(language);
+
+  // Compute primary + secondary recommended paths from stored answers
+  const goalRaw = storedAnswers.main_goal;
+  const mainGoal = Array.isArray(goalRaw) ? goalRaw[0] : goalRaw;
+  const barriersRaw = storedAnswers.barriers;
+  const barriers: string[] = Array.isArray(barriersRaw)
+    ? barriersRaw
+    : typeof barriersRaw === "string"
+      ? barriersRaw.split(",").map((s: string) => s.trim()).filter(Boolean)
+      : [];
+  const { primary, secondary } = computeRecommendedPath({
+    leadRoute: storedAnswers.leadRoute || storedAnswers.route,
+    main_goal: mainGoal,
+    french_level_cecrl: storedAnswers.french_level_cecrl,
+    barriers,
+  });
+  const primaryContent: PathContent = getPathContent(language, primary);
+  const secondaryContent: PathContent | null = secondary ? getPathContent(language, secondary) : null;
 
   // Build profile items from stored answers
   const profileItems = Object.entries(FIELD_LABELS)
@@ -232,13 +200,15 @@ const ConfirmationPage = () => {
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs font-semibold uppercase tracking-wider text-primary">
-                      Un conseiller vous rappelle sous 48h
+                      {texts.callbackBadge}
                     </p>
                     <p className="text-base font-semibold text-foreground leading-snug">
-                      Merci{storedAnswers.contact_firstname ? `, ${storedAnswers.contact_firstname}` : ""}. Votre demande a bien été reçue.
+                      {storedAnswers.contact_firstname
+                        ? texts.callbackThanks.replace(/^(\S+)/, `$1, ${storedAnswers.contact_firstname}`)
+                        : texts.callbackThanks}
                     </p>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      Un conseiller parlant votre langue vous rappellera dans les <strong className="text-foreground">48 heures</strong> au numéro <strong className="text-foreground">{storedAnswers.contact_phone || "que vous avez indiqué"}</strong> pour vous aider à avancer vers le bon parcours. Vous n'êtes pas seul·e.
+                      {texts.callbackBody(storedAnswers.contact_phone || "—")}
                     </p>
                   </div>
                 </div>
@@ -246,7 +216,7 @@ const ConfirmationPage = () => {
             </Card>
           </motion.div>
 
-          {/* ── Recommended route ── */}
+          {/* ── Recommended primary path ── */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
@@ -255,22 +225,30 @@ const ConfirmationPage = () => {
             <Card>
               <CardContent className="p-5">
                 <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  {texts.yourRoute}
+                  {texts.primaryHeader}
                 </p>
-                <div className={`rounded-xl bg-gradient-to-br ${routeInfo.bgGradient} p-4`}>
-                  <div className="flex items-center gap-4">
-                    <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-background shadow-sm ${routeInfo.color}`}>
-                      {routeInfo.icon}
-                    </div>
-                    <div>
-                      <p className={`text-lg font-bold ${routeInfo.color}`}>{routeInfo.label}</p>
-                      <p className="text-sm text-muted-foreground">{routeInfo.description}</p>
-                    </div>
-                  </div>
-                </div>
+                <PathCard content={primaryContent} />
               </CardContent>
             </Card>
           </motion.div>
+
+          {/* ── Secondary path (also relevant) ── */}
+          {secondaryContent && (
+            <motion.div
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.5 }}
+            >
+              <Card>
+                <CardContent className="p-5">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {texts.secondaryHeader}
+                  </p>
+                  <PathCard content={secondaryContent} compact />
+                </CardContent>
+              </Card>
+            </motion.div>
+          )}
 
           {/* ── Profile summary ── */}
           {(profileItems.length > 0 || fullName || storedAnswers.contact_email || storedAnswers.location) && (
@@ -360,7 +338,7 @@ const ConfirmationPage = () => {
                 </h2>
 
                 <div className="relative space-y-0">
-                  {routeInfo.nextSteps.map((step, i) => (
+                  {primaryContent.nextSteps.map((step, i) => (
                     <motion.div
                       key={i}
                       initial={{ opacity: 0, x: -10 }}
@@ -369,7 +347,7 @@ const ConfirmationPage = () => {
                       className="relative flex gap-4 pb-6 last:pb-0"
                     >
                       {/* Timeline line */}
-                      {i < routeInfo.nextSteps.length - 1 && (
+                      {i < primaryContent.nextSteps.length - 1 && (
                         <div className="absolute left-[15px] top-8 h-[calc(100%-16px)] w-0.5 bg-border" />
                       )}
 
@@ -417,7 +395,7 @@ const ConfirmationPage = () => {
               onClick={() => generateOnboardingPDF(storedAnswers)}
             >
               <Download className="h-5 w-5" />
-              Télécharger le récapitulatif PDF
+              {texts.downloadPdf}
             </Button>
 
             <div className="grid grid-cols-2 gap-3">
@@ -445,7 +423,7 @@ const ConfirmationPage = () => {
                 className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
               >
                 <Shield className="h-3 w-3" />
-                Gérer mes données personnelles
+                {texts.managePersonalData}
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
@@ -455,5 +433,21 @@ const ConfirmationPage = () => {
     </div>
   );
 };
+
+function PathCard({ content, compact }: { content: PathContent; compact?: boolean }) {
+  return (
+    <div className={`rounded-xl bg-gradient-to-br ${content.bgGradient} p-4`}>
+      <div className="flex items-center gap-4">
+        <div className={`flex ${compact ? "h-12 w-12" : "h-14 w-14"} shrink-0 items-center justify-center rounded-xl bg-background shadow-sm ${content.color}`}>
+          {PATH_ICON[content.iconKey]}
+        </div>
+        <div>
+          <p className={`${compact ? "text-base" : "text-lg"} font-bold ${content.color}`}>{content.label}</p>
+          <p className="text-sm text-muted-foreground">{content.description}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default ConfirmationPage;
