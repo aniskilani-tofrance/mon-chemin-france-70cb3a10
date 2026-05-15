@@ -16,6 +16,7 @@ export function Header() {
   const { t } = useLanguage();
   const { isAdmin } = useAdminCheck();
   const { user, signOut } = useAuth();
+  const { establishment } = useUserEstablishment();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
