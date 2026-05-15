@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Mail, Lock, User } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { PasswordInput } from "@/components/ui/password-input";
 
 export default function Signup() {
   const [email, setEmail] = useState("");
