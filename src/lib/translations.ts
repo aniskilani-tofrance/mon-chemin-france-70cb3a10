@@ -301,6 +301,20 @@ export const TRANSLATIONS: Record<LanguageCode, {
     badge: string;
     availableIn: string;
   };
+  hero: {
+    availableBadge: string;
+    title: string;
+    description: string;
+    descriptionStrong: string;
+    cta: string;
+    reassurance: string;
+    card1Title: string;
+    card1Desc: string;
+    card2Title: string;
+    card2Desc: string;
+    card3Title: string;
+    card3Desc: string;
+  };
   onboarding: typeof ONBOARDING_FR;
 }> = {
   fr: {
