@@ -111,9 +111,25 @@ const ConfirmationPage = () => {
   const navigate = useNavigate();
 
   const storedAnswers = JSON.parse(localStorage.getItem("onboarding_answers") || "{}");
-  const route = storedAnswers.leadRoute || storedAnswers.route || "sas";
-  const routeInfo = ROUTE_DISPLAY[route] || ROUTE_DISPLAY.sas;
-  const texts = TEXTS[language] || TEXTS.fr;
+  const texts = getConfirmationTexts(language);
+
+  // Compute primary + secondary recommended paths from stored answers
+  const goalRaw = storedAnswers.main_goal;
+  const mainGoal = Array.isArray(goalRaw) ? goalRaw[0] : goalRaw;
+  const barriersRaw = storedAnswers.barriers;
+  const barriers: string[] = Array.isArray(barriersRaw)
+    ? barriersRaw
+    : typeof barriersRaw === "string"
+      ? barriersRaw.split(",").map((s: string) => s.trim()).filter(Boolean)
+      : [];
+  const { primary, secondary } = computeRecommendedPath({
+    leadRoute: storedAnswers.leadRoute || storedAnswers.route,
+    main_goal: mainGoal,
+    french_level_cecrl: storedAnswers.french_level_cecrl,
+    barriers,
+  });
+  const primaryContent: PathContent = getPathContent(language, primary);
+  const secondaryContent: PathContent | null = secondary ? getPathContent(language, secondary) : null;
 
   // Build profile items from stored answers
   const profileItems = Object.entries(FIELD_LABELS)
