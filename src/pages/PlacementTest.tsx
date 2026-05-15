@@ -207,19 +207,28 @@ export default function PlacementTest() {
   const isAnswered = currentAnswer !== "" && currentAnswer !== null && currentAnswer !== undefined;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f8fafa" }}>
+    <div className="min-h-screen bg-[#f8fafa]">
       <header className="sticky top-0 z-50 border-b bg-white shadow-sm">
-        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-4">
-          <img src={LOGO_URL} alt="PEF" className="h-10 w-auto" />
-          <span className="text-sm font-medium" style={{ color: "#00504e" }}>
+        <div className="mx-auto flex h-14 max-w-3xl items-center justify-between px-3 sm:px-4">
+          <img src={LOGO_URL} alt="PEF — Plateforme d'Évaluation du Français" className="h-10 w-auto" />
+          <span className="text-sm font-medium text-[#00504e]" aria-live="polite" aria-atomic="true">
             Question {currentIndex + 1} / {questions.length}
           </span>
         </div>
-        <Progress value={progress} className="h-1" />
+        <div
+          role="progressbar"
+          aria-valuenow={Math.round(progress)}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label="Progression du test"
+        >
+          <Progress value={progress} className="h-1" />
+        </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-8">
-        <div className="rounded-2xl border bg-white p-6 shadow-md">
+      <main className="mx-auto max-w-2xl px-3 py-6 sm:px-4 sm:py-8">
+        <h1 className="sr-only">Test de positionnement — question {currentIndex + 1} sur {questions.length}</h1>
+        <div className="rounded-2xl border bg-white p-4 sm:p-6 shadow-md" aria-live="polite">
           <QuestionCard
             question={currentQuestion}
             selectedAnswer={currentAnswer}
@@ -230,14 +239,15 @@ export default function PlacementTest() {
           />
         </div>
 
-        <div className="mt-6 flex items-center justify-between gap-2">
+        <nav className="mt-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" aria-label="Navigation entre les questions">
           <Button
             variant="ghost"
             onClick={goPrev}
             disabled={currentIndex === 0 || submitting}
-            className="gap-1 text-gray-500 hover:text-gray-700"
+            className="gap-1 text-gray-600 hover:text-gray-800 min-h-11 justify-start sm:justify-center"
+            aria-label="Question précédente"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
             Précédent
           </Button>
 
@@ -245,26 +255,27 @@ export default function PlacementTest() {
             variant="ghost"
             onClick={goNext}
             disabled={submitting}
-            className="gap-1 text-gray-400 hover:text-gray-600"
+            className="gap-1 text-gray-500 hover:text-gray-700 min-h-11 justify-start sm:justify-center"
+            aria-label="Passer cette question"
           >
-            <SkipForward className="h-4 w-4" />
+            <SkipForward className="h-4 w-4" aria-hidden="true" />
             Passer
           </Button>
 
           <Button
             onClick={goNext}
             disabled={submitting || !isAnswered}
-            className="gap-1 text-white border-0"
-            style={{ background: "linear-gradient(135deg, #00504e 0%, #17c3b2 100%)" }}
+            className="gap-1 text-white border-0 min-h-11 bg-gradient-to-r from-[#00504e] to-[#17c3b2]"
+            aria-label={currentIndex === questions.length - 1 ? "Terminer le test" : "Question suivante"}
           >
             {submitting
               ? "Envoi..."
               : currentIndex === questions.length - 1
               ? "Terminer"
               : "Suivant"}
-            {!submitting && currentIndex < questions.length - 1 && <ChevronRight className="h-4 w-4" />}
+            {!submitting && currentIndex < questions.length - 1 && <ChevronRight className="h-4 w-4" aria-hidden="true" />}
           </Button>
-        </div>
+        </nav>
 
         {currentIndex < questions.length - 1 && Object.keys(answers).length >= 5 && (
           <div className="mt-6 text-center">
@@ -275,7 +286,7 @@ export default function PlacementTest() {
                 }
               }}
               disabled={submitting}
-              className="text-xs text-gray-400 underline hover:text-gray-600"
+              className="text-xs text-gray-500 underline hover:text-gray-700 min-h-11 px-3"
             >
               Terminer le test maintenant ({Object.keys(answers).length} réponses)
             </button>

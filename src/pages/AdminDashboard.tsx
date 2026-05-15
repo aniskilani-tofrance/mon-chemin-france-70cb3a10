@@ -20,6 +20,7 @@ import { AdminContactRequests } from "@/components/AdminContactRequests";
 import { AdminLeadsManager } from "@/components/AdminLeadsManager";
 import { AdminAnalytics } from "@/components/AdminAnalytics";
 import { AdminCheckpointAnalytics } from "@/components/AdminCheckpointAnalytics";
+import { AdminPlacementTestAnalytics } from "@/components/AdminPlacementTestAnalytics";
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
 import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
 
@@ -374,6 +375,10 @@ export default function AdminDashboard() {
 
         <div className="mt-10">
           <AdminHubSpotSyncLogs />
+        </div>
+
+        <div className="mt-10">
+          <AdminPlacementTestAnalytics />
         </div>
 
         <div className="mt-10">
