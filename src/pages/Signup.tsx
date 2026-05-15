@@ -134,9 +134,8 @@ export default function Signup() {
               <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                <Input
+                <PasswordInput
                   id="confirmPassword"
-                  type="password"
                   placeholder="••••••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
