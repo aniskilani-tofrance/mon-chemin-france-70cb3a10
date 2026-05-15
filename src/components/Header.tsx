@@ -56,6 +56,12 @@ export function Header() {
             <LanguageSelector />
             {user ? (
               <>
+                {establishment && (
+                  <Badge variant="secondary" className="gap-1 hidden xl:inline-flex">
+                    <Building2 className="h-3.5 w-3.5" />
+                    {establishment.name}
+                  </Badge>
+                )}
                 {isAdmin && (
                   <Button variant="hero" size="sm" asChild>
                     <Link to="/onboarding">Démarrer Marianne</Link>
