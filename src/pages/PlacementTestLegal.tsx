@@ -91,23 +91,27 @@ export default function PlacementTestLegal() {
   const content = pages[page || ""] || { title: "Page introuvable", content: "Cette page n'existe pas." };
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#f8fafa" }}>
+    <div className="min-h-screen bg-[#f8fafa]">
       <header className="border-b bg-white">
-        <div className="mx-auto flex h-14 max-w-3xl items-center gap-4 px-4">
-          <Link to="/placement-test" className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700">
-            <ArrowLeft className="h-4 w-4" />
+        <div className="mx-auto flex h-14 max-w-3xl items-center gap-4 px-3 sm:px-4">
+          <Link
+            to="/placement-test"
+            className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-800 min-h-11"
+            aria-label="Retour à l'accueil du test"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
             Retour
           </Link>
-          <img src={LOGO_URL} alt="PEF" className="h-10 w-auto" />
+          <img src={LOGO_URL} alt="PEF — Plateforme d'Évaluation du Français" className="h-10 w-auto" />
         </div>
       </header>
 
-      <main className="mx-auto max-w-2xl px-4 py-10">
-        <h1 className="mb-6 text-2xl font-bold" style={{ color: "#00504e" }}>{content.title}</h1>
-        <div className="prose prose-sm max-w-none text-gray-600">
+      <main className="mx-auto max-w-2xl px-3 py-8 sm:px-4 sm:py-10">
+        <h1 className="mb-6 text-2xl font-bold text-[#00504e]">{content.title}</h1>
+        <div className="prose prose-sm max-w-none text-gray-700">
           {content.content.split("\n").map((line, i) => {
             if (line.startsWith("**") && line.endsWith("**")) {
-              return <h3 key={i} className="mt-6 mb-2 text-base font-semibold text-gray-800">{line.replace(/\*\*/g, "")}</h3>;
+              return <h2 key={i} className="mt-6 mb-2 text-base font-semibold text-gray-900">{line.replace(/\*\*/g, "")}</h2>;
             }
             if (line.trim().startsWith("- ")) {
               return <li key={i} className="ml-4">{line.replace("- ", "")}</li>;
