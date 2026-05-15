@@ -134,6 +134,42 @@ export function FormateurApprenants() {
     }
   };
 
+  const handleCreatePlacement = async (learner: Learner | null) => {
+    const key = learner?.learner_id ?? "quick";
+    setCreatingPlacement(key);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: codeData } = await supabase.rpc("generate_access_code");
+      const accessCode = codeData as string;
+
+      const { error } = await supabase
+        .from("placement_test_sessions")
+        .insert({
+          formateur_id: user.id,
+          learner_id: learner?.learner_id ?? null,
+          candidate_name: learner?.full_name ?? null,
+          candidate_email: learner?.email ?? null,
+          access_code: accessCode,
+          status: "pending",
+        });
+
+      if (error) throw error;
+
+      await navigator.clipboard.writeText(accessCode).catch(() => {});
+      toast.success(
+        learner
+          ? `Test de positionnement assigné à ${learner.full_name || learner.email} — code : ${accessCode} (copié)`
+          : `Code de positionnement généré : ${accessCode} (copié)`
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la création du test");
+    } finally {
+      setCreatingPlacement(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
