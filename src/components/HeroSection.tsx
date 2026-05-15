@@ -77,13 +77,13 @@ export function HeroSection() {
 
 function ReassuranceCard({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-xl border border-white/20 bg-white/10 p-4 text-left backdrop-blur-sm">
-      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/20 text-white">
+    <div className="flex items-start gap-3 rounded-xl border border-white/30 bg-black/55 p-4 text-left shadow-lg backdrop-blur-md ring-1 ring-white/10">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/25 text-white">
         {icon}
       </div>
       <div>
-        <p className="text-sm font-semibold text-white">{title}</p>
-        <p className="text-xs text-white/80">{desc}</p>
+        <p className="text-sm font-semibold text-white drop-shadow">{title}</p>
+        <p className="text-xs text-white/95 drop-shadow">{desc}</p>
       </div>
     </div>
   );
