@@ -1057,6 +1057,42 @@ export type Database = {
         }
         Relationships: []
       }
+      onboarding_follow_up_events: {
+        Row: {
+          advisor_id: string | null
+          created_at: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["follow_up_status"] | null
+          id: string
+          metadata: Json
+          note: string | null
+          onboarding_result_id: string
+          to_status: Database["public"]["Enums"]["follow_up_status"] | null
+        }
+        Insert: {
+          advisor_id?: string | null
+          created_at?: string
+          event_type: string
+          from_status?: Database["public"]["Enums"]["follow_up_status"] | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          onboarding_result_id: string
+          to_status?: Database["public"]["Enums"]["follow_up_status"] | null
+        }
+        Update: {
+          advisor_id?: string | null
+          created_at?: string
+          event_type?: string
+          from_status?: Database["public"]["Enums"]["follow_up_status"] | null
+          id?: string
+          metadata?: Json
+          note?: string | null
+          onboarding_result_id?: string
+          to_status?: Database["public"]["Enums"]["follow_up_status"] | null
+        }
+        Relationships: []
+      }
       onboarding_results: {
         Row: {
           advisor_notes: string | null

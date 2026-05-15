@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { Helmet } from "react-helmet-async";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
@@ -14,13 +13,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Phone, MapPin, Languages, Clock, MessageCircle, Loader2, ArrowLeft } from "lucide-react";
+import {
+  Phone,
+  MapPin,
+  Languages,
+  Clock,
+  MessageCircle,
+  Loader2,
+  ArrowLeft,
+  PhoneCall,
+  CheckCircle2,
+  StickyNote,
+  ArrowRight,
+  History,
+} from "lucide-react";
 import { RECOMMENDED_PATH_LABEL } from "@/lib/orientationRouter";
 import type { Database } from "@/integrations/supabase/types";
 import { toast } from "sonner";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 
 type Status = Database["public"]["Enums"]["follow_up_status"];
+type EventType = "status_change" | "call" | "whatsapp" | "note" | "callback_done" | "assignment";
 
 const STATUS_LABELS: Record<Status, string> = {
   nouveau_diagnostic: "Nouveau diagnostic",
@@ -80,6 +93,18 @@ interface BeneficiaryRow {
   answers: Record<string, unknown> | null;
 }
 
+interface FollowUpEvent {
+  id: string;
+  onboarding_result_id: string;
+  advisor_id: string | null;
+  event_type: EventType;
+  from_status: Status | null;
+  to_status: Status | null;
+  note: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
 const ConseillerDashboard = () => {
   const { isAdmin, loading: adminLoading } = useAdminCheck();
   const [rows, setRows] = useState<BeneficiaryRow[]>([]);
@@ -129,22 +154,79 @@ const ConseillerDashboard = () => {
 
   const selected = rows.find((r) => r.id === selectedId) ?? null;
 
-  const updateRow = async (id: string, patch: Partial<BeneficiaryRow>) => {
+  const logEvent = useCallback(async (resultId: string, payload: Partial<FollowUpEvent>) => {
+    const { data: userData } = await supabase.auth.getUser();
+    const advisor_id = userData.user?.id ?? null;
+    const { error } = await supabase.from("onboarding_follow_up_events").insert({
+      onboarding_result_id: resultId,
+      advisor_id,
+      event_type: payload.event_type,
+      from_status: payload.from_status ?? null,
+      to_status: payload.to_status ?? null,
+      note: payload.note ?? null,
+      metadata: payload.metadata ?? {},
+    });
+    if (error) console.error("Failed to log event", error);
+  }, []);
+
+  const updateRow = useCallback(async (
+    id: string,
+    patch: Partial<BeneficiaryRow>,
+    eventType?: EventType,
+    eventNote?: string,
+  ) => {
     setSavingId(id);
+    const current = rows.find((r) => r.id === id);
     const update: Record<string, unknown> = { ...patch };
-    if (patch.follow_up_status === "contacte" && !rows.find((r) => r.id === id)?.callback_done_at) {
+
+    // Quand on passe à "contacte", on horodate l'appel effectif
+    if (patch.follow_up_status === "contacte" && !current?.callback_done_at) {
       update.callback_done_at = new Date().toISOString();
     }
-    const { error } = await supabase.from("onboarding_results").update(update as any).eq("id", id);
+
+    const { error } = await supabase
+      .from("onboarding_results")
+      .update(update as never)
+      .eq("id", id);
     setSavingId(null);
+
     if (error) {
       toast.error("Mise à jour impossible.");
       console.error(error);
       return;
     }
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch, ...(update.callback_done_at ? { callback_done_at: update.callback_done_at as string } : {}) } : r)));
+
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === id
+          ? {
+              ...r,
+              ...patch,
+              ...(update.callback_done_at
+                ? { callback_done_at: update.callback_done_at as string }
+                : {}),
+            }
+          : r,
+      ),
+    );
+
+    // Historisation
+    if (eventType) {
+      const isStatusChange = eventType === "status_change" && patch.follow_up_status;
+      await logEvent(id, {
+        event_type: eventType,
+        from_status: isStatusChange ? current?.follow_up_status ?? null : null,
+        to_status: isStatusChange ? (patch.follow_up_status as Status) : null,
+        note: eventNote,
+      });
+    }
     toast.success("Mis à jour.");
-  };
+  }, [rows, logEvent]);
+
+  // Action sans changement DB (ex: bouton Appeler, WhatsApp) → on log seulement
+  const trackContactAction = useCallback(async (id: string, kind: "call" | "whatsapp") => {
+    await logEvent(id, { event_type: kind });
+  }, [logEvent]);
 
   if (adminLoading) {
     return (
@@ -202,7 +284,8 @@ const ConseillerDashboard = () => {
             row={selected}
             saving={savingId === selected.id}
             onBack={() => setSelectedId(null)}
-            onUpdate={(patch) => updateRow(selected.id, patch)}
+            onUpdate={updateRow}
+            onTrackContact={trackContactAction}
           />
         ) : (
           <div className="grid gap-3">
@@ -249,17 +332,74 @@ function BeneficiaryDetail({
   saving,
   onBack,
   onUpdate,
+  onTrackContact,
 }: {
   row: BeneficiaryRow;
   saving: boolean;
   onBack: () => void;
-  onUpdate: (patch: Partial<BeneficiaryRow>) => void;
+  onUpdate: (
+    id: string,
+    patch: Partial<BeneficiaryRow>,
+    eventType?: EventType,
+    eventNote?: string,
+  ) => Promise<void> | void;
+  onTrackContact: (id: string, kind: "call" | "whatsapp") => Promise<void> | void;
 }) {
   const [notes, setNotes] = useState(row.advisor_notes ?? "");
+  const [events, setEvents] = useState<FollowUpEvent[]>([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [reload, setReload] = useState(0);
+
   useEffect(() => setNotes(row.advisor_notes ?? ""), [row.id, row.advisor_notes]);
+
+  useEffect(() => {
+    let mounted = true;
+    setLoadingEvents(true);
+    (async () => {
+      const { data, error } = await supabase
+        .from("onboarding_follow_up_events")
+        .select("*")
+        .eq("onboarding_result_id", row.id)
+        .order("created_at", { ascending: false })
+        .limit(50);
+      if (!mounted) return;
+      if (error) console.error(error);
+      setEvents((data ?? []) as unknown as FollowUpEvent[]);
+      setLoadingEvents(false);
+    })();
+    return () => { mounted = false; };
+  }, [row.id, reload]);
+
+  const triggerReload = () => setReload((n) => n + 1);
+
   const answers = (row.answers ?? {}) as Record<string, unknown>;
   const postal = (answers.postal_code as string) || "";
   const goal = (answers.main_goal as string) || row.main_goal || "—";
+
+  const handleStatusChange = async (next: Status) => {
+    await onUpdate(row.id, { follow_up_status: next }, "status_change");
+    triggerReload();
+  };
+
+  const handleSaveNotes = async () => {
+    await onUpdate(row.id, { advisor_notes: notes }, "note", notes);
+    triggerReload();
+  };
+
+  const handleCall = async () => {
+    await onTrackContact(row.id, "call");
+    triggerReload();
+  };
+
+  const handleWhatsApp = async () => {
+    await onTrackContact(row.id, "whatsapp");
+    triggerReload();
+  };
+
+  const handleMarkContacted = async () => {
+    await onUpdate(row.id, { follow_up_status: "contacte" }, "callback_done");
+    triggerReload();
+  };
 
   return (
     <div className="space-y-4">
@@ -303,12 +443,47 @@ function BeneficiaryDetail({
             </div>
           )}
 
+          {/* Actions de contact */}
+          <div className="grid gap-2 sm:grid-cols-3">
+            {row.phone ? (
+              <>
+                <Button variant="outline" asChild className="gap-2" onClick={handleCall}>
+                  <a href={`tel:${row.phone}`}>
+                    <PhoneCall className="h-4 w-4" /> Appeler
+                  </a>
+                </Button>
+                <Button variant="outline" asChild className="gap-2" onClick={handleWhatsApp}>
+                  <a
+                    href={`https://wa.me/${row.phone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4" /> WhatsApp
+                  </a>
+                </Button>
+              </>
+            ) : (
+              <div className="sm:col-span-2 rounded-lg border border-dashed border-border p-3 text-center text-xs text-muted-foreground">
+                Aucun numéro de téléphone fourni
+              </div>
+            )}
+            <Button
+              variant="default"
+              className="gap-2"
+              onClick={handleMarkContacted}
+              disabled={saving || row.follow_up_status === "contacte"}
+            >
+              <CheckCircle2 className="h-4 w-4" /> Marquer contacté
+            </Button>
+          </div>
+
+          {/* Statut + Notes */}
           <div className="grid gap-3 sm:grid-cols-2">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-muted-foreground">Statut de suivi</label>
+              <label className="text-xs font-medium text-muted-foreground">Statut de suivi (14)</label>
               <Select
                 value={row.follow_up_status}
-                onValueChange={(v) => onUpdate({ follow_up_status: v as Status })}
+                onValueChange={(v) => handleStatusChange(v as Status)}
               >
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -318,19 +493,15 @@ function BeneficiaryDetail({
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex items-end gap-2">
-              {row.phone && (
-                <Button variant="outline" asChild className="flex-1 gap-2">
-                  <a href={`tel:${row.phone}`}><Phone className="h-4 w-4" /> Appeler</a>
-                </Button>
-              )}
-              {row.phone && (
-                <Button variant="outline" asChild className="flex-1 gap-2">
-                  <a href={`https://wa.me/${row.phone.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                    <MessageCircle className="h-4 w-4" /> WhatsApp
-                  </a>
-                </Button>
-              )}
+            <div className="space-y-1">
+              <label className="text-xs font-medium text-muted-foreground">
+                Dernier contact effectif
+              </label>
+              <div className="flex h-10 items-center rounded-md border border-input bg-background px-3 text-sm text-muted-foreground">
+                {row.callback_done_at
+                  ? new Date(row.callback_done_at).toLocaleString("fr-FR")
+                  : "Pas encore contacté"}
+              </div>
             </div>
           </div>
 
@@ -346,17 +517,95 @@ function BeneficiaryDetail({
               <Button
                 size="sm"
                 disabled={saving || notes === (row.advisor_notes ?? "")}
-                onClick={() => onUpdate({ advisor_notes: notes })}
+                onClick={handleSaveNotes}
               >
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer les notes"}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : "Enregistrer la note"}
               </Button>
             </div>
           </div>
         </CardContent>
       </Card>
+
+      {/* Timeline */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="mb-4 flex items-center gap-2">
+            <History className="h-4 w-4 text-muted-foreground" />
+            <h3 className="text-sm font-semibold text-foreground">Historique du suivi</h3>
+            <span className="text-xs text-muted-foreground">({events.length})</span>
+          </div>
+          {loadingEvents ? (
+            <div className="flex h-20 items-center justify-center">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          ) : events.length === 0 ? (
+            <p className="py-4 text-center text-xs text-muted-foreground">
+              Aucune action enregistrée pour l'instant.
+            </p>
+          ) : (
+            <ol className="relative space-y-4 border-l border-border pl-5">
+              {events.map((e) => (
+                <TimelineItem key={e.id} event={e} />
+              ))}
+            </ol>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
+
+function TimelineItem({ event }: { event: FollowUpEvent }) {
+  const meta = EVENT_META[event.event_type];
+  const Icon = meta.icon;
+  return (
+    <li className="relative">
+      <span
+        className={`absolute -left-[26px] flex h-5 w-5 items-center justify-center rounded-full ${meta.bg} ring-4 ring-background`}
+      >
+        <Icon className="h-3 w-3 text-white" />
+      </span>
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="font-medium text-foreground">{meta.label}</span>
+        {event.event_type === "status_change" && event.to_status && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            {event.from_status && (
+              <>
+                <Badge variant="outline" className="text-[10px]">
+                  {STATUS_LABELS[event.from_status]}
+                </Badge>
+                <ArrowRight className="h-3 w-3" />
+              </>
+            )}
+            <Badge variant="secondary" className="text-[10px]">
+              {STATUS_LABELS[event.to_status]}
+            </Badge>
+          </span>
+        )}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {new Date(event.created_at).toLocaleString("fr-FR", {
+          dateStyle: "short",
+          timeStyle: "short",
+        })}
+      </p>
+      {event.note && (
+        <p className="mt-1 whitespace-pre-wrap rounded-md bg-muted/40 p-2 text-xs text-foreground">
+          {event.note}
+        </p>
+      )}
+    </li>
+  );
+}
+
+const EVENT_META: Record<EventType, { label: string; icon: typeof Phone; bg: string }> = {
+  status_change: { label: "Changement de statut", icon: ArrowRight, bg: "bg-primary" },
+  call: { label: "Appel téléphonique", icon: PhoneCall, bg: "bg-blue-500" },
+  whatsapp: { label: "Message WhatsApp", icon: MessageCircle, bg: "bg-green-500" },
+  note: { label: "Note ajoutée", icon: StickyNote, bg: "bg-amber-500" },
+  callback_done: { label: "Rappel effectué", icon: CheckCircle2, bg: "bg-emerald-600" },
+  assignment: { label: "Attribution", icon: History, bg: "bg-purple-500" },
+};
 
 function Field({ icon, label, value }: { icon?: React.ReactNode; label: string; value: string }) {
   return (
