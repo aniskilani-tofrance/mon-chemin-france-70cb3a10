@@ -12,6 +12,7 @@ import { FLEInstallPrompt } from "@/components/FLE/FLEInstallPrompt";
 
 // Eagerly loaded (critical path)
 import Index from "./pages/Index";
+import LanguageGate from "./pages/LanguageGate";
 
 // Lazy loaded pages
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -90,7 +91,8 @@ const App = () => (
           <FLEInstallPrompt />
           <Suspense fallback={<LoadingScreen />}>
             <Routes>
-              <Route path="/" element={<Index />} />
+              <Route path="/" element={<LanguageGate />} />
+              <Route path="/home" element={<Index />} />
               <Route path="/landing" element={<Landing />} />
               <Route path="/login" element={<Login />} />
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
