@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
-import { Menu, X, Handshake, Home, ShieldCheck, LogIn, LogOut, User } from "lucide-react";
+import { Menu, X, Handshake, Home, ShieldCheck, LogIn, LogOut, User, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { LanguageSelector } from "@/components/LanguageSelector";
 import { useLanguage } from "@/hooks/useLanguage";
 import { useAdminCheck } from "@/hooks/useAdminCheck";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserEstablishment } from "@/hooks/useUserEstablishment";
 import logoTofrance from "@/assets/logo-tofrance.png";
 
 export function Header() {
