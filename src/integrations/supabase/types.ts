@@ -1224,10 +1224,12 @@ export type Database = {
           candidate_name: string | null
           completed_at: string | null
           created_at: string
+          expires_at: string | null
           formateur_id: string
           id: string
           learner_id: string | null
           status: string
+          tab_switch_count: number
           test_result_id: string | null
           updated_at: string
         }
@@ -1237,10 +1239,12 @@ export type Database = {
           candidate_name?: string | null
           completed_at?: string | null
           created_at?: string
+          expires_at?: string | null
           formateur_id: string
           id?: string
           learner_id?: string | null
           status?: string
+          tab_switch_count?: number
           test_result_id?: string | null
           updated_at?: string
         }
@@ -1250,10 +1254,12 @@ export type Database = {
           candidate_name?: string | null
           completed_at?: string | null
           created_at?: string
+          expires_at?: string | null
           formateur_id?: string
           id?: string
           learner_id?: string | null
           status?: string
+          tab_switch_count?: number
           test_result_id?: string | null
           updated_at?: string
         }
