@@ -218,11 +218,39 @@ const ConfirmationPage = () => {
             </Card>
           </motion.div>
 
+          {/* ── Human callback within 48h — promesse centrale ── */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.25 }}
+          >
+            <Card className="border-primary/30 bg-gradient-to-br from-primary/5 to-accent/5">
+              <CardContent className="p-5">
+                <div className="flex items-start gap-4">
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/15 text-primary">
+                    <Phone className="h-6 w-6" />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                      Un conseiller vous rappelle sous 48h
+                    </p>
+                    <p className="text-base font-semibold text-foreground leading-snug">
+                      Merci{storedAnswers.contact_firstname ? `, ${storedAnswers.contact_firstname}` : ""}. Votre demande a bien été reçue.
+                    </p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Un conseiller parlant votre langue vous rappellera dans les <strong className="text-foreground">48 heures</strong> au numéro <strong className="text-foreground">{storedAnswers.contact_phone || "que vous avez indiqué"}</strong> pour vous aider à avancer vers le bon parcours. Vous n'êtes pas seul·e.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </motion.div>
+
           {/* ── Recommended route ── */}
           <motion.div
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4 }}
           >
             <Card>
               <CardContent className="p-5">
