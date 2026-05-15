@@ -399,12 +399,21 @@ export default function PlacementTest() {
         </div>
 
         {/* Navigation */}
-        <div className="mt-6 flex items-center justify-between">
-          <div />
+        <div className="mt-6 flex items-center justify-between gap-2">
+          <Button
+            variant="ghost"
+            onClick={handlePrev}
+            disabled={currentIndex === 0 || submitting}
+            className="gap-1 text-gray-500 hover:text-gray-700"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Précédent
+          </Button>
 
           <Button
             variant="ghost"
             onClick={handleSkip}
+            disabled={submitting}
             className="gap-1 text-gray-400 hover:text-gray-600"
           >
             <SkipForward className="h-4 w-4" />
@@ -425,6 +434,23 @@ export default function PlacementTest() {
             {!submitting && currentIndex < questions.length - 1 && <ChevronRight className="h-4 w-4" />}
           </Button>
         </div>
+
+        {/* Early finish */}
+        {currentIndex < questions.length - 1 && answerRecords.length >= 5 && (
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => {
+                if (confirm("Terminer le test maintenant et calculer le niveau avec les réponses déjà données ?")) {
+                  handleSubmit();
+                }
+              }}
+              disabled={submitting}
+              className="text-xs text-gray-400 underline hover:text-gray-600"
+            >
+              Terminer le test maintenant ({answerRecords.length} réponses)
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );
