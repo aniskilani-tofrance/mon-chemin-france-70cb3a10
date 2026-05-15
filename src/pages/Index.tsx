@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { EmployersSection } from "@/components/EmployersSection";
@@ -8,7 +10,9 @@ import { CTASection } from "@/components/CTASection";
 import { Footer } from "@/components/Footer";
 import { SEO } from "@/components/SEO";
 import { useLanguage } from "@/hooks/useLanguage";
-import type { LanguageCode } from "@/lib/translations";
+import { useAuth } from "@/hooks/useAuth";
+import { detectUserRole, getRoleDashboardPath, isStaffRole } from "@/hooks/useRoleCheck";
+import { LoadingScreen } from "@/components/LoadingScreen";
 
 const SEO_BY_LANG: Record<LanguageCode, { title: string; description: string }> = {
   fr: {
