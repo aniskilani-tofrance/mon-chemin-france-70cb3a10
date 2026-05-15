@@ -17,16 +17,22 @@ const GREETINGS: { code: LanguageCode; label: string }[] = [
   { code: "ru", label: "Выберите язык" },
 ];
 
+const SUPPORTED: LanguageCode[] = ["fr", "en", "ar", "es", "pt", "ru"];
+
 export default function LanguageGate() {
   const { setLanguage } = useLanguage();
   const navigate = useNavigate();
 
-  // Si la langue est déjà choisie, on saute la gate
+  // Si une langue valide est déjà mémorisée, on saute la gate.
+  // Si la valeur stockée est invalide (corruption, valeur d'une autre app),
+  // on la nettoie et on laisse l'utilisateur choisir.
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      const stored = window.localStorage.getItem(STORAGE_KEY) as LanguageCode | null;
+      if (stored && SUPPORTED.includes(stored)) {
         navigate("/home", { replace: true });
+      } else if (stored) {
+        window.localStorage.removeItem(STORAGE_KEY);
       }
     } catch {
       /* ignore */
@@ -35,7 +41,8 @@ export default function LanguageGate() {
 
   const handleSelect = (code: LanguageCode) => {
     setLanguage(code);
-    navigate("/home");
+    // replace pour que le bouton "retour" depuis /home ne reboucle pas sur la gate
+    navigate("/home", { replace: true });
   };
 
   return (
@@ -110,7 +117,7 @@ export default function LanguageGate() {
       <button
         onClick={() => {
           setLanguage("fr");
-          navigate("/home");
+          navigate("/home", { replace: true });
         }}
         className="mt-10 text-xs text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
       >
