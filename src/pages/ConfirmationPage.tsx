@@ -423,7 +423,7 @@ const ConfirmationPage = () => {
                 className="text-xs text-muted-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
               >
                 <Shield className="h-3 w-3" />
-                Gérer mes données personnelles
+                {texts.managePersonalData}
                 <ChevronRight className="h-3 w-3" />
               </button>
             </div>
