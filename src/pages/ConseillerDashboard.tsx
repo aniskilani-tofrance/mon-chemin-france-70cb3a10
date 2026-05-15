@@ -157,7 +157,6 @@ const ConseillerDashboard = () => {
   const logEvent = useCallback(async (resultId: string, payload: Partial<FollowUpEvent>) => {
     const { data: userData } = await supabase.auth.getUser();
     const advisor_id = userData.user?.id ?? null;
-    // @ts-expect-error - new table not yet in generated types
     const { error } = await supabase.from("onboarding_follow_up_events").insert({
       onboarding_result_id: resultId,
       advisor_id,
@@ -357,7 +356,6 @@ function BeneficiaryDetail({
     let mounted = true;
     setLoadingEvents(true);
     (async () => {
-      // @ts-expect-error - new table not yet in generated types
       const { data, error } = await supabase
         .from("onboarding_follow_up_events")
         .select("*")
