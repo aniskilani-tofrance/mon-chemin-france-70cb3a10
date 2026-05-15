@@ -27,6 +27,16 @@ export function FormateurApprenants() {
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
   const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
+  const generateAccessCodeSafe = async (): Promise<string> => {
+    const { data, error } = await supabase.rpc("generate_access_code");
+    if (!error && typeof data === "string" && data.length > 0) return data;
+    // Fallback client-side (même alphabet que la fonction SQL)
+    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    let code = "";
+    for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
+    return code;
+  };
+
   const fetchLearners = useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -77,8 +87,7 @@ export function FormateurApprenants() {
       if (!user) return;
 
       // Generate access code
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { data: diag, error } = await supabase
         .from("shared_diagnostics")
@@ -108,8 +117,7 @@ export function FormateurApprenants() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { data: diag, error } = await supabase
         .from("shared_diagnostics")
@@ -141,8 +149,7 @@ export function FormateurApprenants() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data: codeData } = await supabase.rpc("generate_access_code");
-      const accessCode = codeData as string;
+      const accessCode = await generateAccessCodeSafe();
 
       const { error } = await supabase
         .from("placement_test_sessions")
