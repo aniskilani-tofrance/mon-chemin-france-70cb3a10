@@ -186,6 +186,7 @@ export default function AdminDashboard() {
             address: form.address || null,
             is_active: form.is_active,
             create_access: form.create_access,
+            tags: form.tags,
           },
         });
 
