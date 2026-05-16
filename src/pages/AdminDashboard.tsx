@@ -428,24 +428,31 @@ export default function AdminDashboard() {
                 <TableBody>
                   {filteredProviders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-16 text-center">
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <Building2 className="h-10 w-10 opacity-30" />
-                          <p className="font-medium">Aucun partenaire trouvé</p>
+                      <TableCell colSpan={6} className="py-20 text-center">
+                        <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-muted-foreground">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                            <Building2 className="h-7 w-7 opacity-50" />
+                          </div>
+                          <p className="font-semibold text-foreground">Aucun partenaire trouvé</p>
                           <p className="text-xs">
                             {providers.length === 0
-                              ? "Commencez par ajouter votre premier partenaire."
-                              : "Essayez d'ajuster vos filtres ou la recherche."}
+                              ? "Commencez par ajouter votre premier partenaire pour structurer votre réseau."
+                              : "Essayez d'ajuster vos filtres ou la recherche pour élargir les résultats."}
                           </p>
+                          {providers.length === 0 && (
+                            <Button size="sm" onClick={openCreate} className="mt-2 gap-2">
+                              <Plus className="h-4 w-4" /> Ajouter un partenaire
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredProviders.map((p) => (
-                      <TableRow key={p.id} className="group">
+                      <TableRow key={p.id} className="group transition-colors hover:bg-primary/[0.03]">
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-primary/15 to-primary/5 text-xs font-semibold text-primary ring-1 ring-primary/10">
                               {initials(p.name) || <Building2 className="h-4 w-4" />}
                             </div>
                             <div className="min-w-0">
