@@ -38,6 +38,8 @@ import { AdminPlacementTestAnalytics } from "@/components/AdminPlacementTestAnal
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
 import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
 
+type ProviderType = "employer" | "training_org" | "housing";
+
 interface Provider {
   id: string;
   name: string;
@@ -45,7 +47,7 @@ interface Provider {
   phone: string | null;
   website: string | null;
   description: string | null;
-  provider_type: "employer" | "training_org";
+  provider_type: ProviderType;
   is_active: boolean | null;
   city: string | null;
   postal_code: string | null;
@@ -60,11 +62,18 @@ const emptyForm = {
   phone: "",
   website: "",
   description: "",
-  provider_type: "training_org" as "employer" | "training_org",
+  provider_type: "training_org" as ProviderType,
   city: "",
   postal_code: "",
   address: "",
   is_active: true,
+  create_access: false,
+};
+
+const PROVIDER_TYPE_META: Record<ProviderType, { label: string; short: string }> = {
+  training_org: { label: "Organisme de formation", short: "Formation" },
+  employer: { label: "Employeur", short: "Employeur" },
+  housing: { label: "Hébergeur", short: "Hébergeur" },
 };
 
 const QUICK_LINKS = [
