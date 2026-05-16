@@ -180,12 +180,18 @@ export default function AdminDashboard() {
             postal_code: form.postal_code || null,
             address: form.address || null,
             is_active: form.is_active,
+            create_access: form.create_access,
           },
         });
 
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
-        toast({ title: "Partenaire créé" });
+        const inviteMsg =
+          data?.invite_status === "sent" ? " — invitation envoyée par email"
+          : data?.invite_status === "existing" ? " — compte existant rattaché"
+          : data?.invite_status === "failed" ? " — partenaire créé mais invitation échouée"
+          : "";
+        toast({ title: "Partenaire créé" + inviteMsg });
       }
 
       setDialogOpen(false);
