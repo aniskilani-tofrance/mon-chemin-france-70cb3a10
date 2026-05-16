@@ -547,15 +547,20 @@ export default function AdminDashboard() {
 
         {/* Secondary sections grouped by tabs */}
         <div className="mt-10">
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <h2 className="text-lg font-semibold tracking-tight">Pilotage & analytics</h2>
+            <span className="text-xs text-muted-foreground">— Données plateforme et synchronisations</span>
+          </div>
           <Tabs defaultValue="analytics" className="w-full">
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="placement">Test positionnement</TabsTrigger>
-              <TabsTrigger value="checkpoint">Checkpoints</TabsTrigger>
-              <TabsTrigger value="leads">Leads</TabsTrigger>
-              <TabsTrigger value="contacts">Contacts</TabsTrigger>
-              <TabsTrigger value="codes">Codes Marianne</TabsTrigger>
-              <TabsTrigger value="hubspot">HubSpot sync</TabsTrigger>
+            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 bg-muted/60 p-1">
+              <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
+              <TabsTrigger value="placement" className="text-xs">Test positionnement</TabsTrigger>
+              <TabsTrigger value="checkpoint" className="text-xs">Checkpoints</TabsTrigger>
+              <TabsTrigger value="leads" className="text-xs">Leads</TabsTrigger>
+              <TabsTrigger value="contacts" className="text-xs">Contacts</TabsTrigger>
+              <TabsTrigger value="codes" className="text-xs">Codes Marianne</TabsTrigger>
+              <TabsTrigger value="hubspot" className="text-xs">HubSpot sync</TabsTrigger>
             </TabsList>
             <TabsContent value="analytics" className="mt-4"><AdminAnalytics /></TabsContent>
             <TabsContent value="placement" className="mt-4"><AdminPlacementTestAnalytics /></TabsContent>
