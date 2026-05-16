@@ -599,12 +599,21 @@ export function FormateurApprenants() {
                 <TableBody>
                   {filtered.map((l) => {
                     const level = (l.estimated_level || l.french_level_cecrl || "").toUpperCase();
+                    const isChecked = selectedIds.has(l.learner_id);
                     return (
                       <TableRow
                         key={l.learner_id}
+                        data-state={isChecked ? "selected" : undefined}
                         className="cursor-pointer group"
                         onClick={() => openSheet(l)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={() => toggleId(l.learner_id)}
+                            aria-label={`Sélectionner ${l.full_name || l.email || ""}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
