@@ -138,9 +138,9 @@ export function FormateurApprenants() {
     setLoading(true);
     setLoadError(null);
 
-    const withTimeout = <T,>(p: Promise<T>, ms = 12000): Promise<T> =>
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 12000): Promise<T> =>
       Promise.race([
-        p,
+        Promise.resolve(p),
         new Promise<T>((_, reject) =>
           setTimeout(() => reject(new Error("__timeout__")), ms),
         ),
