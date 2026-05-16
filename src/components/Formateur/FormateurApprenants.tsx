@@ -111,6 +111,14 @@ export function FormateurApprenants() {
   const [history, setHistory] = useState<LearnerHistory>({ placements: [], diagnostics: [] });
   const [historyLoading, setHistoryLoading] = useState(false);
 
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifyTitle, setNotifyTitle] = useState("");
+  const [notifyMessage, setNotifyMessage] = useState("");
+  const [notifyKind, setNotifyKind] = useState<"info" | "success" | "warning">("info");
+
   const generateAccessCodeSafe = async (): Promise<string> => {
     const { data, error } = await supabase.rpc("generate_access_code");
     if (!error && typeof data === "string" && data.length > 0) return data;
