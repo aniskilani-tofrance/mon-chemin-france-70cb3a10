@@ -516,6 +516,51 @@ export default function AdminDashboard() {
                 </Select>
               </div>
             </div>
+
+            {/* Tag filter chips */}
+            {(allTags.length > 0 || selectedTags.length > 0) && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3">
+                <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="mr-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Tags</span>
+                {selectedTags.map((tag) => (
+                  <Badge
+                    key={`sel-${tag}`}
+                    variant="default"
+                    className="cursor-pointer gap-1 px-2 py-0.5 text-[11px]"
+                    onClick={() => toggleTagFilter(tag)}
+                  >
+                    {tag}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+                {allTags
+                  .filter((t) => !selectedTags.includes(t))
+                  .slice(0, 12)
+                  .map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="cursor-pointer px-2 py-0.5 text-[11px] hover:bg-primary/10 hover:text-primary"
+                      onClick={() => toggleTagFilter(tag)}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                {allTags.length > 12 + selectedTags.length && (
+                  <span className="text-[11px] text-muted-foreground">+{allTags.length - 12 - selectedTags.length} autres</span>
+                )}
+                {selectedTags.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-1 h-6 px-2 text-[11px]"
+                    onClick={() => setSelectedTags([])}
+                  >
+                    Réinitialiser
+                  </Button>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
