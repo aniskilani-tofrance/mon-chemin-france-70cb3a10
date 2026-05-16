@@ -469,8 +469,75 @@ export function FormateurApprenants() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-lg border bg-primary/5 px-3 py-2 shadow-sm">
+          <Badge variant="secondary" className="font-semibold">
+            {selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}
+          </Badge>
+          <div className="h-5 w-px bg-border mx-1" />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" disabled={bulkBusy}>
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Changer le niveau
+                <ChevronDown className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel className="text-xs">
+                Niveau CECRL
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {LEVELS.map((lv) => (
+                <DropdownMenuItem key={lv} onClick={() => bulkChangeLevel(lv)}>
+                  {lv}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={bulkTriggerPlacement}
+            disabled={bulkBusy}
+          >
+            {bulkBusy ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCheck className="mr-2 h-4 w-4" />
+            )}
+            Lancer un test
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setNotifyOpen(true)}
+            disabled={bulkBusy}
+          >
+            <Bell className="mr-2 h-4 w-4" />
+            Notifier
+          </Button>
+
+          <div className="ml-auto" />
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={clearSelection}
+            disabled={bulkBusy}
+          >
+            <X className="mr-2 h-4 w-4" />
+            Annuler
+          </Button>
+        </div>
+      )}
+
       {/* List */}
       <Card>
+
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-16">
