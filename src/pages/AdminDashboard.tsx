@@ -397,7 +397,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* KPI cards */}
-        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
           <KpiCard
             label="Actifs"
@@ -408,6 +408,7 @@ export default function AdminDashboard() {
           />
           <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
           <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
+          <KpiCard label="Hébergeurs" value={stats.housing} icon={Home} tone="muted" hint="logement / accueil" />
         </div>
 
         {/* Partners table */}
