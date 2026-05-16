@@ -136,52 +136,92 @@ export function FormateurApprenants() {
 
   const fetchLearners = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    setLoadError(null);
+
+    const withTimeout = <T,>(p: Promise<T>, ms = 12000): Promise<T> =>
+      Promise.race([
+        p,
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error("__timeout__")), ms),
+        ),
+      ]);
+
+    try {
+      const { data: { user } } = await withTimeout(supabase.auth.getUser());
+      if (!user) {
+        setLearners([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: links, error: linksErr } = await withTimeout(
+        supabase
+          .from("formateur_learners")
+          .select("learner_id")
+          .eq("formateur_id", user.id),
+      );
+      if (linksErr) throw linksErr;
+
+      if (!links || links.length === 0) {
+        setLearners([]);
+        setLoading(false);
+        return;
+      }
+
+      const learnerIds = links.map((l) => l.learner_id);
+
+      const [{ data: profiles, error: pErr }, { data: progress, error: prErr }] =
+        await withTimeout(
+          Promise.all([
+            supabase
+              .from("profiles")
+              .select("user_id, email, full_name, french_level_cecrl")
+              .in("user_id", learnerIds),
+            supabase
+              .from("fle_user_progress")
+              .select("user_id, total_xp, estimated_level, last_activity_at")
+              .in("user_id", learnerIds),
+          ]),
+        );
+      if (pErr) throw pErr;
+      if (prErr) throw prErr;
+
+      const merged: Learner[] = learnerIds.map((id) => {
+        const profile = profiles?.find((p) => p.user_id === id);
+        const prog = progress?.find((p) => p.user_id === id);
+        return {
+          learner_id: id,
+          email: profile?.email ?? null,
+          full_name: profile?.full_name ?? null,
+          french_level_cecrl: profile?.french_level_cecrl ?? null,
+          last_activity_at: prog?.last_activity_at ?? null,
+          total_xp: prog?.total_xp ?? 0,
+          estimated_level: prog?.estimated_level ?? null,
+        };
+      });
+
+      setLearners(merged);
+    } catch (err: any) {
+      const msg = String(err?.message || err || "");
+      if (msg === "__timeout__") {
+        setLoadError({
+          kind: "timeout",
+          message: "Le chargement prend plus de temps que prévu. Vérifiez votre connexion.",
+        });
+      } else if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+        setLoadError({
+          kind: "network",
+          message: "Impossible de joindre le serveur. Vérifiez votre connexion internet.",
+        });
+      } else {
+        setLoadError({
+          kind: "unknown",
+          message: msg || "Une erreur est survenue lors du chargement des apprenants.",
+        });
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: links } = await supabase
-      .from("formateur_learners")
-      .select("learner_id")
-      .eq("formateur_id", user.id);
-
-    if (!links || links.length === 0) {
-      setLearners([]);
-      setLoading(false);
-      return;
-    }
-
-    const learnerIds = links.map((l) => l.learner_id);
-
-    const [{ data: profiles }, { data: progress }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("user_id, email, full_name, french_level_cecrl")
-        .in("user_id", learnerIds),
-      supabase
-        .from("fle_user_progress")
-        .select("user_id, total_xp, estimated_level, last_activity_at")
-        .in("user_id", learnerIds),
-    ]);
-
-    const merged: Learner[] = learnerIds.map((id) => {
-      const profile = profiles?.find((p) => p.user_id === id);
-      const prog = progress?.find((p) => p.user_id === id);
-      return {
-        learner_id: id,
-        email: profile?.email ?? null,
-        full_name: profile?.full_name ?? null,
-        french_level_cecrl: profile?.french_level_cecrl ?? null,
-        last_activity_at: prog?.last_activity_at ?? null,
-        total_xp: prog?.total_xp ?? 0,
-        estimated_level: prog?.estimated_level ?? null,
-      };
-    });
-
-    setLearners(merged);
-    setLoading(false);
   }, []);
 
   useEffect(() => {
