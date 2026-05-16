@@ -203,6 +203,12 @@ export default function AdminDashboard() {
 
           <div className="flex gap-2">
             <Button variant="outline" asChild>
+              <Link to="/admin/subscriptions">
+                <CreditCard className="mr-2 h-4 w-4" />
+                Abonnements
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link to="/admin/leads">
                 <ExternalLink className="mr-2 h-4 w-4" />
                 Leads HubSpot
