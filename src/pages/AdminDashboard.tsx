@@ -437,6 +437,7 @@ export default function AdminDashboard() {
                     <TabsTrigger value="all" className="text-xs">Tous</TabsTrigger>
                     <TabsTrigger value="training_org" className="text-xs">Formation</TabsTrigger>
                     <TabsTrigger value="employer" className="text-xs">Employeurs</TabsTrigger>
+                    <TabsTrigger value="housing" className="text-xs">Hébergeurs</TabsTrigger>
                   </TabsList>
                 </Tabs>
                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
