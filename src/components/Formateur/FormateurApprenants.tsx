@@ -789,6 +789,70 @@ export function FormateurApprenants() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Bulk notification dialog */}
+      <Dialog open={notifyOpen} onOpenChange={setNotifyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-primary" />
+              Envoyer une notification
+            </DialogTitle>
+            <DialogDescription>
+              {selectedIds.size} apprenant{selectedIds.size > 1 ? "s" : ""} recevront ce message.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Type</label>
+              <Select value={notifyKind} onValueChange={(v: any) => setNotifyKind(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Information</SelectItem>
+                  <SelectItem value="success">Encouragement</SelectItem>
+                  <SelectItem value="warning">Rappel important</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Titre</label>
+              <Input
+                value={notifyTitle}
+                onChange={(e) => setNotifyTitle(e.target.value)}
+                placeholder="Ex. Nouveau module disponible"
+                maxLength={120}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Message</label>
+              <Textarea
+                value={notifyMessage}
+                onChange={(e) => setNotifyMessage(e.target.value)}
+                placeholder="Votre message…"
+                rows={4}
+                maxLength={1000}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNotifyOpen(false)} disabled={bulkBusy}>
+              Annuler
+            </Button>
+            <Button onClick={bulkSendNotification} disabled={bulkBusy}>
+              {bulkBusy ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Bell className="mr-2 h-4 w-4" />
+              )}
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
