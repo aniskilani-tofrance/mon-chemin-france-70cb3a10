@@ -252,24 +252,44 @@ export function FormateurApprenants() {
 
   const loadHistory = async (learner: Learner) => {
     setHistoryLoading(true);
-    setHistory({ placements: [], diagnostics: [] });
-    const [pRes, dRes] = await Promise.all([
+    setHistory(EMPTY_HISTORY);
+    const [pRes, dRes, aRes, nRes, prRes] = await Promise.all([
       supabase
         .from("placement_test_sessions")
-        .select("id, status, level_estimated, created_at")
+        .select("id, status, level_estimated, access_code, created_at")
         .eq("learner_id", learner.learner_id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(10),
       supabase
         .from("shared_diagnostics")
         .select("id, status, access_code, created_at")
         .eq("learner_id", learner.learner_id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(10),
+      supabase
+        .from("audio_submissions")
+        .select("id, status, module_id, created_at, reviewed_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("learner_notifications")
+        .select("id, title, kind, created_at, read_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("fle_user_progress")
+        .select("streak_days, words_learned, phrases_mastered, total_time_minutes, oral_score, comprehension_score, placement_completed")
+        .eq("user_id", learner.learner_id)
+        .maybeSingle(),
     ]);
     setHistory({
       placements: (pRes.data as any) || [],
       diagnostics: (dRes.data as any) || [],
+      audios: (aRes.data as any) || [],
+      notifications: (nRes.data as any) || [],
+      progress: (prRes.data as any) || null,
     });
     setHistoryLoading(false);
   };
