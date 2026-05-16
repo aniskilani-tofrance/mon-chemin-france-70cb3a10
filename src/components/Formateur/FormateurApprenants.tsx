@@ -154,7 +154,7 @@ export function FormateurApprenants() {
         return;
       }
 
-      const { data: links, error: linksErr } = await withTimeout(
+      const { data: links, error: linksErr } = await withTimeout<any>(
         supabase
           .from("formateur_learners")
           .select("learner_id")
