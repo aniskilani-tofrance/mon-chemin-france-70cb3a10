@@ -139,6 +139,7 @@ export default function AdminDashboard() {
       address: p.address || "",
       is_active: p.is_active ?? true,
       create_access: false,
+      tags: p.tags ?? [],
     });
     setDialogOpen(true);
   };
