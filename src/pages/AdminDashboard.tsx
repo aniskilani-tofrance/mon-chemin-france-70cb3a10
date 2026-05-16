@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
@@ -25,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Plus, Pencil, Building2, Users, Search, Mail, ExternalLink,
   CreditCard, MoreHorizontal, Globe, MapPin, CheckCircle2, XCircle,
-  Briefcase, GraduationCap, Phone, BarChart3, Filter,
+  Briefcase, GraduationCap, Phone, BarChart3, Filter, TrendingUp, Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
@@ -231,124 +232,140 @@ export default function AdminDashboard() {
       <Header />
 
       <main className="container mx-auto px-4 py-24">
-        {/* Page header */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground">
-              <Building2 className="h-8 w-8 text-primary" />
-              Gestion des partenaires
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Pilotez les organismes et employeurs partenaires de ToFrance.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <ExternalLink className="h-4 w-4" /> Outils admin
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Espaces admin</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
-                  <DropdownMenuItem key={to} asChild>
-                    <Link to={to} className="cursor-pointer">
-                      <Icon className="mr-2 h-4 w-4" /> {label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={openCreate} size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" /> Ajouter un partenaire
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label>Type de structure</Label>
-                    <Select value={form.provider_type} onValueChange={(v) => setForm({ ...form, provider_type: v as any })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="training_org">Organisme de formation</SelectItem>
-                        <SelectItem value="employer">Employeur</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nom *</Label>
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom de l'organisme" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email *</Label>
-                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@organisme.fr" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Téléphone</Label>
-                      <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01 23 45 67 89" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Site web</Label>
-                      <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Adresse</Label>
-                    <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 rue..." />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Ville</Label>
-                      <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Paris" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Code postal</Label>
-                      <Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="75001" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                    <Label>Actif</Label>
-                  </div>
-                  <Button onClick={handleSave} disabled={saving} className="w-full">
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {editingId ? "Enregistrer" : "Créer le partenaire"}
+        {/* Hero header */}
+        <div className="relative mb-8 overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-background p-6 sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                Back-office ToFrance
+              </div>
+              <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <Building2 className="h-6 w-6" />
+                </span>
+                Partenaires & écosystème
+              </h1>
+              <p className="max-w-xl text-sm text-muted-foreground">
+                Pilotez les organismes de formation, employeurs et outils administratifs depuis un espace unifié.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 bg-background/70 backdrop-blur">
+                    <ExternalLink className="h-4 w-4" /> Outils admin
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Espaces admin</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild>
+                      <Link to={to} className="cursor-pointer">
+                        <Icon className="mr-2 h-4 w-4" /> {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openCreate} size="sm" className="gap-2 shadow-sm">
+                    <Plus className="h-4 w-4" /> Ajouter un partenaire
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label>Type de structure</Label>
+                      <Select value={form.provider_type} onValueChange={(v) => setForm({ ...form, provider_type: v as any })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="training_org">Organisme de formation</SelectItem>
+                          <SelectItem value="employer">Employeur</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nom *</Label>
+                      <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom de l'organisme" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email *</Label>
+                      <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@organisme.fr" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Téléphone</Label>
+                        <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01 23 45 67 89" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Site web</Label>
+                        <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Adresse</Label>
+                      <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 rue..." />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Ville</Label>
+                        <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Paris" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Code postal</Label>
+                        <Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="75001" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                      <Label>Actif</Label>
+                    </div>
+                    <Button onClick={handleSave} disabled={saving} className="w-full">
+                      {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {editingId ? "Enregistrer" : "Créer le partenaire"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
 
         {/* KPI cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" />
-          <KpiCard label="Actifs" value={stats.active} icon={CheckCircle2} tone="success" />
-          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" />
-          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" />
+          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
+          <KpiCard
+            label="Actifs"
+            value={stats.active}
+            icon={CheckCircle2}
+            tone="success"
+            hint={stats.total ? `${Math.round((stats.active / stats.total) * 100)}% du réseau` : "—"}
+          />
+          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
+          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
         </div>
 
         {/* Partners table */}
-        <Card>
-          <CardHeader className="border-b">
+        <Card className="overflow-hidden border-border/60 shadow-sm">
+          <CardHeader className="sticky top-0 z-10 border-b bg-card/80 backdrop-blur-md">
             <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-              <CardTitle className="text-base font-semibold">
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <Users className="h-4 w-4 text-primary" />
                 Liste des partenaires
-                <span className="ml-2 text-sm font-normal text-muted-foreground">
-                  {filteredProviders.length} sur {providers.length}
-                </span>
+                <Badge variant="outline" className="ml-1 font-mono text-[11px]">
+                  {filteredProviders.length}/{providers.length}
+                </Badge>
               </CardTitle>
               <div className="flex flex-wrap items-center gap-2">
                 <div className="relative">
@@ -383,8 +400,18 @@ export default function AdminDashboard() {
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
-              <div className="flex justify-center py-16">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <div className="space-y-2 p-4">
+                {[0, 1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-lg border border-border/40 p-3">
+                    <Skeleton className="h-9 w-9 rounded-md" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3.5 w-1/3" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                    <Skeleton className="h-6 w-20 rounded-full" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                ))}
               </div>
             ) : (
               <Table>
@@ -401,24 +428,31 @@ export default function AdminDashboard() {
                 <TableBody>
                   {filteredProviders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="py-16 text-center">
-                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                          <Building2 className="h-10 w-10 opacity-30" />
-                          <p className="font-medium">Aucun partenaire trouvé</p>
+                      <TableCell colSpan={6} className="py-20 text-center">
+                        <div className="mx-auto flex max-w-sm flex-col items-center gap-3 text-muted-foreground">
+                          <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
+                            <Building2 className="h-7 w-7 opacity-50" />
+                          </div>
+                          <p className="font-semibold text-foreground">Aucun partenaire trouvé</p>
                           <p className="text-xs">
                             {providers.length === 0
-                              ? "Commencez par ajouter votre premier partenaire."
-                              : "Essayez d'ajuster vos filtres ou la recherche."}
+                              ? "Commencez par ajouter votre premier partenaire pour structurer votre réseau."
+                              : "Essayez d'ajuster vos filtres ou la recherche pour élargir les résultats."}
                           </p>
+                          {providers.length === 0 && (
+                            <Button size="sm" onClick={openCreate} className="mt-2 gap-2">
+                              <Plus className="h-4 w-4" /> Ajouter un partenaire
+                            </Button>
+                          )}
                         </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredProviders.map((p) => (
-                      <TableRow key={p.id} className="group">
+                      <TableRow key={p.id} className="group transition-colors hover:bg-primary/[0.03]">
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-gradient-to-br from-primary/15 to-primary/5 text-xs font-semibold text-primary ring-1 ring-primary/10">
                               {initials(p.name) || <Building2 className="h-4 w-4" />}
                             </div>
                             <div className="min-w-0">
@@ -513,15 +547,20 @@ export default function AdminDashboard() {
 
         {/* Secondary sections grouped by tabs */}
         <div className="mt-10">
+          <div className="mb-3 flex items-center gap-2">
+            <TrendingUp className="h-4 w-4 text-primary" />
+            <h2 className="text-lg font-semibold tracking-tight">Pilotage & analytics</h2>
+            <span className="text-xs text-muted-foreground">— Données plateforme et synchronisations</span>
+          </div>
           <Tabs defaultValue="analytics" className="w-full">
-            <TabsList className="w-full justify-start overflow-x-auto">
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="placement">Test positionnement</TabsTrigger>
-              <TabsTrigger value="checkpoint">Checkpoints</TabsTrigger>
-              <TabsTrigger value="leads">Leads</TabsTrigger>
-              <TabsTrigger value="contacts">Contacts</TabsTrigger>
-              <TabsTrigger value="codes">Codes Marianne</TabsTrigger>
-              <TabsTrigger value="hubspot">HubSpot sync</TabsTrigger>
+            <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1 bg-muted/60 p-1">
+              <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>
+              <TabsTrigger value="placement" className="text-xs">Test positionnement</TabsTrigger>
+              <TabsTrigger value="checkpoint" className="text-xs">Checkpoints</TabsTrigger>
+              <TabsTrigger value="leads" className="text-xs">Leads</TabsTrigger>
+              <TabsTrigger value="contacts" className="text-xs">Contacts</TabsTrigger>
+              <TabsTrigger value="codes" className="text-xs">Codes Marianne</TabsTrigger>
+              <TabsTrigger value="hubspot" className="text-xs">HubSpot sync</TabsTrigger>
             </TabsList>
             <TabsContent value="analytics" className="mt-4"><AdminAnalytics /></TabsContent>
             <TabsContent value="placement" className="mt-4"><AdminPlacementTestAnalytics /></TabsContent>
@@ -540,22 +579,23 @@ export default function AdminDashboard() {
 }
 
 function KpiCard({
-  label, value, icon: Icon, tone,
-}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted" }) {
+  label, value, icon: Icon, tone, hint,
+}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string }) {
   const toneClasses = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/10 text-success",
     muted: "bg-muted text-muted-foreground",
   }[tone];
   return (
-    <Card>
-      <CardContent className="flex items-center gap-3 p-4">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneClasses}`}>
+    <Card className="group relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="flex items-start gap-3 p-4">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneClasses} transition-transform group-hover:scale-105`}>
           <Icon className="h-5 w-5" />
         </div>
-        <div>
-          <div className="text-2xl font-bold leading-tight">{value}</div>
-          <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-2xl font-bold leading-none tracking-tight">{value}</div>
+          <div className="mt-1 text-xs font-medium text-foreground">{label}</div>
+          {hint && <div className="mt-0.5 text-[11px] text-muted-foreground">{hint}</div>}
         </div>
       </CardContent>
     </Card>
