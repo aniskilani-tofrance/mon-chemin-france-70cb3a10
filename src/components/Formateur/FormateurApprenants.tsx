@@ -27,6 +27,24 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Loader2,
   User,
@@ -40,6 +58,9 @@ import {
   Trophy,
   Calendar,
   ArrowRight,
+  Bell,
+  X,
+  CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
