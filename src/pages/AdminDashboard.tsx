@@ -396,19 +396,53 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* KPI cards */}
+        {/* KPI cards (cliquables pour filtrer) */}
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
+          <KpiCard
+            label="Partenaires"
+            value={stats.total}
+            icon={Building2}
+            tone="primary"
+            hint="total répertoriés"
+            active={typeFilter === "all" && statusFilter === "all"}
+            onClick={() => { setTypeFilter("all"); setStatusFilter("all"); }}
+          />
           <KpiCard
             label="Actifs"
             value={stats.active}
             icon={CheckCircle2}
             tone="success"
             hint={stats.total ? `${Math.round((stats.active / stats.total) * 100)}% du réseau` : "—"}
+            active={statusFilter === "active"}
+            onClick={() => setStatusFilter(statusFilter === "active" ? "all" : "active")}
           />
-          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
-          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
-          <KpiCard label="Hébergeurs" value={stats.housing} icon={Home} tone="muted" hint="logement / accueil" />
+          <KpiCard
+            label="Organismes"
+            value={stats.trainingOrgs}
+            icon={GraduationCap}
+            tone="muted"
+            hint="formation"
+            active={typeFilter === "training_org"}
+            onClick={() => setTypeFilter(typeFilter === "training_org" ? "all" : "training_org")}
+          />
+          <KpiCard
+            label="Employeurs"
+            value={stats.employers}
+            icon={Briefcase}
+            tone="muted"
+            hint="recruteurs"
+            active={typeFilter === "employer"}
+            onClick={() => setTypeFilter(typeFilter === "employer" ? "all" : "employer")}
+          />
+          <KpiCard
+            label="Hébergeurs"
+            value={stats.housing}
+            icon={Home}
+            tone="muted"
+            hint="logement / accueil"
+            active={typeFilter === "housing"}
+            onClick={() => setTypeFilter(typeFilter === "housing" ? "all" : "housing")}
+          />
         </div>
 
         {/* Partners table */}
@@ -645,15 +679,22 @@ export default function AdminDashboard() {
 }
 
 function KpiCard({
-  label, value, icon: Icon, tone, hint,
-}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string }) {
+  label, value, icon: Icon, tone, hint, active, onClick,
+}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string; active?: boolean; onClick?: () => void }) {
   const toneClasses = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/10 text-success",
     muted: "bg-muted text-muted-foreground",
   }[tone];
+  const interactive = !!onClick;
   return (
-    <Card className="group relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card
+      onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } } : undefined}
+      className={`group relative overflow-hidden transition-all ${interactive ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" : ""} ${active ? "ring-2 ring-primary shadow-md" : ""}`}
+    >
       <CardContent className="flex items-start gap-3 p-4">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneClasses} transition-transform group-hover:scale-105`}>
           <Icon className="h-5 w-5" />
