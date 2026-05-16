@@ -571,6 +571,24 @@ export function FormateurApprenants() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={
+                          filtered.length > 0 &&
+                          filtered.every((l) => selectedIds.has(l.learner_id))
+                        }
+                        onCheckedChange={(v) => {
+                          if (v) {
+                            setSelectedIds(
+                              new Set(filtered.map((l) => l.learner_id)),
+                            );
+                          } else {
+                            clearSelection();
+                          }
+                        }}
+                        aria-label="Tout sélectionner"
+                      />
+                    </TableHead>
                     <TableHead>Apprenant</TableHead>
                     <TableHead>Niveau</TableHead>
                     <TableHead>XP</TableHead>
