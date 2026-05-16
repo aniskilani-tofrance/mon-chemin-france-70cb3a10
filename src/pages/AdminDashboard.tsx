@@ -26,7 +26,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, Plus, Pencil, Building2, Users, Search, Mail, ExternalLink,
   CreditCard, MoreHorizontal, Globe, MapPin, CheckCircle2, XCircle,
-  Briefcase, GraduationCap, Phone, BarChart3, Filter,
+  Briefcase, GraduationCap, Phone, BarChart3, Filter, TrendingUp, Sparkles,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
