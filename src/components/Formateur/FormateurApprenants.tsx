@@ -363,6 +363,7 @@ export function FormateurApprenants() {
     }
   };
 
+  const filtered = useMemo(() => {
     let result = [...learners];
 
     if (search.trim()) {
