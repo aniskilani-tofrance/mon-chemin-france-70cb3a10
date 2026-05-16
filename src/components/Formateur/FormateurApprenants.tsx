@@ -1239,56 +1239,134 @@ export function FormateurApprenants() {
   );
 }
 
-function StatBox({ label, value, small }: { label: string; value: string; small?: boolean }) {
+function formatMinutes(mins: number | null | undefined): string {
+  const m = mins ?? 0;
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return r ? `${h}h${String(r).padStart(2, "0")}` : `${h}h`;
+}
+
+function StatBox({
+  label,
+  value,
+  small,
+  icon: Icon,
+  iconClass,
+}: {
+  label: string;
+  value: string;
+  small?: boolean;
+  icon?: any;
+  iconClass?: string;
+}) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-3 text-center">
-      <div className={`font-bold ${small ? "text-sm" : "text-lg"}`}>{value}</div>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mt-1">{label}</div>
+    <div className="rounded-lg border bg-muted/30 p-2.5 text-center">
+      <div className="flex items-center justify-center gap-1">
+        {Icon && <Icon className={`h-3.5 w-3.5 ${iconClass || "text-muted-foreground"}`} />}
+        <div className={`font-bold ${small ? "text-xs" : "text-base"}`}>{value}</div>
+      </div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">
+        {label}
+      </div>
     </div>
   );
 }
 
-function HistorySection({
-  title,
+function ShortcutLink({
   icon: Icon,
-  items,
-  loading,
-  empty,
+  label,
+  hint,
+  tone,
+  onClick,
 }: {
-  title: string;
   icon: any;
-  items: Array<{ id: string; primary: string; secondary: string; date: string }>;
-  loading: boolean;
-  empty: string;
+  label: string;
+  hint?: string;
+  tone?: "warning" | "default";
+  onClick: () => void;
 }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">{title}</h3>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+        tone === "warning"
+          ? "bg-amber-500/5 hover:bg-amber-500/10 text-amber-900 dark:text-amber-200"
+          : "hover:bg-muted"
+      }`}
+    >
+      <Icon className={`h-4 w-4 shrink-0 ${tone === "warning" ? "text-amber-600" : "text-muted-foreground"}`} />
+      <span className="flex-1 truncate font-medium">{label}</span>
+      {hint && <span className="text-[10px] text-muted-foreground whitespace-nowrap">{hint}</span>}
+      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+    </button>
+  );
+}
+
+function TimelineItem({
+  event,
+  onOpen,
+}: {
+  event: {
+    id: string;
+    kind: "placement" | "diagnostic" | "audio" | "notification";
+    date: string;
+    title: string;
+    subtitle: string;
+    href?: string;
+    badge?: { label: string; tone: "default" | "secondary" | "outline" | "destructive" };
+  };
+  onOpen: () => void;
+}) {
+  const iconMap = {
+    placement: { Icon: GraduationCap, color: "text-blue-600 bg-blue-500/10" },
+    diagnostic: { Icon: Sparkles, color: "text-violet-600 bg-violet-500/10" },
+    audio: { Icon: Mic, color: "text-amber-600 bg-amber-500/10" },
+    notification: { Icon: Bell, color: "text-emerald-600 bg-emerald-500/10" },
+  };
+  const { Icon, color } = iconMap[event.kind];
+  const date = new Date(event.date);
+  const relative =
+    Math.floor((Date.now() - date.getTime()) / 86400000) < 1
+      ? "Aujourd'hui"
+      : date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+  return (
+    <li className="ml-3">
+      <span
+        className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-background ${color}`}
+      >
+        <Icon className="h-2.5 w-2.5" />
+      </span>
+      <div
+        className={`rounded-md border bg-card px-3 py-2 text-sm group ${
+          event.href ? "cursor-pointer hover:border-primary/50 hover:bg-muted/40 transition-colors" : ""
+        }`}
+        onClick={event.href ? onOpen : undefined}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-medium truncate flex items-center gap-1.5">
+              {event.title}
+              {event.href && (
+                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground truncate capitalize">
+              {event.subtitle}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{relative}</span>
+            {event.badge && (
+              <Badge variant={event.badge.tone} className="text-[10px] py-0 px-1.5 h-4">
+                {event.badge.label}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
-      {loading ? (
-        <div className="text-xs text-muted-foreground py-2">Chargement…</div>
-      ) : items.length === 0 ? (
-        <div className="text-xs text-muted-foreground py-2 italic">{empty}</div>
-      ) : (
-        <ul className="space-y-1.5">
-          {items.map((it) => (
-            <li
-              key={it.id}
-              className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-sm"
-            >
-              <div className="min-w-0">
-                <div className="font-medium truncate">{it.primary}</div>
-                <div className="text-xs text-muted-foreground capitalize">{it.secondary}</div>
-              </div>
-              <div className="text-xs text-muted-foreground whitespace-nowrap">
-                {formatRelative(it.date)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </li>
   );
 }
