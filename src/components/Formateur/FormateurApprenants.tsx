@@ -61,7 +61,12 @@ import {
   Bell,
   X,
   CheckCheck,
+  AlertCircle,
+  RefreshCw,
+  SearchX,
+  WifiOff,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
 import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
@@ -97,6 +102,7 @@ export function FormateurApprenants() {
   const navigate = useNavigate();
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<null | { kind: "timeout" | "network" | "unknown"; message: string }>(null);
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
   const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
@@ -130,52 +136,92 @@ export function FormateurApprenants() {
 
   const fetchLearners = useCallback(async () => {
     setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
+    setLoadError(null);
+
+    const withTimeout = <T,>(p: PromiseLike<T>, ms = 12000): Promise<T> =>
+      Promise.race([
+        Promise.resolve(p),
+        new Promise<T>((_, reject) =>
+          setTimeout(() => reject(new Error("__timeout__")), ms),
+        ),
+      ]);
+
+    try {
+      const { data: { user } } = await withTimeout(supabase.auth.getUser());
+      if (!user) {
+        setLearners([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: links, error: linksErr } = await withTimeout<any>(
+        supabase
+          .from("formateur_learners")
+          .select("learner_id")
+          .eq("formateur_id", user.id),
+      );
+      if (linksErr) throw linksErr;
+
+      if (!links || links.length === 0) {
+        setLearners([]);
+        setLoading(false);
+        return;
+      }
+
+      const learnerIds = links.map((l) => l.learner_id);
+
+      const [{ data: profiles, error: pErr }, { data: progress, error: prErr }] =
+        await withTimeout(
+          Promise.all([
+            supabase
+              .from("profiles")
+              .select("user_id, email, full_name, french_level_cecrl")
+              .in("user_id", learnerIds),
+            supabase
+              .from("fle_user_progress")
+              .select("user_id, total_xp, estimated_level, last_activity_at")
+              .in("user_id", learnerIds),
+          ]),
+        );
+      if (pErr) throw pErr;
+      if (prErr) throw prErr;
+
+      const merged: Learner[] = learnerIds.map((id) => {
+        const profile = profiles?.find((p) => p.user_id === id);
+        const prog = progress?.find((p) => p.user_id === id);
+        return {
+          learner_id: id,
+          email: profile?.email ?? null,
+          full_name: profile?.full_name ?? null,
+          french_level_cecrl: profile?.french_level_cecrl ?? null,
+          last_activity_at: prog?.last_activity_at ?? null,
+          total_xp: prog?.total_xp ?? 0,
+          estimated_level: prog?.estimated_level ?? null,
+        };
+      });
+
+      setLearners(merged);
+    } catch (err: any) {
+      const msg = String(err?.message || err || "");
+      if (msg === "__timeout__") {
+        setLoadError({
+          kind: "timeout",
+          message: "Le chargement prend plus de temps que prévu. Vérifiez votre connexion.",
+        });
+      } else if (msg.toLowerCase().includes("fetch") || msg.toLowerCase().includes("network")) {
+        setLoadError({
+          kind: "network",
+          message: "Impossible de joindre le serveur. Vérifiez votre connexion internet.",
+        });
+      } else {
+        setLoadError({
+          kind: "unknown",
+          message: msg || "Une erreur est survenue lors du chargement des apprenants.",
+        });
+      }
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data: links } = await supabase
-      .from("formateur_learners")
-      .select("learner_id")
-      .eq("formateur_id", user.id);
-
-    if (!links || links.length === 0) {
-      setLearners([]);
-      setLoading(false);
-      return;
-    }
-
-    const learnerIds = links.map((l) => l.learner_id);
-
-    const [{ data: profiles }, { data: progress }] = await Promise.all([
-      supabase
-        .from("profiles")
-        .select("user_id, email, full_name, french_level_cecrl")
-        .in("user_id", learnerIds),
-      supabase
-        .from("fle_user_progress")
-        .select("user_id, total_xp, estimated_level, last_activity_at")
-        .in("user_id", learnerIds),
-    ]);
-
-    const merged: Learner[] = learnerIds.map((id) => {
-      const profile = profiles?.find((p) => p.user_id === id);
-      const prog = progress?.find((p) => p.user_id === id);
-      return {
-        learner_id: id,
-        email: profile?.email ?? null,
-        full_name: profile?.full_name ?? null,
-        french_level_cecrl: profile?.french_level_cecrl ?? null,
-        last_activity_at: prog?.last_activity_at ?? null,
-        total_xp: prog?.total_xp ?? 0,
-        estimated_level: prog?.estimated_level ?? null,
-      };
-    });
-
-    setLearners(merged);
-    setLoading(false);
   }, []);
 
   useEffect(() => {
@@ -540,8 +586,58 @@ export function FormateurApprenants() {
 
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="p-4 space-y-3" aria-busy="true" aria-label="Chargement des apprenants">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3.5 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-12 rounded-full" />
+                  <Skeleton className="h-4 w-10" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground text-center pt-2">
+                Récupération de la liste de vos apprenants…
+              </p>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-16 px-6 space-y-3">
+              <div
+                className={`mx-auto h-14 w-14 rounded-full flex items-center justify-center ${
+                  loadError.kind === "network"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-amber-500/10 text-amber-600"
+                }`}
+              >
+                {loadError.kind === "network" ? (
+                  <WifiOff className="h-7 w-7" />
+                ) : (
+                  <AlertCircle className="h-7 w-7" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold">
+                  {loadError.kind === "timeout"
+                    ? "Chargement trop long"
+                    : loadError.kind === "network"
+                    ? "Connexion interrompue"
+                    : "Une erreur est survenue"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {loadError.message}
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2">
+                <Button onClick={fetchLearners}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Réessayer
+                </Button>
+              </div>
             </div>
           ) : learners.length === 0 ? (
             <div className="text-center py-16 px-6 space-y-3">
@@ -551,11 +647,12 @@ export function FormateurApprenants() {
               <div>
                 <p className="font-semibold">Aucun apprenant pour le moment</p>
                 <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Créez un compte apprenant ou démarrez un diagnostic rapide avec un code d'accès.
+                  Créez un compte apprenant, importez depuis une source existante, ou démarrez un diagnostic rapide avec un code d'accès.
                 </p>
               </div>
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 pt-2 flex-wrap">
                 <CreateLearnerDialog onCreated={fetchLearners} />
+                <ImportFromSourceDialog onImported={fetchLearners} />
                 <Button variant="outline" onClick={() => handleCreatePlacement(null)}>
                   <GraduationCap className="mr-2 h-4 w-4" />
                   Code de positionnement
@@ -563,8 +660,35 @@ export function FormateurApprenants() {
               </div>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
-              Aucun résultat avec ces filtres.
+            <div className="text-center py-16 px-6 space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+                <SearchX className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold">Aucun apprenant ne correspond</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {search.trim()
+                    ? `Aucun résultat pour "${search.trim()}"`
+                    : "Aucun apprenant ne correspond aux filtres sélectionnés."}
+                  {" "}Ajustez votre recherche ou réinitialisez les filtres.
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearch("");
+                    setLevelFilter("all");
+                    setActivityFilter("all");
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground pt-1">
+                {learners.length} apprenant{learners.length > 1 ? "s" : ""} au total
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
