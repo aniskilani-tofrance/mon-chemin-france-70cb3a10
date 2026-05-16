@@ -50,9 +50,12 @@ Deno.serve(async (req) => {
     const body = await req.json();
     const {
       name, email, phone, website, description, provider_type,
-      address, city, postal_code, is_active, create_access,
+      address, city, postal_code, is_active, create_access, tags,
       _existing_provider_id,
     } = body;
+    const cleanTags = Array.isArray(tags)
+      ? Array.from(new Set(tags.map((t: any) => String(t).trim()).filter(Boolean))).slice(0, 50)
+      : [];
 
     if (!name || !email) {
       return new Response(JSON.stringify({ error: "Nom et email requis" }), {
