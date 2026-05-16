@@ -556,22 +556,23 @@ export default function AdminDashboard() {
 }
 
 function KpiCard({
-  label, value, icon: Icon, tone,
-}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted" }) {
+  label, value, icon: Icon, tone, hint,
+}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string }) {
   const toneClasses = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/10 text-success",
     muted: "bg-muted text-muted-foreground",
   }[tone];
   return (
-    <Card>
-      <CardContent className="flex items-center gap-3 p-4">
-        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneClasses}`}>
+    <Card className="group relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
+      <CardContent className="flex items-start gap-3 p-4">
+        <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneClasses} transition-transform group-hover:scale-105`}>
           <Icon className="h-5 w-5" />
         </div>
-        <div>
-          <div className="text-2xl font-bold leading-tight">{value}</div>
-          <div className="text-xs text-muted-foreground">{label}</div>
+        <div className="min-w-0 flex-1">
+          <div className="text-2xl font-bold leading-none tracking-tight">{value}</div>
+          <div className="mt-1 text-xs font-medium text-foreground">{label}</div>
+          {hint && <div className="mt-0.5 text-[11px] text-muted-foreground">{hint}</div>}
         </div>
       </CardContent>
     </Card>
