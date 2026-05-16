@@ -65,6 +65,14 @@ import {
   RefreshCw,
   SearchX,
   WifiOff,
+  Copy,
+  Flame,
+  Clock,
+  Mic,
+  Activity,
+  ExternalLink,
+  BookOpen,
+  CheckCircle2,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
