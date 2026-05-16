@@ -364,9 +364,26 @@ export default function AdminDashboard() {
                       <Label>Description</Label>
                       <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                      <Label>Actif</Label>
+                    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <Label className="text-sm font-medium">Structure active</Label>
+                          <p className="text-xs text-muted-foreground">Visible dans les annuaires et matching</p>
+                        </div>
+                        <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                      </div>
+                      {!editingId && (
+                        <div className="flex items-center justify-between gap-2 border-t pt-3">
+                          <div className="flex items-start gap-2">
+                            <KeyRound className="mt-0.5 h-4 w-4 text-primary" />
+                            <div>
+                              <Label className="text-sm font-medium">Créer un accès partenaire</Label>
+                              <p className="text-xs text-muted-foreground">Envoie un email d'invitation pour activer le compte</p>
+                            </div>
+                          </div>
+                          <Switch checked={form.create_access} onCheckedChange={(v) => setForm({ ...form, create_access: v })} />
+                        </div>
+                      )}
                     </div>
                     <Button onClick={handleSave} disabled={saving} className="w-full">
                       {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
