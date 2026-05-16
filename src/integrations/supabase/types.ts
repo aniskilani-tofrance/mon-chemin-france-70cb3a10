@@ -1885,6 +1885,7 @@ export type Database = {
           phone: string | null
           postal_code: string | null
           provider_type: Database["public"]["Enums"]["provider_type"]
+          tags: string[]
           updated_at: string
           user_id: string | null
           website: string | null
@@ -1905,6 +1906,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           provider_type?: Database["public"]["Enums"]["provider_type"]
+          tags?: string[]
           updated_at?: string
           user_id?: string | null
           website?: string | null
@@ -1925,6 +1927,7 @@ export type Database = {
           phone?: string | null
           postal_code?: string | null
           provider_type?: Database["public"]["Enums"]["provider_type"]
+          tags?: string[]
           updated_at?: string
           user_id?: string | null
           website?: string | null

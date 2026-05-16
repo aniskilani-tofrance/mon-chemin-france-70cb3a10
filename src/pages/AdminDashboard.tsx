@@ -27,7 +27,7 @@ import {
   Loader2, Plus, Pencil, Building2, Users, Search, Mail, ExternalLink,
   CreditCard, MoreHorizontal, Globe, MapPin, CheckCircle2, XCircle,
   Briefcase, GraduationCap, Phone, BarChart3, Filter, TrendingUp, Sparkles,
-  Home, KeyRound, ShieldCheck,
+  Home, KeyRound, ShieldCheck, Tag, X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
@@ -54,6 +54,7 @@ interface Provider {
   postal_code: string | null;
   address: string | null;
   user_id: string | null;
+  tags: string[] | null;
   created_at: string;
 }
 
@@ -69,6 +70,7 @@ const emptyForm = {
   address: "",
   is_active: true,
   create_access: false,
+  tags: [] as string[],
 };
 
 const PROVIDER_TYPE_META: Record<ProviderType, { label: string; short: string }> = {
@@ -96,6 +98,8 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | ProviderType>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState("");
   const { toast } = useToast();
 
   const fetchProviders = async () => {
@@ -137,6 +141,7 @@ export default function AdminDashboard() {
       address: p.address || "",
       is_active: p.is_active ?? true,
       create_access: false,
+      tags: p.tags ?? [],
     });
     setDialogOpen(true);
   };
@@ -163,6 +168,7 @@ export default function AdminDashboard() {
             postal_code: form.postal_code || null,
             address: form.address || null,
             is_active: form.is_active,
+            tags: form.tags,
           })
           .eq("id", editingId);
 
@@ -182,6 +188,7 @@ export default function AdminDashboard() {
             address: form.address || null,
             is_active: form.is_active,
             create_access: form.create_access,
+            tags: form.tags,
           },
         });
 
@@ -244,20 +251,42 @@ export default function AdminDashboard() {
     return { total, active, inactive: total - active, employers, trainingOrgs, housing, withAccess };
   }, [providers]);
 
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    providers.forEach((p) => (p.tags || []).forEach((t) => t && set.add(t)));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [providers]);
+
+  const tagSuggestions = useMemo(() => {
+    const q = tagInput.trim().toLowerCase();
+    return allTags
+      .filter((t) => !selectedTags.includes(t) && (!q || t.toLowerCase().includes(q)))
+      .slice(0, 8);
+  }, [allTags, tagInput, selectedTags]);
+
   const filteredProviders = useMemo(() => {
     const q = search.toLowerCase();
+    const selLower = selectedTags.map((t) => t.toLowerCase());
     return providers.filter((p) => {
       if (typeFilter !== "all" && p.provider_type !== typeFilter) return false;
       if (statusFilter === "active" && !p.is_active) return false;
       if (statusFilter === "inactive" && p.is_active) return false;
+      const pTagsLower = (p.tags || []).map((t) => t.toLowerCase());
+      if (selLower.length && !selLower.every((t) => pTagsLower.includes(t))) return false;
       if (!q) return true;
       return (
         p.name.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q) ||
-        (p.city || "").toLowerCase().includes(q)
+        (p.city || "").toLowerCase().includes(q) ||
+        (p.description || "").toLowerCase().includes(q) ||
+        pTagsLower.some((t) => t.includes(q))
       );
     });
-  }, [providers, search, typeFilter, statusFilter]);
+  }, [providers, search, typeFilter, statusFilter, selectedTags]);
+
+  const toggleTagFilter = (tag: string) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
 
   const initials = (name: string) =>
     name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
@@ -364,6 +393,72 @@ export default function AdminDashboard() {
                       <Label>Description</Label>
                       <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
                     </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Tag className="h-3.5 w-3.5" /> Tags / Mots-clés
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Compétences, secteurs, langues parlées, publics, certifications… Appuyez sur Entrée ou virgule pour ajouter.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 rounded-md border bg-background p-2">
+                        {form.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => setForm({ ...form, tags: form.tags.filter((t) => t !== tag) })}
+                              className="ml-0.5 rounded-sm opacity-60 hover:opacity-100"
+                              aria-label={`Retirer ${tag}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                        <Input
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === ",") {
+                              e.preventDefault();
+                              const v = tagInput.trim().replace(/,$/, "");
+                              if (v && !form.tags.includes(v)) {
+                                setForm({ ...form, tags: [...form.tags, v] });
+                              }
+                              setTagInput("");
+                            } else if (e.key === "Backspace" && !tagInput && form.tags.length) {
+                              setForm({ ...form, tags: form.tags.slice(0, -1) });
+                            }
+                          }}
+                          onBlur={() => {
+                            const v = tagInput.trim();
+                            if (v && !form.tags.includes(v)) {
+                              setForm({ ...form, tags: [...form.tags, v] });
+                              setTagInput("");
+                            }
+                          }}
+                          placeholder={form.tags.length ? "" : "ex: anglais, cuisine, BTP, RQTH…"}
+                          className="h-7 min-w-[140px] flex-1 border-0 p-0 text-sm shadow-none focus-visible:ring-0"
+                        />
+                      </div>
+                      {tagSuggestions.length > 0 && tagInput && (
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-[11px] text-muted-foreground">Suggestions :</span>
+                          {tagSuggestions.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="outline"
+                              className="cursor-pointer px-1.5 py-0 text-[11px] hover:bg-primary/10"
+                              onClick={() => {
+                                if (!form.tags.includes(tag)) setForm({ ...form, tags: [...form.tags, tag] });
+                                setTagInput("");
+                              }}
+                            >
+                              + {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
                       <div className="flex items-center justify-between gap-2">
                         <div>
@@ -460,7 +555,7 @@ export default function AdminDashboard() {
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
-                    placeholder="Rechercher nom, email, ville…"
+                    placeholder="Rechercher nom, email, ville, tag…"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     className="h-9 w-64 pl-9"
@@ -487,6 +582,51 @@ export default function AdminDashboard() {
                 </Select>
               </div>
             </div>
+
+            {/* Tag filter chips */}
+            {(allTags.length > 0 || selectedTags.length > 0) && (
+              <div className="mt-3 flex flex-wrap items-center gap-1.5 border-t border-border/50 pt-3">
+                <Tag className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="mr-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground">Tags</span>
+                {selectedTags.map((tag) => (
+                  <Badge
+                    key={`sel-${tag}`}
+                    variant="default"
+                    className="cursor-pointer gap-1 px-2 py-0.5 text-[11px]"
+                    onClick={() => toggleTagFilter(tag)}
+                  >
+                    {tag}
+                    <X className="h-3 w-3" />
+                  </Badge>
+                ))}
+                {allTags
+                  .filter((t) => !selectedTags.includes(t))
+                  .slice(0, 12)
+                  .map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="cursor-pointer px-2 py-0.5 text-[11px] hover:bg-primary/10 hover:text-primary"
+                      onClick={() => toggleTagFilter(tag)}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                {allTags.length > 12 + selectedTags.length && (
+                  <span className="text-[11px] text-muted-foreground">+{allTags.length - 12 - selectedTags.length} autres</span>
+                )}
+                {selectedTags.length > 0 && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="ml-1 h-6 px-2 text-[11px]"
+                    onClick={() => setSelectedTags([])}
+                  >
+                    Réinitialiser
+                  </Button>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent className="p-0">
             {loading ? (
@@ -550,6 +690,23 @@ export default function AdminDashboard() {
                               {p.description && (
                                 <div className="truncate text-xs text-muted-foreground max-w-[260px]">
                                   {p.description}
+                                </div>
+                              )}
+                              {p.tags && p.tags.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {p.tags.slice(0, 4).map((tag) => (
+                                    <Badge
+                                      key={tag}
+                                      variant="secondary"
+                                      className="cursor-pointer px-1.5 py-0 text-[10px] font-normal hover:bg-primary/15 hover:text-primary"
+                                      onClick={(e) => { e.stopPropagation(); toggleTagFilter(tag); }}
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                  {p.tags.length > 4 && (
+                                    <span className="text-[10px] text-muted-foreground">+{p.tags.length - 4}</span>
+                                  )}
                                 </div>
                               )}
                             </div>
