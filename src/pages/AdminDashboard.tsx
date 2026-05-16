@@ -584,6 +584,10 @@ export default function AdminDashboard() {
                                   <><CheckCircle2 className="mr-2 h-4 w-4" /> Activer</>
                                 )}
                               </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendAccess(p)}>
+                                <KeyRound className="mr-2 h-4 w-4" />
+                                {p.user_id ? "Renvoyer l'accès" : "Créer un accès"}
+                              </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild disabled={!p.website}>
                                 <a href={p.website || "#"} target="_blank" rel="noreferrer">
