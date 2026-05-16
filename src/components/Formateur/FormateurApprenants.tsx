@@ -61,7 +61,12 @@ import {
   Bell,
   X,
   CheckCheck,
+  AlertCircle,
+  RefreshCw,
+  SearchX,
+  WifiOff,
 } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
 import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
