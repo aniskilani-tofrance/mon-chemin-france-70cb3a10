@@ -522,13 +522,19 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={p.provider_type === "employer" ? "secondary" : "default"} className="gap-1">
-                            {p.provider_type === "employer" ? (
-                              <><Briefcase className="h-3 w-3" /> Employeur</>
-                            ) : (
-                              <><GraduationCap className="h-3 w-3" /> Formation</>
-                            )}
+                          <Badge
+                            variant={p.provider_type === "training_org" ? "default" : "secondary"}
+                            className="gap-1"
+                          >
+                            {p.provider_type === "employer" && <><Briefcase className="h-3 w-3" /> Employeur</>}
+                            {p.provider_type === "training_org" && <><GraduationCap className="h-3 w-3" /> Formation</>}
+                            {p.provider_type === "housing" && <><Home className="h-3 w-3" /> Hébergeur</>}
                           </Badge>
+                          {p.user_id ? (
+                            <Badge variant="outline" className="ml-1 gap-1 border-success/30 bg-success/10 text-success text-[10px]">
+                              <ShieldCheck className="h-2.5 w-2.5" /> accès
+                            </Badge>
+                          ) : null}
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">{p.email}</div>
