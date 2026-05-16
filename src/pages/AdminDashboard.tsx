@@ -393,6 +393,72 @@ export default function AdminDashboard() {
                       <Label>Description</Label>
                       <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
                     </div>
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-1.5">
+                        <Tag className="h-3.5 w-3.5" /> Tags / Mots-clés
+                      </Label>
+                      <p className="text-xs text-muted-foreground">
+                        Compétences, secteurs, langues parlées, publics, certifications… Appuyez sur Entrée ou virgule pour ajouter.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 rounded-md border bg-background p-2">
+                        {form.tags.map((tag) => (
+                          <Badge key={tag} variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
+                            {tag}
+                            <button
+                              type="button"
+                              onClick={() => setForm({ ...form, tags: form.tags.filter((t) => t !== tag) })}
+                              className="ml-0.5 rounded-sm opacity-60 hover:opacity-100"
+                              aria-label={`Retirer ${tag}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                        <Input
+                          value={tagInput}
+                          onChange={(e) => setTagInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === ",") {
+                              e.preventDefault();
+                              const v = tagInput.trim().replace(/,$/, "");
+                              if (v && !form.tags.includes(v)) {
+                                setForm({ ...form, tags: [...form.tags, v] });
+                              }
+                              setTagInput("");
+                            } else if (e.key === "Backspace" && !tagInput && form.tags.length) {
+                              setForm({ ...form, tags: form.tags.slice(0, -1) });
+                            }
+                          }}
+                          onBlur={() => {
+                            const v = tagInput.trim();
+                            if (v && !form.tags.includes(v)) {
+                              setForm({ ...form, tags: [...form.tags, v] });
+                              setTagInput("");
+                            }
+                          }}
+                          placeholder={form.tags.length ? "" : "ex: anglais, cuisine, BTP, RQTH…"}
+                          className="h-7 min-w-[140px] flex-1 border-0 p-0 text-sm shadow-none focus-visible:ring-0"
+                        />
+                      </div>
+                      {tagSuggestions.length > 0 && tagInput && (
+                        <div className="flex flex-wrap gap-1">
+                          <span className="text-[11px] text-muted-foreground">Suggestions :</span>
+                          {tagSuggestions.map((tag) => (
+                            <Badge
+                              key={tag}
+                              variant="outline"
+                              className="cursor-pointer px-1.5 py-0 text-[11px] hover:bg-primary/10"
+                              onClick={() => {
+                                if (!form.tags.includes(tag)) setForm({ ...form, tags: [...form.tags, tag] });
+                                setTagInput("");
+                              }}
+                            >
+                              + {tag}
+                            </Badge>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                     <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
                       <div className="flex items-center justify-between gap-2">
                         <div>
