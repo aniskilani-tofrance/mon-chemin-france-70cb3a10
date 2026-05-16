@@ -65,6 +65,14 @@ import {
   RefreshCw,
   SearchX,
   WifiOff,
+  Copy,
+  Flame,
+  Clock,
+  Mic,
+  Activity,
+  ExternalLink,
+  BookOpen,
+  CheckCircle2,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -82,9 +90,30 @@ interface Learner {
 }
 
 interface LearnerHistory {
-  placements: Array<{ id: string; status: string | null; level_estimated: string | null; created_at: string }>;
+  placements: Array<{ id: string; status: string | null; level_estimated: string | null; access_code: string | null; created_at: string }>;
   diagnostics: Array<{ id: string; status: string | null; access_code: string | null; created_at: string }>;
+  audios: Array<{ id: string; status: string; module_id: string; created_at: string; reviewed_at: string | null }>;
+  notifications: Array<{ id: string; title: string; kind: string; created_at: string; read_at: string | null }>;
+  progress: {
+    streak_days: number | null;
+    words_learned: number | null;
+    phrases_mastered: number | null;
+    total_time_minutes: number | null;
+    oral_score: number | null;
+    comprehension_score: number | null;
+    placement_completed: boolean | null;
+  } | null;
 }
+
+type TimelineEvent = {
+  id: string;
+  kind: "placement" | "diagnostic" | "audio" | "notification";
+  date: string;
+  title: string;
+  subtitle: string;
+  href?: string;
+  badge?: { label: string; tone: "default" | "secondary" | "outline" | "destructive" };
+};
 
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
@@ -114,7 +143,8 @@ export function FormateurApprenants() {
 
   // Drill-down sheet
   const [selected, setSelected] = useState<Learner | null>(null);
-  const [history, setHistory] = useState<LearnerHistory>({ placements: [], diagnostics: [] });
+  const EMPTY_HISTORY: LearnerHistory = { placements: [], diagnostics: [], audios: [], notifications: [], progress: null };
+  const [history, setHistory] = useState<LearnerHistory>(EMPTY_HISTORY);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   // Bulk selection
@@ -230,24 +260,44 @@ export function FormateurApprenants() {
 
   const loadHistory = async (learner: Learner) => {
     setHistoryLoading(true);
-    setHistory({ placements: [], diagnostics: [] });
-    const [pRes, dRes] = await Promise.all([
+    setHistory(EMPTY_HISTORY);
+    const [pRes, dRes, aRes, nRes, prRes] = await Promise.all([
       supabase
         .from("placement_test_sessions")
-        .select("id, status, level_estimated, created_at")
+        .select("id, status, level_estimated, access_code, created_at")
         .eq("learner_id", learner.learner_id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(10),
       supabase
         .from("shared_diagnostics")
         .select("id, status, access_code, created_at")
         .eq("learner_id", learner.learner_id)
         .order("created_at", { ascending: false })
-        .limit(5),
+        .limit(10),
+      supabase
+        .from("audio_submissions")
+        .select("id, status, module_id, created_at, reviewed_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("learner_notifications")
+        .select("id, title, kind, created_at, read_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+      supabase
+        .from("fle_user_progress")
+        .select("streak_days, words_learned, phrases_mastered, total_time_minutes, oral_score, comprehension_score, placement_completed")
+        .eq("user_id", learner.learner_id)
+        .maybeSingle(),
     ]);
     setHistory({
       placements: (pRes.data as any) || [],
       diagnostics: (dRes.data as any) || [],
+      audios: (aRes.data as any) || [],
+      notifications: (nRes.data as any) || [],
+      progress: (prRes.data as any) || null,
     });
     setHistoryLoading(false);
   };
@@ -821,96 +871,304 @@ export function FormateurApprenants() {
 
       {/* Drill-down sheet */}
       <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
-        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-          {selected && (
-            <>
-              <SheetHeader>
-                <div className="flex items-center gap-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-semibold">
-                    {(selected.full_name || selected.email || "?").charAt(0).toUpperCase()}
+        <SheetContent className="w-full sm:max-w-lg overflow-y-auto p-0">
+          {selected && (() => {
+            const level = (selected.estimated_level || selected.french_level_cecrl || "—").toUpperCase();
+            const isActive7d = selected.last_activity_at
+              ? (Date.now() - new Date(selected.last_activity_at).getTime()) / 86400000 <= 7
+              : false;
+            const isInactive30d = selected.last_activity_at
+              ? (Date.now() - new Date(selected.last_activity_at).getTime()) / 86400000 > 30
+              : true;
+
+            const timeline: TimelineEvent[] = [
+              ...history.placements.map<TimelineEvent>((p) => ({
+                id: `pl-${p.id}`,
+                kind: "placement",
+                date: p.created_at,
+                title: p.level_estimated
+                  ? `Test de positionnement — niveau ${p.level_estimated}`
+                  : "Test de positionnement",
+                subtitle: p.access_code ? `Code ${p.access_code}` : (p.status || "—"),
+                href: `/formateur/apprenants?placement=${p.id}`,
+                badge: p.status === "completed"
+                  ? { label: "Terminé", tone: "secondary" }
+                  : p.status === "pending"
+                  ? { label: "En attente", tone: "outline" }
+                  : { label: p.status || "—", tone: "outline" },
+              })),
+              ...history.diagnostics.map<TimelineEvent>((d) => ({
+                id: `di-${d.id}`,
+                kind: "diagnostic",
+                date: d.created_at,
+                title: "Diagnostic partagé",
+                subtitle: d.access_code ? `Code ${d.access_code}` : (d.status || "—"),
+                href: `/diagnostic-partage?id=${d.id}`,
+                badge: d.status === "completed"
+                  ? { label: "Terminé", tone: "secondary" }
+                  : { label: d.status || "En cours", tone: "outline" },
+              })),
+              ...history.audios.map<TimelineEvent>((a) => ({
+                id: `au-${a.id}`,
+                kind: "audio",
+                date: a.created_at,
+                title: "Production orale soumise",
+                subtitle: a.reviewed_at ? "Évaluée" : "À évaluer",
+                href: `/formateur/evaluations?submission=${a.id}`,
+                badge: a.status === "approved"
+                  ? { label: "Validée", tone: "secondary" }
+                  : a.status === "needs_revision"
+                  ? { label: "À revoir", tone: "destructive" }
+                  : { label: "En attente", tone: "outline" },
+              })),
+              ...history.notifications.map<TimelineEvent>((n) => ({
+                id: `nt-${n.id}`,
+                kind: "notification",
+                date: n.created_at,
+                title: n.title,
+                subtitle: n.read_at ? "Lue par l'apprenant" : "Non lue",
+                badge: n.read_at
+                  ? { label: "Lue", tone: "secondary" }
+                  : { label: "Envoyée", tone: "outline" },
+              })),
+            ]
+              .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+              .slice(0, 12);
+
+            const lastPlacement = history.placements[0];
+            const lastDiagnostic = history.diagnostics[0];
+            const pendingAudio = history.audios.find((a) => !a.reviewed_at);
+
+            const copyEmail = async () => {
+              if (!selected.email) return;
+              try {
+                await navigator.clipboard.writeText(selected.email);
+                toast.success("Email copié");
+              } catch {
+                toast.error("Impossible de copier");
+              }
+            };
+
+            return (
+              <>
+                {/* Header */}
+                <SheetHeader className="px-6 pt-6 pb-4 border-b bg-gradient-to-b from-muted/40 to-transparent">
+                  <div className="flex items-start gap-3">
+                    <div className="h-14 w-14 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xl font-semibold shrink-0">
+                      {(selected.full_name || selected.email || "?").charAt(0).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <SheetTitle className="text-left truncate text-lg">
+                        {selected.full_name || "Apprenant"}
+                      </SheetTitle>
+                      <SheetDescription className="text-left truncate flex items-center gap-1.5">
+                        <Mail className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{selected.email || "Pas d'email"}</span>
+                        {selected.email && (
+                          <button
+                            onClick={copyEmail}
+                            className="text-muted-foreground hover:text-foreground transition-colors"
+                            aria-label="Copier l'email"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        )}
+                      </SheetDescription>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-2">
+                        <Badge variant="outline" className="font-semibold">{level}</Badge>
+                        {isActive7d ? (
+                          <Badge className="bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500/10 border-emerald-500/20">
+                            <Activity className="h-3 w-3 mr-1" />
+                            Actif
+                          </Badge>
+                        ) : isInactive30d ? (
+                          <Badge variant="outline" className="text-muted-foreground">
+                            Inactif &gt;30j
+                          </Badge>
+                        ) : (
+                          <Badge variant="outline">Récent</Badge>
+                        )}
+                        {history.progress?.placement_completed && (
+                          <Badge variant="secondary" className="text-xs">
+                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            Positionné
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <SheetTitle className="text-left truncate">
-                      {selected.full_name || "Apprenant"}
-                    </SheetTitle>
-                    <SheetDescription className="text-left truncate">
-                      {selected.email || "Pas d'email"}
-                    </SheetDescription>
+                </SheetHeader>
+
+                <div className="px-6 py-4 space-y-5">
+                  {/* Stats grid */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <StatBox
+                      label="XP"
+                      value={String(selected.total_xp)}
+                      icon={Trophy}
+                      iconClass="text-amber-500"
+                    />
+                    <StatBox
+                      label="Série"
+                      value={`${history.progress?.streak_days ?? 0}j`}
+                      icon={Flame}
+                      iconClass="text-orange-500"
+                    />
+                    <StatBox
+                      label="Temps"
+                      value={formatMinutes(history.progress?.total_time_minutes)}
+                      icon={Clock}
+                      iconClass="text-sky-500"
+                    />
+                    <StatBox
+                      label="Mots"
+                      value={String(history.progress?.words_learned ?? 0)}
+                      icon={BookOpen}
+                      iconClass="text-violet-500"
+                    />
+                    <StatBox
+                      label="Phrases"
+                      value={String(history.progress?.phrases_mastered ?? 0)}
+                      icon={Sparkles}
+                      iconClass="text-pink-500"
+                    />
+                    <StatBox
+                      label="Activité"
+                      value={formatRelative(selected.last_activity_at)}
+                      small
+                    />
+                  </div>
+
+                  {/* Recent shortcuts */}
+                  {(lastPlacement || lastDiagnostic || pendingAudio) && (
+                    <div className="rounded-lg border bg-muted/20 p-3 space-y-1.5">
+                      <p className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+                        Reprendre rapidement
+                      </p>
+                      {pendingAudio && (
+                        <ShortcutLink
+                          icon={Mic}
+                          label="Évaluer la dernière production"
+                          hint={formatRelative(pendingAudio.created_at)}
+                          tone="warning"
+                          onClick={() => {
+                            navigate(`/formateur/evaluations?submission=${pendingAudio.id}`);
+                            setSelected(null);
+                          }}
+                        />
+                      )}
+                      {lastDiagnostic && (
+                        <ShortcutLink
+                          icon={Sparkles}
+                          label={`Ouvrir le dernier diagnostic${lastDiagnostic.access_code ? ` (${lastDiagnostic.access_code})` : ""}`}
+                          hint={formatRelative(lastDiagnostic.created_at)}
+                          onClick={() => {
+                            navigate(`/diagnostic-partage?id=${lastDiagnostic.id}`);
+                            setSelected(null);
+                          }}
+                        />
+                      )}
+                      {lastPlacement && (
+                        <ShortcutLink
+                          icon={GraduationCap}
+                          label={`Dernier positionnement${lastPlacement.level_estimated ? ` — ${lastPlacement.level_estimated}` : ""}`}
+                          hint={formatRelative(lastPlacement.created_at)}
+                          onClick={() => {
+                            if (lastPlacement.access_code) {
+                              navigator.clipboard.writeText(lastPlacement.access_code).catch(() => {});
+                              toast.success(`Code ${lastPlacement.access_code} copié`);
+                            }
+                          }}
+                        />
+                      )}
+                    </div>
+                  )}
+
+                  {/* Quick actions */}
+                  <div className="grid grid-cols-3 gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCreatePlacement(selected)}
+                      disabled={creatingPlacement === selected.learner_id}
+                    >
+                      {creatingPlacement === selected.learner_id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <GraduationCap className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Positionner
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleCreateDiagnostic(selected)}
+                      disabled={creatingDiagnostic === selected.learner_id}
+                    >
+                      {creatingDiagnostic === selected.learner_id ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      Diagnostic
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedIds(new Set([selected.learner_id]));
+                        setNotifyOpen(true);
+                      }}
+                    >
+                      <Bell className="mr-1.5 h-3.5 w-3.5" />
+                      Notifier
+                    </Button>
+                  </div>
+
+                  {/* Unified timeline */}
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-muted-foreground" />
+                        <h3 className="text-sm font-semibold">Activité récente</h3>
+                      </div>
+                      {timeline.length > 0 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {timeline.length} événement{timeline.length > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+                    {historyLoading ? (
+                      <div className="space-y-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <Skeleton key={i} className="h-14 w-full rounded-md" />
+                        ))}
+                      </div>
+                    ) : timeline.length === 0 ? (
+                      <div className="text-center py-8 text-xs text-muted-foreground italic border border-dashed rounded-md">
+                        Aucune activité enregistrée pour cet apprenant.
+                      </div>
+                    ) : (
+                      <ol className="relative border-l border-border ml-2 space-y-3">
+                        {timeline.map((ev) => (
+                          <TimelineItem
+                            key={ev.id}
+                            event={ev}
+                            onOpen={() => {
+                              if (ev.href) {
+                                navigate(ev.href);
+                                setSelected(null);
+                              }
+                            }}
+                          />
+                        ))}
+                      </ol>
+                    )}
                   </div>
                 </div>
-              </SheetHeader>
-
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-2 mt-6">
-                <StatBox
-                  label="Niveau"
-                  value={(selected.estimated_level || selected.french_level_cecrl || "—").toUpperCase()}
-                />
-                <StatBox label="XP" value={String(selected.total_xp)} />
-                <StatBox
-                  label="Activité"
-                  value={formatRelative(selected.last_activity_at)}
-                  small
-                />
-              </div>
-
-              {/* Quick actions */}
-              <div className="grid grid-cols-2 gap-2 mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => handleCreatePlacement(selected)}
-                  disabled={creatingPlacement === selected.learner_id}
-                >
-                  {creatingPlacement === selected.learner_id ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <GraduationCap className="mr-2 h-4 w-4" />
-                  )}
-                  Positionnement
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleCreateDiagnostic(selected)}
-                  disabled={creatingDiagnostic === selected.learner_id}
-                >
-                  {creatingDiagnostic === selected.learner_id ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Sparkles className="mr-2 h-4 w-4" />
-                  )}
-                  Diagnostic
-                </Button>
-              </div>
-
-              {/* History */}
-              <div className="mt-6 space-y-5">
-                <HistorySection
-                  title="Tests de positionnement"
-                  icon={GraduationCap}
-                  loading={historyLoading}
-                  items={history.placements.map((p) => ({
-                    id: p.id,
-                    primary: p.level_estimated ? `Niveau ${p.level_estimated}` : "Test",
-                    secondary: p.status || "—",
-                    date: p.created_at,
-                  }))}
-                  empty="Aucun test passé."
-                />
-                <HistorySection
-                  title="Diagnostics partagés"
-                  icon={Sparkles}
-                  loading={historyLoading}
-                  items={history.diagnostics.map((d) => ({
-                    id: d.id,
-                    primary: d.access_code ? `Code ${d.access_code}` : "Diagnostic",
-                    secondary: d.status || "—",
-                    date: d.created_at,
-                  }))}
-                  empty="Aucun diagnostic créé."
-                />
-              </div>
-            </>
-          )}
+              </>
+            );
+          })()}
         </SheetContent>
       </Sheet>
 
@@ -981,56 +1239,134 @@ export function FormateurApprenants() {
   );
 }
 
-function StatBox({ label, value, small }: { label: string; value: string; small?: boolean }) {
+function formatMinutes(mins: number | null | undefined): string {
+  const m = mins ?? 0;
+  if (m < 60) return `${m}m`;
+  const h = Math.floor(m / 60);
+  const r = m % 60;
+  return r ? `${h}h${String(r).padStart(2, "0")}` : `${h}h`;
+}
+
+function StatBox({
+  label,
+  value,
+  small,
+  icon: Icon,
+  iconClass,
+}: {
+  label: string;
+  value: string;
+  small?: boolean;
+  icon?: any;
+  iconClass?: string;
+}) {
   return (
-    <div className="rounded-lg border bg-muted/30 p-3 text-center">
-      <div className={`font-bold ${small ? "text-sm" : "text-lg"}`}>{value}</div>
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mt-1">{label}</div>
+    <div className="rounded-lg border bg-muted/30 p-2.5 text-center">
+      <div className="flex items-center justify-center gap-1">
+        {Icon && <Icon className={`h-3.5 w-3.5 ${iconClass || "text-muted-foreground"}`} />}
+        <div className={`font-bold ${small ? "text-xs" : "text-base"}`}>{value}</div>
+      </div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mt-0.5">
+        {label}
+      </div>
     </div>
   );
 }
 
-function HistorySection({
-  title,
+function ShortcutLink({
   icon: Icon,
-  items,
-  loading,
-  empty,
+  label,
+  hint,
+  tone,
+  onClick,
 }: {
-  title: string;
   icon: any;
-  items: Array<{ id: string; primary: string; secondary: string; date: string }>;
-  loading: boolean;
-  empty: string;
+  label: string;
+  hint?: string;
+  tone?: "warning" | "default";
+  onClick: () => void;
 }) {
   return (
-    <div>
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-        <h3 className="text-sm font-semibold">{title}</h3>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full flex items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors ${
+        tone === "warning"
+          ? "bg-amber-500/5 hover:bg-amber-500/10 text-amber-900 dark:text-amber-200"
+          : "hover:bg-muted"
+      }`}
+    >
+      <Icon className={`h-4 w-4 shrink-0 ${tone === "warning" ? "text-amber-600" : "text-muted-foreground"}`} />
+      <span className="flex-1 truncate font-medium">{label}</span>
+      {hint && <span className="text-[10px] text-muted-foreground whitespace-nowrap">{hint}</span>}
+      <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+    </button>
+  );
+}
+
+function TimelineItem({
+  event,
+  onOpen,
+}: {
+  event: {
+    id: string;
+    kind: "placement" | "diagnostic" | "audio" | "notification";
+    date: string;
+    title: string;
+    subtitle: string;
+    href?: string;
+    badge?: { label: string; tone: "default" | "secondary" | "outline" | "destructive" };
+  };
+  onOpen: () => void;
+}) {
+  const iconMap = {
+    placement: { Icon: GraduationCap, color: "text-blue-600 bg-blue-500/10" },
+    diagnostic: { Icon: Sparkles, color: "text-violet-600 bg-violet-500/10" },
+    audio: { Icon: Mic, color: "text-amber-600 bg-amber-500/10" },
+    notification: { Icon: Bell, color: "text-emerald-600 bg-emerald-500/10" },
+  };
+  const { Icon, color } = iconMap[event.kind];
+  const date = new Date(event.date);
+  const relative =
+    Math.floor((Date.now() - date.getTime()) / 86400000) < 1
+      ? "Aujourd'hui"
+      : date.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+
+  return (
+    <li className="ml-3">
+      <span
+        className={`absolute -left-[9px] flex h-4 w-4 items-center justify-center rounded-full ring-4 ring-background ${color}`}
+      >
+        <Icon className="h-2.5 w-2.5" />
+      </span>
+      <div
+        className={`rounded-md border bg-card px-3 py-2 text-sm group ${
+          event.href ? "cursor-pointer hover:border-primary/50 hover:bg-muted/40 transition-colors" : ""
+        }`}
+        onClick={event.href ? onOpen : undefined}
+      >
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <div className="font-medium truncate flex items-center gap-1.5">
+              {event.title}
+              {event.href && (
+                <ExternalLink className="h-3 w-3 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+              )}
+            </div>
+            <div className="text-xs text-muted-foreground truncate capitalize">
+              {event.subtitle}
+            </div>
+          </div>
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span className="text-[10px] text-muted-foreground whitespace-nowrap">{relative}</span>
+            {event.badge && (
+              <Badge variant={event.badge.tone} className="text-[10px] py-0 px-1.5 h-4">
+                {event.badge.label}
+              </Badge>
+            )}
+          </div>
+        </div>
       </div>
-      {loading ? (
-        <div className="text-xs text-muted-foreground py-2">Chargement…</div>
-      ) : items.length === 0 ? (
-        <div className="text-xs text-muted-foreground py-2 italic">{empty}</div>
-      ) : (
-        <ul className="space-y-1.5">
-          {items.map((it) => (
-            <li
-              key={it.id}
-              className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-sm"
-            >
-              <div className="min-w-0">
-                <div className="font-medium truncate">{it.primary}</div>
-                <div className="text-xs text-muted-foreground capitalize">{it.secondary}</div>
-              </div>
-              <div className="text-xs text-muted-foreground whitespace-nowrap">
-                {formatRelative(it.date)}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    </li>
   );
 }
