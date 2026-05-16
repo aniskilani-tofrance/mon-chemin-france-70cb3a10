@@ -150,6 +150,29 @@ export default function AdminSubscriptions() {
 
   useEffect(() => {
     fetchSubs();
+    const channel = supabase
+      .channel("admin-subscriptions")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "subscriptions" },
+        (payload) => {
+          setSubs((prev) => {
+            if (payload.eventType === "DELETE") {
+              return prev.filter((s) => s.id !== (payload.old as any).id);
+            }
+            const row = payload.new as Subscription;
+            const idx = prev.findIndex((s) => s.id === row.id);
+            if (idx === -1) return [row, ...prev];
+            const copy = [...prev];
+            copy[idx] = row;
+            return copy;
+          });
+        }
+      )
+      .subscribe();
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const openCreate = () => {
