@@ -324,6 +324,7 @@ export default function AdminDashboard() {
                         <SelectContent>
                           <SelectItem value="training_org">Organisme de formation</SelectItem>
                           <SelectItem value="employer">Employeur</SelectItem>
+                          <SelectItem value="housing">Hébergeur</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
