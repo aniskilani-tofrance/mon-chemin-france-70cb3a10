@@ -166,6 +166,7 @@ export default function AdminDashboard() {
             postal_code: form.postal_code || null,
             address: form.address || null,
             is_active: form.is_active,
+            tags: form.tags,
           })
           .eq("id", editingId);
 
