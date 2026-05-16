@@ -38,6 +38,7 @@ import { AdminCheckpointAnalytics } from "@/components/AdminCheckpointAnalytics"
 import { AdminPlacementTestAnalytics } from "@/components/AdminPlacementTestAnalytics";
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
 import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
+import { PartnerWizard } from "@/components/admin/PartnerWizard";
 
 type ProviderType = "employer" | "training_org" | "housing";
 
