@@ -934,6 +934,39 @@ export type Database = {
           },
         ]
       }
+      learner_notifications: {
+        Row: {
+          created_at: string
+          formateur_id: string
+          id: string
+          kind: string
+          learner_id: string
+          message: string
+          read_at: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          formateur_id: string
+          id?: string
+          kind?: string
+          learner_id: string
+          message: string
+          read_at?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          formateur_id?: string
+          id?: string
+          kind?: string
+          learner_id?: string
+          message?: string
+          read_at?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       marianne_access_code_audit_logs: {
         Row: {
           access_code_id: string | null

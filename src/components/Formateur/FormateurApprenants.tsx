@@ -27,6 +27,24 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Loader2,
   User,
@@ -40,6 +58,9 @@ import {
   Trophy,
   Calendar,
   ArrowRight,
+  Bell,
+  X,
+  CheckCheck,
 } from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
@@ -89,6 +110,14 @@ export function FormateurApprenants() {
   const [selected, setSelected] = useState<Learner | null>(null);
   const [history, setHistory] = useState<LearnerHistory>({ placements: [], diagnostics: [] });
   const [historyLoading, setHistoryLoading] = useState(false);
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [notifyOpen, setNotifyOpen] = useState(false);
+  const [notifyTitle, setNotifyTitle] = useState("");
+  const [notifyMessage, setNotifyMessage] = useState("");
+  const [notifyKind, setNotifyKind] = useState<"info" | "success" | "warning">("info");
 
   const generateAccessCodeSafe = async (): Promise<string> => {
     const { data, error } = await supabase.rpc("generate_access_code");
@@ -239,6 +268,101 @@ export function FormateurApprenants() {
     }
   };
 
+  // ───── Bulk actions ─────
+  const toggleId = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectedLearners = useMemo(
+    () => learners.filter((l) => selectedIds.has(l.learner_id)),
+    [learners, selectedIds],
+  );
+
+  const bulkChangeLevel = async (level: string) => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ french_level_cecrl: level.toLowerCase() })
+        .in("user_id", ids);
+      if (error) throw error;
+      toast.success(`Niveau ${level} appliqué à ${ids.length} apprenant(s)`);
+      clearSelection();
+      await fetchLearners();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du changement de niveau");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkTriggerPlacement = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = await Promise.all(
+        selectedLearners.map(async (l) => ({
+          formateur_id: user.id,
+          learner_id: l.learner_id,
+          candidate_name: l.full_name,
+          candidate_email: l.email,
+          access_code: await generateAccessCodeSafe(),
+          status: "pending",
+        })),
+      );
+      const { error } = await supabase.from("placement_test_sessions").insert(rows);
+      if (error) throw error;
+      toast.success(`${rows.length} test(s) de positionnement créé(s)`);
+      clearSelection();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la création des tests");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkSendNotification = async () => {
+    if (selectedIds.size === 0) return;
+    if (!notifyTitle.trim() || !notifyMessage.trim()) {
+      toast.error("Titre et message requis");
+      return;
+    }
+    setBulkBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = Array.from(selectedIds).map((learner_id) => ({
+        formateur_id: user.id,
+        learner_id,
+        title: notifyTitle.trim(),
+        message: notifyMessage.trim(),
+        kind: notifyKind,
+      }));
+      const { error } = await supabase.from("learner_notifications").insert(rows);
+      if (error) throw error;
+      toast.success(`Notification envoyée à ${rows.length} apprenant(s)`);
+      setNotifyOpen(false);
+      setNotifyTitle("");
+      setNotifyMessage("");
+      setNotifyKind("info");
+      clearSelection();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'envoi");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   const filtered = useMemo(() => {
     let result = [...learners];
 
@@ -345,8 +469,75 @@ export function FormateurApprenants() {
         </div>
       </div>
 
+      {/* Bulk action bar */}
+      {selectedIds.size > 0 && (
+        <div className="sticky top-16 z-10 flex flex-wrap items-center gap-2 rounded-lg border bg-primary/5 px-3 py-2 shadow-sm">
+          <Badge variant="secondary" className="font-semibold">
+            {selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}
+          </Badge>
+          <div className="h-5 w-px bg-border mx-1" />
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="sm" variant="outline" disabled={bulkBusy}>
+                <GraduationCap className="mr-2 h-4 w-4" />
+                Changer le niveau
+                <ChevronDown className="ml-1 h-3.5 w-3.5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel className="text-xs">
+                Niveau CECRL
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {LEVELS.map((lv) => (
+                <DropdownMenuItem key={lv} onClick={() => bulkChangeLevel(lv)}>
+                  {lv}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={bulkTriggerPlacement}
+            disabled={bulkBusy}
+          >
+            {bulkBusy ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <CheckCheck className="mr-2 h-4 w-4" />
+            )}
+            Lancer un test
+          </Button>
+
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setNotifyOpen(true)}
+            disabled={bulkBusy}
+          >
+            <Bell className="mr-2 h-4 w-4" />
+            Notifier
+          </Button>
+
+          <div className="ml-auto" />
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={clearSelection}
+            disabled={bulkBusy}
+          >
+            <X className="mr-2 h-4 w-4" />
+            Annuler
+          </Button>
+        </div>
+      )}
+
       {/* List */}
       <Card>
+
         <CardContent className="p-0">
           {loading ? (
             <div className="flex items-center justify-center py-16">
@@ -380,6 +571,24 @@ export function FormateurApprenants() {
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead className="w-[40px]">
+                      <Checkbox
+                        checked={
+                          filtered.length > 0 &&
+                          filtered.every((l) => selectedIds.has(l.learner_id))
+                        }
+                        onCheckedChange={(v) => {
+                          if (v) {
+                            setSelectedIds(
+                              new Set(filtered.map((l) => l.learner_id)),
+                            );
+                          } else {
+                            clearSelection();
+                          }
+                        }}
+                        aria-label="Tout sélectionner"
+                      />
+                    </TableHead>
                     <TableHead>Apprenant</TableHead>
                     <TableHead>Niveau</TableHead>
                     <TableHead>XP</TableHead>
@@ -390,12 +599,21 @@ export function FormateurApprenants() {
                 <TableBody>
                   {filtered.map((l) => {
                     const level = (l.estimated_level || l.french_level_cecrl || "").toUpperCase();
+                    const isChecked = selectedIds.has(l.learner_id);
                     return (
                       <TableRow
                         key={l.learner_id}
+                        data-state={isChecked ? "selected" : undefined}
                         className="cursor-pointer group"
                         onClick={() => openSheet(l)}
                       >
+                        <TableCell onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={() => toggleId(l.learner_id)}
+                            aria-label={`Sélectionner ${l.full_name || l.email || ""}`}
+                          />
+                        </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-3">
                             <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
@@ -571,6 +789,70 @@ export function FormateurApprenants() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Bulk notification dialog */}
+      <Dialog open={notifyOpen} onOpenChange={setNotifyOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="h-4 w-4 text-primary" />
+              Envoyer une notification
+            </DialogTitle>
+            <DialogDescription>
+              {selectedIds.size} apprenant{selectedIds.size > 1 ? "s" : ""} recevront ce message.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3">
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Type</label>
+              <Select value={notifyKind} onValueChange={(v: any) => setNotifyKind(v)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Information</SelectItem>
+                  <SelectItem value="success">Encouragement</SelectItem>
+                  <SelectItem value="warning">Rappel important</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Titre</label>
+              <Input
+                value={notifyTitle}
+                onChange={(e) => setNotifyTitle(e.target.value)}
+                placeholder="Ex. Nouveau module disponible"
+                maxLength={120}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-medium">Message</label>
+              <Textarea
+                value={notifyMessage}
+                onChange={(e) => setNotifyMessage(e.target.value)}
+                placeholder="Votre message…"
+                rows={4}
+                maxLength={1000}
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNotifyOpen(false)} disabled={bulkBusy}>
+              Annuler
+            </Button>
+            <Button onClick={bulkSendNotification} disabled={bulkBusy}>
+              {bulkBusy ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Bell className="mr-2 h-4 w-4" />
+              )}
+              Envoyer
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
