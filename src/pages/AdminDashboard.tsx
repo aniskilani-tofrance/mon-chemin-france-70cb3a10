@@ -396,19 +396,53 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {/* KPI cards */}
+        {/* KPI cards (cliquables pour filtrer) */}
         <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
-          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
+          <KpiCard
+            label="Partenaires"
+            value={stats.total}
+            icon={Building2}
+            tone="primary"
+            hint="total répertoriés"
+            active={typeFilter === "all" && statusFilter === "all"}
+            onClick={() => { setTypeFilter("all"); setStatusFilter("all"); }}
+          />
           <KpiCard
             label="Actifs"
             value={stats.active}
             icon={CheckCircle2}
             tone="success"
             hint={stats.total ? `${Math.round((stats.active / stats.total) * 100)}% du réseau` : "—"}
+            active={statusFilter === "active"}
+            onClick={() => setStatusFilter(statusFilter === "active" ? "all" : "active")}
           />
-          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
-          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
-          <KpiCard label="Hébergeurs" value={stats.housing} icon={Home} tone="muted" hint="logement / accueil" />
+          <KpiCard
+            label="Organismes"
+            value={stats.trainingOrgs}
+            icon={GraduationCap}
+            tone="muted"
+            hint="formation"
+            active={typeFilter === "training_org"}
+            onClick={() => setTypeFilter(typeFilter === "training_org" ? "all" : "training_org")}
+          />
+          <KpiCard
+            label="Employeurs"
+            value={stats.employers}
+            icon={Briefcase}
+            tone="muted"
+            hint="recruteurs"
+            active={typeFilter === "employer"}
+            onClick={() => setTypeFilter(typeFilter === "employer" ? "all" : "employer")}
+          />
+          <KpiCard
+            label="Hébergeurs"
+            value={stats.housing}
+            icon={Home}
+            tone="muted"
+            hint="logement / accueil"
+            active={typeFilter === "housing"}
+            onClick={() => setTypeFilter(typeFilter === "housing" ? "all" : "housing")}
+          />
         </div>
 
         {/* Partners table */}
