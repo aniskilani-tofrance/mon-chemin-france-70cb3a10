@@ -268,7 +268,101 @@ export function FormateurApprenants() {
     }
   };
 
-  const filtered = useMemo(() => {
+  // ───── Bulk actions ─────
+  const toggleId = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const selectedLearners = useMemo(
+    () => learners.filter((l) => selectedIds.has(l.learner_id)),
+    [learners, selectedIds],
+  );
+
+  const bulkChangeLevel = async (level: string) => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const ids = Array.from(selectedIds);
+      const { error } = await supabase
+        .from("profiles")
+        .update({ french_level_cecrl: level.toLowerCase() })
+        .in("user_id", ids);
+      if (error) throw error;
+      toast.success(`Niveau ${level} appliqué à ${ids.length} apprenant(s)`);
+      clearSelection();
+      await fetchLearners();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors du changement de niveau");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkTriggerPlacement = async () => {
+    if (selectedIds.size === 0) return;
+    setBulkBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = await Promise.all(
+        selectedLearners.map(async (l) => ({
+          formateur_id: user.id,
+          learner_id: l.learner_id,
+          candidate_name: l.full_name,
+          candidate_email: l.email,
+          access_code: await generateAccessCodeSafe(),
+          status: "pending",
+        })),
+      );
+      const { error } = await supabase.from("placement_test_sessions").insert(rows);
+      if (error) throw error;
+      toast.success(`${rows.length} test(s) de positionnement créé(s)`);
+      clearSelection();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de la création des tests");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkSendNotification = async () => {
+    if (selectedIds.size === 0) return;
+    if (!notifyTitle.trim() || !notifyMessage.trim()) {
+      toast.error("Titre et message requis");
+      return;
+    }
+    setBulkBusy(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      const rows = Array.from(selectedIds).map((learner_id) => ({
+        formateur_id: user.id,
+        learner_id,
+        title: notifyTitle.trim(),
+        message: notifyMessage.trim(),
+        kind: notifyKind,
+      }));
+      const { error } = await supabase.from("learner_notifications").insert(rows);
+      if (error) throw error;
+      toast.success(`Notification envoyée à ${rows.length} apprenant(s)`);
+      setNotifyOpen(false);
+      setNotifyTitle("");
+      setNotifyMessage("");
+      setNotifyKind("info");
+      clearSelection();
+    } catch (err: any) {
+      toast.error(err.message || "Erreur lors de l'envoi");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
     let result = [...learners];
 
     if (search.trim()) {
