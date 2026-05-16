@@ -1,11 +1,46 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, User, FileText, Copy, Sparkles, GraduationCap } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from "@/components/ui/sheet";
+import {
+  Loader2,
+  User,
+  FileText,
+  Search,
+  GraduationCap,
+  Plus,
+  Sparkles,
+  ChevronDown,
+  Mail,
+  Trophy,
+  Calendar,
+  ArrowRight,
+} from "lucide-react";
 import { toast } from "sonner";
 import { CreateLearnerDialog } from "./CreateLearnerDialog";
 import { ImportFromSourceDialog } from "./ImportFromSourceDialog";
@@ -20,6 +55,23 @@ interface Learner {
   estimated_level: string | null;
 }
 
+interface LearnerHistory {
+  placements: Array<{ id: string; status: string | null; level_estimated: string | null; created_at: string }>;
+  diagnostics: Array<{ id: string; status: string | null; access_code: string | null; created_at: string }>;
+}
+
+const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
+
+function formatRelative(iso: string | null) {
+  if (!iso) return "—";
+  const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86400000);
+  if (days < 1) return "Aujourd'hui";
+  if (days === 1) return "Hier";
+  if (days < 7) return `Il y a ${days} j`;
+  if (days < 30) return `Il y a ${Math.floor(days / 7)} sem.`;
+  return new Date(iso).toLocaleDateString("fr-FR");
+}
+
 export function FormateurApprenants() {
   const navigate = useNavigate();
   const [learners, setLearners] = useState<Learner[]>([]);
@@ -27,10 +79,20 @@ export function FormateurApprenants() {
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
   const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
+  // Filters
+  const [search, setSearch] = useState("");
+  const [levelFilter, setLevelFilter] = useState("all");
+  const [activityFilter, setActivityFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("recent");
+
+  // Drill-down sheet
+  const [selected, setSelected] = useState<Learner | null>(null);
+  const [history, setHistory] = useState<LearnerHistory>({ placements: [], diagnostics: [] });
+  const [historyLoading, setHistoryLoading] = useState(false);
+
   const generateAccessCodeSafe = async (): Promise<string> => {
     const { data, error } = await supabase.rpc("generate_access_code");
     if (!error && typeof data === "string" && data.length > 0) return data;
-    // Fallback client-side (même alphabet que la fonction SQL)
     const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
     let code = "";
     for (let i = 0; i < 6; i++) code += chars[Math.floor(Math.random() * chars.length)];
@@ -40,7 +102,10 @@ export function FormateurApprenants() {
   const fetchLearners = useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) { setLoading(false); return; }
+    if (!user) {
+      setLoading(false);
+      return;
+    }
 
     const { data: links } = await supabase
       .from("formateur_learners")
@@ -56,8 +121,14 @@ export function FormateurApprenants() {
     const learnerIds = links.map((l) => l.learner_id);
 
     const [{ data: profiles }, { data: progress }] = await Promise.all([
-      supabase.from("profiles").select("user_id, email, full_name, french_level_cecrl").in("user_id", learnerIds),
-      supabase.from("fle_user_progress").select("user_id, total_xp, estimated_level, last_activity_at").in("user_id", learnerIds),
+      supabase
+        .from("profiles")
+        .select("user_id, email, full_name, french_level_cecrl")
+        .in("user_id", learnerIds),
+      supabase
+        .from("fle_user_progress")
+        .select("user_id, total_xp, estimated_level, last_activity_at")
+        .in("user_id", learnerIds),
     ]);
 
     const merged: Learner[] = learnerIds.map((id) => {
@@ -78,17 +149,45 @@ export function FormateurApprenants() {
     setLoading(false);
   }, []);
 
-  useEffect(() => { fetchLearners(); }, [fetchLearners]);
+  useEffect(() => {
+    fetchLearners();
+  }, [fetchLearners]);
+
+  const loadHistory = async (learner: Learner) => {
+    setHistoryLoading(true);
+    setHistory({ placements: [], diagnostics: [] });
+    const [pRes, dRes] = await Promise.all([
+      supabase
+        .from("placement_test_sessions")
+        .select("id, status, level_estimated, created_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("shared_diagnostics")
+        .select("id, status, access_code, created_at")
+        .eq("learner_id", learner.learner_id)
+        .order("created_at", { ascending: false })
+        .limit(5),
+    ]);
+    setHistory({
+      placements: (pRes.data as any) || [],
+      diagnostics: (dRes.data as any) || [],
+    });
+    setHistoryLoading(false);
+  };
+
+  const openSheet = (l: Learner) => {
+    setSelected(l);
+    loadHistory(l);
+  };
 
   const handleCreateDiagnostic = async (learner: Learner) => {
     setCreatingDiagnostic(learner.learner_id);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
-      // Generate access code
       const accessCode = await generateAccessCodeSafe();
-
       const { data: diag, error } = await supabase
         .from("shared_diagnostics")
         .insert({
@@ -100,43 +199,11 @@ export function FormateurApprenants() {
         })
         .select()
         .single();
-
       if (error) throw error;
-
       toast.success(`Diagnostic créé — code : ${accessCode}`);
       navigate(`/diagnostic-partage?id=${diag.id}`);
     } catch (err: any) {
       toast.error(err.message || "Erreur lors de la création");
-    } finally {
-      setCreatingDiagnostic(null);
-    }
-  };
-
-  const handleQuickDiagnostic = async () => {
-    setCreatingDiagnostic("quick");
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      const accessCode = await generateAccessCodeSafe();
-
-      const { data: diag, error } = await supabase
-        .from("shared_diagnostics")
-        .insert({
-          formateur_id: user.id,
-          learner_id: null,
-          access_code: accessCode,
-          learner_language: "fr",
-          status: "in_progress",
-        })
-        .select()
-        .single();
-
-      if (error) throw error;
-      toast.success(`Code généré : ${accessCode}`);
-      navigator.clipboard.writeText(accessCode).catch(() => {});
-      navigate(`/diagnostic-partage?id=${diag.id}`);
-    } catch (err: any) {
-      toast.error(err.message || "Erreur");
     } finally {
       setCreatingDiagnostic(null);
     }
@@ -148,149 +215,416 @@ export function FormateurApprenants() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
-
       const accessCode = await generateAccessCodeSafe();
-
-      const { error } = await supabase
-        .from("placement_test_sessions")
-        .insert({
-          formateur_id: user.id,
-          learner_id: learner?.learner_id ?? null,
-          candidate_name: learner?.full_name ?? null,
-          candidate_email: learner?.email ?? null,
-          access_code: accessCode,
-          status: "pending",
-        });
-
+      const { error } = await supabase.from("placement_test_sessions").insert({
+        formateur_id: user.id,
+        learner_id: learner?.learner_id ?? null,
+        candidate_name: learner?.full_name ?? null,
+        candidate_email: learner?.email ?? null,
+        access_code: accessCode,
+        status: "pending",
+      });
       if (error) throw error;
-
       await navigator.clipboard.writeText(accessCode).catch(() => {});
-      const who = learner ? (learner.full_name || learner.email || "l'apprenant") : null;
+      const who = learner ? learner.full_name || learner.email || "l'apprenant" : null;
       toast.success(
         who
-          ? `Test de positionnement assigné à ${who} — code : ${accessCode} (copié)`
-          : `Code de positionnement généré : ${accessCode} (copié)`
+          ? `Test assigné à ${who} — code : ${accessCode} (copié)`
+          : `Code de positionnement : ${accessCode} (copié)`
       );
     } catch (err: any) {
-      toast.error(err.message || "Erreur lors de la création du test");
+      toast.error(err.message || "Erreur");
     } finally {
       setCreatingPlacement(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const filtered = useMemo(() => {
+    let result = [...learners];
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (l) =>
+          (l.full_name || "").toLowerCase().includes(q) ||
+          (l.email || "").toLowerCase().includes(q)
+      );
+    }
+
+    if (levelFilter !== "all") {
+      result = result.filter(
+        (l) => (l.estimated_level || l.french_level_cecrl || "").toUpperCase() === levelFilter
+      );
+    }
+
+    if (activityFilter !== "all") {
+      const now = Date.now();
+      result = result.filter((l) => {
+        if (!l.last_activity_at) return activityFilter === "inactive_30";
+        const days = (now - new Date(l.last_activity_at).getTime()) / 86400000;
+        if (activityFilter === "active_7") return days <= 7;
+        if (activityFilter === "inactive_30") return days > 30;
+        return true;
+      });
+    }
+
+    result.sort((a, b) => {
+      if (sortBy === "recent") {
+        const at = a.last_activity_at ? new Date(a.last_activity_at).getTime() : 0;
+        const bt = b.last_activity_at ? new Date(b.last_activity_at).getTime() : 0;
+        return bt - at;
+      }
+      if (sortBy === "xp") return (b.total_xp || 0) - (a.total_xp || 0);
+      if (sortBy === "name") return (a.full_name || "").localeCompare(b.full_name || "");
+      return 0;
+    });
+
+    return result;
+  }, [learners, search, levelFilter, activityFilter, sortBy]);
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <User className="h-5 w-5" />
-          Mes apprenants ({learners.length})
-        </CardTitle>
+    <div className="space-y-4 max-w-7xl mx-auto">
+      {/* Toolbar */}
+      <div className="flex flex-col lg:flex-row gap-3 lg:items-center lg:justify-between">
+        <div className="flex flex-col sm:flex-row gap-2 flex-1">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un apprenant…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-9"
+            />
+          </div>
+          <Select value={levelFilter} onValueChange={setLevelFilter}>
+            <SelectTrigger className="w-full sm:w-[140px]">
+              <SelectValue placeholder="Niveau" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous niveaux</SelectItem>
+              {LEVELS.map((lv) => (
+                <SelectItem key={lv} value={lv}>
+                  {lv}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={activityFilter} onValueChange={setActivityFilter}>
+            <SelectTrigger className="w-full sm:w-[160px]">
+              <SelectValue placeholder="Activité" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toute activité</SelectItem>
+              <SelectItem value="active_7">Actifs (7 j)</SelectItem>
+              <SelectItem value="inactive_30">Inactifs (&gt;30 j)</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-full sm:w-[150px]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="recent">Plus récents</SelectItem>
+              <SelectItem value="name">Nom (A→Z)</SelectItem>
+              <SelectItem value="xp">XP (décroissant)</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             onClick={() => handleCreatePlacement(null)}
             disabled={creatingPlacement === "quick"}
           >
-            {creatingPlacement === "quick"
-              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              : <GraduationCap className="mr-2 h-4 w-4" />}
-            Positionnement rapide (avec code)
-          </Button>
-          <Button
-            variant="outline"
-            onClick={handleQuickDiagnostic}
-            disabled={creatingDiagnostic === "quick"}
-          >
-            {creatingDiagnostic === "quick"
-              ? <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              : <Sparkles className="mr-2 h-4 w-4" />}
-            Diagnostic rapide (avec code)
+            <GraduationCap className="mr-2 h-4 w-4" />
+            Code positionnement
           </Button>
           <ImportFromSourceDialog onImported={fetchLearners} />
           <CreateLearnerDialog onCreated={fetchLearners} />
         </div>
-      </CardHeader>
-      <CardContent>
-        {learners.length === 0 ? (
-          <div className="text-center py-12 space-y-4">
-            <User className="mx-auto h-12 w-12 text-muted-foreground/40" />
-            <div>
-              <p className="font-medium">Aucun apprenant pour le moment</p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Créez un compte directement ou démarrez un diagnostic rapide avec un code.
-              </p>
+      </div>
+
+      {/* List */}
+      <Card>
+        <CardContent className="p-0">
+          {loading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nom</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Niveau</TableHead>
-                <TableHead>XP</TableHead>
-                <TableHead>Dernière activité</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {learners.map((l) => (
-                <TableRow key={l.learner_id}>
-                  <TableCell className="font-medium">{l.full_name || "—"}</TableCell>
-                  <TableCell>{l.email || "—"}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline">
-                      {(l.estimated_level || l.french_level_cecrl || "—").toUpperCase()}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{l.total_xp} XP</TableCell>
-                  <TableCell>
-                    {l.last_activity_at
-                      ? new Date(l.last_activity_at).toLocaleDateString("fr-FR")
-                      : "—"}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleCreatePlacement(l)}
-                        disabled={creatingPlacement === l.learner_id}
-                        title="Assigner un test de positionnement"
+          ) : learners.length === 0 ? (
+            <div className="text-center py-16 px-6 space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                <User className="h-7 w-7 text-primary" />
+              </div>
+              <div>
+                <p className="font-semibold">Aucun apprenant pour le moment</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  Créez un compte apprenant ou démarrez un diagnostic rapide avec un code d'accès.
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2">
+                <CreateLearnerDialog onCreated={fetchLearners} />
+                <Button variant="outline" onClick={() => handleCreatePlacement(null)}>
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  Code de positionnement
+                </Button>
+              </div>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-12 text-sm text-muted-foreground">
+              Aucun résultat avec ces filtres.
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-muted/30 hover:bg-muted/30">
+                    <TableHead>Apprenant</TableHead>
+                    <TableHead>Niveau</TableHead>
+                    <TableHead>XP</TableHead>
+                    <TableHead>Dernière activité</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((l) => {
+                    const level = (l.estimated_level || l.french_level_cecrl || "").toUpperCase();
+                    return (
+                      <TableRow
+                        key={l.learner_id}
+                        className="cursor-pointer group"
+                        onClick={() => openSheet(l)}
                       >
-                        {creatingPlacement === l.learner_id
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <GraduationCap className="h-4 w-4" />}
-                        <span className="ml-2 hidden sm:inline">Positionnement</span>
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleCreateDiagnostic(l)}
-                        disabled={creatingDiagnostic === l.learner_id}
-                        title="Créer un diagnostic partagé"
-                      >
-                        {creatingDiagnostic === l.learner_id
-                          ? <Loader2 className="h-4 w-4 animate-spin" />
-                          : <FileText className="h-4 w-4" />}
-                        <span className="ml-2 hidden sm:inline">Diagnostic</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </CardContent>
-    </Card>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <div className="h-9 w-9 rounded-full bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
+                              {(l.full_name || l.email || "?").charAt(0).toUpperCase()}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="font-medium truncate">{l.full_name || "—"}</div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                {l.email || "Pas d'email"}
+                              </div>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          {level ? (
+                            <Badge variant="outline" className="font-semibold">{level}</Badge>
+                          ) : (
+                            <span className="text-xs text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-1 text-sm">
+                            <Trophy className="h-3.5 w-3.5 text-amber-500" />
+                            {l.total_xp}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {formatRelative(l.last_activity_at)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div
+                            className="flex justify-end gap-1"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleCreatePlacement(l)}
+                              disabled={creatingPlacement === l.learner_id}
+                              title="Test de positionnement"
+                            >
+                              {creatingPlacement === l.learner_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <GraduationCap className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => handleCreateDiagnostic(l)}
+                              disabled={creatingDiagnostic === l.learner_id}
+                              title="Diagnostic partagé"
+                            >
+                              {creatingDiagnostic === l.learner_id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Sparkles className="h-4 w-4" />
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => openSheet(l)}
+                              title="Voir la fiche"
+                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <ArrowRight className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Drill-down sheet */}
+      <Sheet open={!!selected} onOpenChange={(o) => !o && setSelected(null)}>
+        <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+          {selected && (
+            <>
+              <SheetHeader>
+                <div className="flex items-center gap-3">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center text-lg font-semibold">
+                    {(selected.full_name || selected.email || "?").charAt(0).toUpperCase()}
+                  </div>
+                  <div className="min-w-0">
+                    <SheetTitle className="text-left truncate">
+                      {selected.full_name || "Apprenant"}
+                    </SheetTitle>
+                    <SheetDescription className="text-left truncate">
+                      {selected.email || "Pas d'email"}
+                    </SheetDescription>
+                  </div>
+                </div>
+              </SheetHeader>
+
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-2 mt-6">
+                <StatBox
+                  label="Niveau"
+                  value={(selected.estimated_level || selected.french_level_cecrl || "—").toUpperCase()}
+                />
+                <StatBox label="XP" value={String(selected.total_xp)} />
+                <StatBox
+                  label="Activité"
+                  value={formatRelative(selected.last_activity_at)}
+                  small
+                />
+              </div>
+
+              {/* Quick actions */}
+              <div className="grid grid-cols-2 gap-2 mt-6">
+                <Button
+                  variant="outline"
+                  onClick={() => handleCreatePlacement(selected)}
+                  disabled={creatingPlacement === selected.learner_id}
+                >
+                  {creatingPlacement === selected.learner_id ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <GraduationCap className="mr-2 h-4 w-4" />
+                  )}
+                  Positionnement
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleCreateDiagnostic(selected)}
+                  disabled={creatingDiagnostic === selected.learner_id}
+                >
+                  {creatingDiagnostic === selected.learner_id ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="mr-2 h-4 w-4" />
+                  )}
+                  Diagnostic
+                </Button>
+              </div>
+
+              {/* History */}
+              <div className="mt-6 space-y-5">
+                <HistorySection
+                  title="Tests de positionnement"
+                  icon={GraduationCap}
+                  loading={historyLoading}
+                  items={history.placements.map((p) => ({
+                    id: p.id,
+                    primary: p.level_estimated ? `Niveau ${p.level_estimated}` : "Test",
+                    secondary: p.status || "—",
+                    date: p.created_at,
+                  }))}
+                  empty="Aucun test passé."
+                />
+                <HistorySection
+                  title="Diagnostics partagés"
+                  icon={Sparkles}
+                  loading={historyLoading}
+                  items={history.diagnostics.map((d) => ({
+                    id: d.id,
+                    primary: d.access_code ? `Code ${d.access_code}` : "Diagnostic",
+                    secondary: d.status || "—",
+                    date: d.created_at,
+                  }))}
+                  empty="Aucun diagnostic créé."
+                />
+              </div>
+            </>
+          )}
+        </SheetContent>
+      </Sheet>
+    </div>
+  );
+}
+
+function StatBox({ label, value, small }: { label: string; value: string; small?: boolean }) {
+  return (
+    <div className="rounded-lg border bg-muted/30 p-3 text-center">
+      <div className={`font-bold ${small ? "text-sm" : "text-lg"}`}>{value}</div>
+      <div className="text-[10px] uppercase tracking-wide text-muted-foreground mt-1">{label}</div>
+    </div>
+  );
+}
+
+function HistorySection({
+  title,
+  icon: Icon,
+  items,
+  loading,
+  empty,
+}: {
+  title: string;
+  icon: any;
+  items: Array<{ id: string; primary: string; secondary: string; date: string }>;
+  loading: boolean;
+  empty: string;
+}) {
+  return (
+    <div>
+      <div className="flex items-center gap-2 mb-2">
+        <Icon className="h-4 w-4 text-muted-foreground" />
+        <h3 className="text-sm font-semibold">{title}</h3>
+      </div>
+      {loading ? (
+        <div className="text-xs text-muted-foreground py-2">Chargement…</div>
+      ) : items.length === 0 ? (
+        <div className="text-xs text-muted-foreground py-2 italic">{empty}</div>
+      ) : (
+        <ul className="space-y-1.5">
+          {items.map((it) => (
+            <li
+              key={it.id}
+              className="flex items-center justify-between rounded-md border bg-card px-3 py-2 text-sm"
+            >
+              <div className="min-w-0">
+                <div className="font-medium truncate">{it.primary}</div>
+                <div className="text-xs text-muted-foreground capitalize">{it.secondary}</div>
+              </div>
+              <div className="text-xs text-muted-foreground whitespace-nowrap">
+                {formatRelative(it.date)}
+              </div>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }

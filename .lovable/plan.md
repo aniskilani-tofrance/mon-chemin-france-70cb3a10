@@ -1,107 +1,94 @@
-## PDF sobre — refonte 3 pages
+## Refonte UX/UI Espace Formateur — diagnostic & plan
 
-Refonte de `src/lib/placementTestPDF.ts` : passage du PDF actuel (1 page dense) à un livret **3 pages** clair, sans mention juridique ni filigrane, avec un rythme aéré et un fil pédagogique.
+### Diagnostic actuel
 
-### Structure cible
+L'espace formateur est fonctionnel mais a une UX de "menu d'admin" plutôt que d'outil métier moderne :
+
+- **Coquille plate** : sidebar sans hiérarchie ni compteurs, header générique ("Espace Formateur" en dur), pas d'identité du formateur connecté.
+- **Pas de page d'accueil** : on atterrit directement sur la liste brute des apprenants — aucun aperçu (KPIs, alertes, activité récente).
+- **Actions noyées** : "Positionnement rapide", "Diagnostic rapide", "Importer", "Créer apprenant" — 4 boutons côte à côte en haut de la table, pas de priorisation visuelle.
+- **Liste apprenants pauvre** : pas de recherche, pas de tri, pas de filtre par niveau/activité, pas de drill-down vers une fiche apprenant.
+- **Navigation dispersée** : 7 onglets à plat (Apprenants, Diagnostic partagé, Diagnostic papier, Contenus, Assignations, Évaluations, AFEST) sans regroupement logique.
+- **Cohérence visuelle** : chaque écran a son propre layout, pas de pattern réutilisable (titre + sous-titre + actions + contenu).
+
+### Vision cible
+
+Un cockpit formateur clair, en 3 zones :
+1. **Sidebar regroupée** par activité (Vue, Apprenants, Outils, Suivi) + compteurs live.
+2. **Header riche** : breadcrumb, recherche globale, profil + déconnexion en menu.
+3. **Page d'accueil = tableau de bord** : KPIs, apprenants actifs, actions rapides contextualisées, derniers diagnostics/tests.
+
+### Plan en 3 phases
+
+#### Phase A — Coquille & navigation (haut impact, faible risque)
 
 ```
-┌──────────────────────────────────────────┐
-│  PAGE 1 — Niveau CECRL                   │
-│  ─────────────────────                   │
-│  Bandeau marque + logo PEF               │
-│  Bloc identité (candidat, date, durée)   │
-│                                          │
-│         ┌─────────────┐                  │
-│         │     B1      │  ← badge XL      │
-│         └─────────────┘                  │
-│           Intermédiaire                  │
-│                                          │
-│  Description longue du niveau            │
-│  (3-4 phrases : ce que sait faire        │
-│  le candidat, situations couvertes)      │
-│                                          │
-│  Repère sur l'échelle A1 → C2            │
-│  ─●─○─○─○─○─○                            │
-│                                          │
-│  Score global : 72 %                     │
-└──────────────────────────────────────────┘
-
-┌──────────────────────────────────────────┐
-│  PAGE 2 — Analyse par catégorie          │
-│  ──────────────────────────              │
-│  Une carte par catégorie (4-6) :         │
-│                                          │
-│  ┌────────────────────────────────────┐ │
-│  │ Compréhension orale         78 %   │ │
-│  │ ████████░░                          │ │
-│  │ Vous comprenez les messages         │ │
-│  │ courants en situation quotidienne.  │ │
-│  └────────────────────────────────────┘ │
-│  ┌────────────────────────────────────┐ │
-│  │ Production écrite           65 %   │ │
-│  │ ██████░░░░                          │ │
-│  │ Quelques structures à consolider.   │ │
-│  └────────────────────────────────────┘ │
-│  …                                       │
-└──────────────────────────────────────────┘
-
-┌──────────────────────────────────────────┐
-│  PAGE 3 — Recommandations                │
-│  ────────────────────                    │
-│  3 priorités numérotées :                │
-│                                          │
-│  ❶  Pratiquer la lecture quotidienne     │
-│     2-3 lignes d'explication concrète    │
-│                                          │
-│  ❷  Renforcer la production orale        │
-│     2-3 lignes d'explication             │
-│                                          │
-│  ❸  Travailler la grammaire seuil B1     │
-│     2-3 lignes d'explication             │
-│                                          │
-│  Encadré « Prochaine étape »             │
-│  Suggestion de module FLE adapté         │
-└──────────────────────────────────────────┘
-
-Footer sobre sur chaque page : "PEF — ToFrance · Page X/3"
-Pas de disclaimer juridique, pas de filigrane.
+┌─────────────────────────────────────────────────────────────┐
+│ [≡] Tableau de bord                  [🔍 Rechercher]  [👤▾]│ ← header riche
+├──────────┬──────────────────────────────────────────────────┤
+│ ToFrance │                                                  │
+│ Formateur│   PAGE                                           │
+│          │                                                  │
+│ VUE      │                                                  │
+│ ● Accueil│                                                  │
+│          │                                                  │
+│ APPRENANTS                                                  │
+│ ○ Liste  │                                                  │
+│   (12)   │                                                  │
+│          │                                                  │
+│ OUTILS   │                                                  │
+│ ○ Diagno │                                                  │
+│   partagé│                                                  │
+│ ○ Diagno │                                                  │
+│   papier │                                                  │
+│ ○ Conten │                                                  │
+│   us     │                                                  │
+│          │                                                  │
+│ SUIVI    │                                                  │
+│ ○ Assign │                                                  │
+│ ○ Évalu  │                                                  │
+│ ○ AFEST  │                                                  │
+└──────────┴──────────────────────────────────────────────────┘
 ```
 
-### Choix éditoriaux
+- Sidebar : groupes labellés (`Vue`, `Apprenants`, `Outils`, `Suivi`), badges compteurs (nombre d'apprenants, évaluations en attente), logo ToFrance en haut, profil + déconnexion en footer.
+- Header : titre dynamique selon la route (breadcrumb), bouton recherche apprenant (⌘K-style), menu profil avec nom + rôle + déconnexion.
+- Route `/formateur` → nouveau `FormateurAccueil` (dashboard). La liste apprenants devient `/formateur/apprenants`.
 
-- **Suppression** du paragraphe « ne constitue pas une certification officielle… » et de la ligne décorative qui l'introduisait.
-- **Suppression** de la mention « bilan indicatif » dans le footer.
-- **Ton** : direct, factuel, orienté action — pas de juridique, pas de marketing.
-- **Trois pages forcées** via `doc.addPage()` (pas de coupure organique) pour un livret lisible.
+#### Phase B — Dashboard d'accueil & fiche apprenant (cœur métier)
 
-### Détails techniques
+**Page d'accueil (`FormateurAccueil`)** :
+- 4 KPIs en cartes : Apprenants suivis · Tests de positionnement (7j) · Diagnostics en cours · Évaluations à corriger.
+- Bloc "Actions rapides" : 3 gros boutons — Créer un apprenant, Lancer un diagnostic, Générer un code de positionnement.
+- Bloc "Activité récente" : 5 derniers événements (test soumis, diagnostic terminé, nouvel apprenant) avec lien direct.
+- Bloc "Apprenants actifs cette semaine" (top 5 par XP/activité).
 
-- Lib existante : `jspdf` (déjà installée, pas de nouvelle dépendance).
-- Palette inchangée : `#00504e` (marque), `#17c3b2` (accent), barres tricolores (vert ≥70, ambre 40-69, rouge <40).
-- **Page 1** :
-  - Bandeau marque hauteur 36 pt + bloc identité.
-  - Badge niveau : carré arrondi 120×120 pt centré, gradient via 2 rectangles superposés (jspdf ne fait pas de vrai gradient, on simule par un fond plein + accent).
-  - Description longue niveau : nouveau dictionnaire `LEVEL_LONG_DESCRIPTIONS` (3-4 phrases par niveau A1→C2).
-  - Échelle visuelle CECRL : 6 cercles alignés, celui du niveau atteint rempli en `#00504e`, les autres en gris.
-  - Score global en bas de page.
-- **Page 2** :
-  - Titre « Analyse par compétence ».
-  - Boucle sur les catégories agrégées depuis `data.answers` (Map<category, {correct,total}>).
-  - Chaque carte : `roundedRect` fond `#ffffff` + bordure `#e5e9e9`, label + score à droite, barre fine, courte phrase contextuelle générée par règle (`pct ≥ 70` → maîtrise, `40-69` → consolidation, `<40` → à travailler).
-  - Si > 6 catégories : continuer sur page 2bis automatiquement.
-- **Page 3** :
-  - Titre « Recommandations ».
-  - Nouveau dictionnaire `RECOMMENDATIONS_DETAILED` : 3 items par niveau, chacun avec `title` + `body` (2-3 lignes).
-  - Encadré final « Prochaine étape » : suggestion module FLE selon niveau (mapping simple).
-- **Footer** uniforme via boucle `getNumberOfPages` : `"PEF — ToFrance"` à gauche, `"Page X / Y"` à droite. Plus de disclaimer.
-- Conservation de la signature `generatePlacementTestPDF(data: PDFData): Promise<Blob>` — pas d'impact sur les appelants (bouton « Télécharger le PDF » de `PlacementTestResults.tsx`).
+**Liste apprenants (`FormateurApprenants` refondu)** :
+- Barre de filtres : recherche texte (nom/email), filtre niveau CECRL, filtre activité (actif 7j / inactif 30j / tous), tri (récent, alphabétique, XP).
+- Vue tableau + vue carte (toggle).
+- Ligne cliquable → ouvre une **fiche apprenant** en panel latéral (Sheet) : infos profil, niveau, historique tests, derniers diagnostics, bouton actions (nouveau test, nouveau diagnostic, voir progression).
+- Actions secondaires (importer, créer) déplacées dans un menu "Ajouter ▾" en haut à droite.
 
-### QA visuelle obligatoire
+#### Phase C — Polish des écrans existants
 
-Après génération : convertir le PDF en images avec `pdftoppm`, inspecter chaque page (overlap, débordement, page blanche, badge tronqué) et corriger avant livraison. Les images de QA sont temporaires (`/tmp`), pas livrées.
+- **Contenus** : header pattern unifié + carte par module au lieu de liste plate.
+- **Assignations** : statuts en pills colorées, regroupement par apprenant.
+- **Évaluations** : file d'attente claire (à corriger / corrigées), tri par date.
+- **AFEST** : timeline plutôt que table.
+
+### Choix techniques
+
+- 100 % composants `@/components/ui/*` existants (sidebar shadcn, sheet, command, badge, card).
+- Aucune nouvelle dépendance.
+- Tokens sémantiques HSL existants — pas de couleurs en dur.
+- Routes inchangées sauf : `/formateur` → accueil, `/formateur/apprenants` → liste (redirect ancien pattern pour ne rien casser).
+
+### Phasage proposé
+
+Je commence par **Phase A + Phase B** dans cette itération (coquille + dashboard + liste apprenants modernisée + fiche apprenant en panel) — c'est ce qui transforme la perception. Phase C en itération suivante quand tu auras vu le rendu.
 
 ### Hors scope
 
-- Pas de modification de l'email (sujet du chantier précédent).
-- Pas d'ajout de tableau question-par-question (décision Phase 1 confirmée).
-- Pas de génération côté serveur — reste 100 % client (download immédiat).
+- Pas de nouvelle feature métier (pas de nouveau type de diagnostic, pas de nouveau module).
+- Pas de refonte du module FLE ou du test de positionnement (déjà traités).
+- Pas de changement de modèle de données.
