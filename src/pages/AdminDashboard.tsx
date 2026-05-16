@@ -221,7 +221,9 @@ export default function AdminDashboard() {
     const active = providers.filter((p) => p.is_active).length;
     const employers = providers.filter((p) => p.provider_type === "employer").length;
     const trainingOrgs = providers.filter((p) => p.provider_type === "training_org").length;
-    return { total, active, inactive: total - active, employers, trainingOrgs };
+    const housing = providers.filter((p) => p.provider_type === "housing").length;
+    const withAccess = providers.filter((p) => !!p.user_id).length;
+    return { total, active, inactive: total - active, employers, trainingOrgs, housing, withAccess };
   }, [providers]);
 
   const filteredProviders = useMemo(() => {
