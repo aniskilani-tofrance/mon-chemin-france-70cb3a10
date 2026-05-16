@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
@@ -12,8 +12,21 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, Building2, Users, Search, Mail, ExternalLink, CreditCard } from "lucide-react";
+import {
+  Loader2, Plus, Pencil, Building2, Users, Search, Mail, ExternalLink,
+  CreditCard, MoreHorizontal, Globe, MapPin, CheckCircle2, XCircle,
+  Briefcase, GraduationCap, Phone, BarChart3, Filter,
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { AdminContactRequests } from "@/components/AdminContactRequests";
@@ -53,6 +66,15 @@ const emptyForm = {
   is_active: true,
 };
 
+const QUICK_LINKS = [
+  { to: "/admin/subscriptions", label: "Abonnements", icon: CreditCard },
+  { to: "/admin/leads", label: "Leads HubSpot", icon: ExternalLink },
+  { to: "/admin/pilotes", label: "Vue pilotes", icon: BarChart3 },
+  { to: "/admin/fle", label: "Suivi FLE", icon: Users },
+  { to: "/admin/email-preview", label: "Aperçu emails", icon: Mail },
+  { to: "/admin/email-logs", label: "Envois emails", icon: Mail },
+];
+
 export default function AdminDashboard() {
   const [providers, setProviders] = useState<Provider[]>([]);
   const [loading, setLoading] = useState(true);
@@ -61,6 +83,8 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [search, setSearch] = useState("");
+  const [typeFilter, setTypeFilter] = useState<"all" | "employer" | "training_org">("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const { toast } = useToast();
 
   const fetchProviders = async () => {
@@ -133,7 +157,6 @@ export default function AdminDashboard() {
         if (error) throw error;
         toast({ title: "Partenaire modifié" });
       } else {
-        // Use edge function to create (handles role assignment too if needed)
         const { data, error } = await supabase.functions.invoke("admin-create-partner", {
           body: {
             name: form.name,
@@ -176,12 +199,31 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredProviders = providers.filter(
-    (p) =>
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.email.toLowerCase().includes(search.toLowerCase()) ||
-      (p.city || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const stats = useMemo(() => {
+    const total = providers.length;
+    const active = providers.filter((p) => p.is_active).length;
+    const employers = providers.filter((p) => p.provider_type === "employer").length;
+    const trainingOrgs = providers.filter((p) => p.provider_type === "training_org").length;
+    return { total, active, inactive: total - active, employers, trainingOrgs };
+  }, [providers]);
+
+  const filteredProviders = useMemo(() => {
+    const q = search.toLowerCase();
+    return providers.filter((p) => {
+      if (typeFilter !== "all" && p.provider_type !== typeFilter) return false;
+      if (statusFilter === "active" && !p.is_active) return false;
+      if (statusFilter === "inactive" && p.is_active) return false;
+      if (!q) return true;
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        (p.city || "").toLowerCase().includes(q)
+      );
+    });
+  }, [providers, search, typeFilter, statusFilter]);
+
+  const initials = (name: string) =>
+    name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,72 +231,43 @@ export default function AdminDashboard() {
       <Header />
 
       <main className="container mx-auto px-4 py-24">
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Page header */}
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground">
               <Building2 className="h-8 w-8 text-primary" />
               Gestion des partenaires
             </h1>
-            <p className="mt-1 text-muted-foreground">
-              <Users className="mr-1 inline h-4 w-4" />
-              {providers.length} partenaire{providers.length > 1 ? "s" : ""} enregistré{providers.length > 1 ? "s" : ""}
+            <p className="mt-1 text-sm text-muted-foreground">
+              Pilotez les organismes et employeurs partenaires de ToFrance.
             </p>
           </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" asChild>
-              <Link to="/admin/subscriptions">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Abonnements
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/leads">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Leads HubSpot
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/pilotes">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                Vue pilotes
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/fle">
-                <Users className="mr-2 h-4 w-4" />
-                Suivi FLE
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/email-preview">
-                <Mail className="mr-2 h-4 w-4" />
-                Prévisualiser les emails
-              </Link>
-            </Button>
-            <Button variant="outline" asChild>
-              <Link to="/admin/email-logs">
-                <Mail className="mr-2 h-4 w-4" />
-                Suivi des envois
-              </Link>
-            </Button>
-            <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Rechercher..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10 w-64"
-              />
-            </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="sm" className="gap-2">
+                  <ExternalLink className="h-4 w-4" /> Outils admin
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>Espaces admin</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
+                  <DropdownMenuItem key={to} asChild>
+                    <Link to={to} className="cursor-pointer">
+                      <Icon className="mr-2 h-4 w-4" /> {label}
+                    </Link>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
-                <Button onClick={openCreate} className="gap-2">
-                  <Plus className="h-4 w-4" />
-                  Ajouter un partenaire
+                <Button onClick={openCreate} size="sm" className="gap-2">
+                  <Plus className="h-4 w-4" /> Ajouter un partenaire
                 </Button>
               </DialogTrigger>
-              <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+              <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
                 </DialogHeader>
@@ -319,92 +332,232 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        {loading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
-        ) : (
-          <Card>
-            <CardContent className="p-0">
+        {/* KPI cards */}
+        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" />
+          <KpiCard label="Actifs" value={stats.active} icon={CheckCircle2} tone="success" />
+          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" />
+          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" />
+        </div>
+
+        {/* Partners table */}
+        <Card>
+          <CardHeader className="border-b">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <CardTitle className="text-base font-semibold">
+                Liste des partenaires
+                <span className="ml-2 text-sm font-normal text-muted-foreground">
+                  {filteredProviders.length} sur {providers.length}
+                </span>
+              </CardTitle>
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Rechercher nom, email, ville…"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="h-9 w-64 pl-9"
+                  />
+                </div>
+                <Tabs value={typeFilter} onValueChange={(v) => setTypeFilter(v as any)}>
+                  <TabsList className="h-9">
+                    <TabsTrigger value="all" className="text-xs">Tous</TabsTrigger>
+                    <TabsTrigger value="training_org" className="text-xs">Formation</TabsTrigger>
+                    <TabsTrigger value="employer" className="text-xs">Employeurs</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
+                  <SelectTrigger className="h-9 w-[140px]">
+                    <Filter className="mr-1 h-3.5 w-3.5" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous statuts</SelectItem>
+                    <SelectItem value="active">Actifs</SelectItem>
+                    <SelectItem value="inactive">Inactifs</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            {loading ? (
+              <div className="flex justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : (
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>Nom</TableHead>
+                  <TableRow className="bg-muted/30">
+                    <TableHead>Partenaire</TableHead>
                     <TableHead>Type</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Ville</TableHead>
+                    <TableHead>Contact</TableHead>
+                    <TableHead>Localisation</TableHead>
                     <TableHead>Statut</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    <TableHead className="w-[60px] text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredProviders.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
-                        Aucun partenaire trouvé
+                      <TableCell colSpan={6} className="py-16 text-center">
+                        <div className="flex flex-col items-center gap-2 text-muted-foreground">
+                          <Building2 className="h-10 w-10 opacity-30" />
+                          <p className="font-medium">Aucun partenaire trouvé</p>
+                          <p className="text-xs">
+                            {providers.length === 0
+                              ? "Commencez par ajouter votre premier partenaire."
+                              : "Essayez d'ajuster vos filtres ou la recherche."}
+                          </p>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredProviders.map((p) => (
-                      <TableRow key={p.id}>
-                        <TableCell className="font-medium">{p.name}</TableCell>
+                      <TableRow key={p.id} className="group">
                         <TableCell>
-                          <Badge variant={p.provider_type === "employer" ? "secondary" : "default"}>
-                            {p.provider_type === "employer" ? "Employeur" : "Formation"}
+                          <div className="flex items-center gap-3">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-xs font-semibold text-primary">
+                              {initials(p.name) || <Building2 className="h-4 w-4" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="truncate font-medium">{p.name}</div>
+                              {p.description && (
+                                <div className="truncate text-xs text-muted-foreground max-w-[260px]">
+                                  {p.description}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={p.provider_type === "employer" ? "secondary" : "default"} className="gap-1">
+                            {p.provider_type === "employer" ? (
+                              <><Briefcase className="h-3 w-3" /> Employeur</>
+                            ) : (
+                              <><GraduationCap className="h-3 w-3" /> Formation</>
+                            )}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{p.email}</TableCell>
-                        <TableCell>{p.city || "—"}</TableCell>
                         <TableCell>
-                          <Switch
-                            checked={p.is_active ?? true}
-                            onCheckedChange={() => handleToggleActive(p.id, p.is_active)}
-                          />
+                          <div className="text-sm">{p.email}</div>
+                          {p.phone && (
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Phone className="h-3 w-3" /> {p.phone}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {p.city ? (
+                            <div className="flex items-center gap-1 text-sm">
+                              <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+                              {p.city}
+                              {p.postal_code && <span className="text-muted-foreground">· {p.postal_code}</span>}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {p.is_active ? (
+                            <Badge variant="outline" className="gap-1 border-success/30 bg-success/10 text-success">
+                              <CheckCircle2 className="h-3 w-3" /> Actif
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="gap-1 text-muted-foreground">
+                              <XCircle className="h-3 w-3" /> Inactif
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                            <Pencil className="h-4 w-4" />
-                          </Button>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="icon" className="h-8 w-8">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEdit(p)}>
+                                <Pencil className="mr-2 h-4 w-4" /> Modifier
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleToggleActive(p.id, p.is_active)}>
+                                {p.is_active ? (
+                                  <><XCircle className="mr-2 h-4 w-4" /> Désactiver</>
+                                ) : (
+                                  <><CheckCircle2 className="mr-2 h-4 w-4" /> Activer</>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem asChild disabled={!p.website}>
+                                <a href={p.website || "#"} target="_blank" rel="noreferrer">
+                                  <Globe className="mr-2 h-4 w-4" /> Site web
+                                </a>
+                              </DropdownMenuItem>
+                              <DropdownMenuItem asChild>
+                                <a href={`mailto:${p.email}`}>
+                                  <Mail className="mr-2 h-4 w-4" /> Envoyer un email
+                                </a>
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </TableCell>
                       </TableRow>
                     ))
                   )}
                 </TableBody>
               </Table>
-            </CardContent>
-          </Card>
-        )}
+            )}
+          </CardContent>
+        </Card>
 
+        {/* Secondary sections grouped by tabs */}
         <div className="mt-10">
-          <AdminMarianneCodes />
-        </div>
-
-        <div className="mt-10">
-          <AdminHubSpotSyncLogs />
-        </div>
-
-        <div className="mt-10">
-          <AdminPlacementTestAnalytics />
-        </div>
-
-        <div className="mt-10">
-          <AdminCheckpointAnalytics />
-        </div>
-
-        <div className="mt-10">
-          <AdminAnalytics />
-        </div>
-
-        <div className="mt-10">
-          <AdminLeadsManager />
-        </div>
-
-        <div className="mt-10">
-          <AdminContactRequests />
+          <Tabs defaultValue="analytics" className="w-full">
+            <TabsList className="w-full justify-start overflow-x-auto">
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="placement">Test positionnement</TabsTrigger>
+              <TabsTrigger value="checkpoint">Checkpoints</TabsTrigger>
+              <TabsTrigger value="leads">Leads</TabsTrigger>
+              <TabsTrigger value="contacts">Contacts</TabsTrigger>
+              <TabsTrigger value="codes">Codes Marianne</TabsTrigger>
+              <TabsTrigger value="hubspot">HubSpot sync</TabsTrigger>
+            </TabsList>
+            <TabsContent value="analytics" className="mt-4"><AdminAnalytics /></TabsContent>
+            <TabsContent value="placement" className="mt-4"><AdminPlacementTestAnalytics /></TabsContent>
+            <TabsContent value="checkpoint" className="mt-4"><AdminCheckpointAnalytics /></TabsContent>
+            <TabsContent value="leads" className="mt-4"><AdminLeadsManager /></TabsContent>
+            <TabsContent value="contacts" className="mt-4"><AdminContactRequests /></TabsContent>
+            <TabsContent value="codes" className="mt-4"><AdminMarianneCodes /></TabsContent>
+            <TabsContent value="hubspot" className="mt-4"><AdminHubSpotSyncLogs /></TabsContent>
+          </Tabs>
         </div>
       </main>
 
       <Footer />
     </div>
+  );
+}
+
+function KpiCard({
+  label, value, icon: Icon, tone,
+}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted" }) {
+  const toneClasses = {
+    primary: "bg-primary/10 text-primary",
+    success: "bg-success/10 text-success",
+    muted: "bg-muted text-muted-foreground",
+  }[tone];
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${toneClasses}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+        <div>
+          <div className="text-2xl font-bold leading-tight">{value}</div>
+          <div className="text-xs text-muted-foreground">{label}</div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
