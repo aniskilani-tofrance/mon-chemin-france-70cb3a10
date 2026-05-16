@@ -217,6 +217,23 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendAccess = async (p: Provider) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-create-partner", {
+        body: {
+          // re-use the existing partner: we pass create_access only, the function will invite by email
+          // but since this would create a duplicate, instead we just call auth invite directly via a tiny RPC pattern:
+          name: p.name, email: p.email, provider_type: p.provider_type, is_active: p.is_active,
+          create_access: true, _existing_provider_id: p.id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Invitation envoyée", description: `Un email d'accès a été envoyé à ${p.email}.` });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erreur", description: e.message });
+    }
+  };
   const stats = useMemo(() => {
     const total = providers.length;
     const active = providers.filter((p) => p.is_active).length;
