@@ -251,20 +251,42 @@ export default function AdminDashboard() {
     return { total, active, inactive: total - active, employers, trainingOrgs, housing, withAccess };
   }, [providers]);
 
+  const allTags = useMemo(() => {
+    const set = new Set<string>();
+    providers.forEach((p) => (p.tags || []).forEach((t) => t && set.add(t)));
+    return Array.from(set).sort((a, b) => a.localeCompare(b, "fr"));
+  }, [providers]);
+
+  const tagSuggestions = useMemo(() => {
+    const q = tagInput.trim().toLowerCase();
+    return allTags
+      .filter((t) => !selectedTags.includes(t) && (!q || t.toLowerCase().includes(q)))
+      .slice(0, 8);
+  }, [allTags, tagInput, selectedTags]);
+
   const filteredProviders = useMemo(() => {
     const q = search.toLowerCase();
+    const selLower = selectedTags.map((t) => t.toLowerCase());
     return providers.filter((p) => {
       if (typeFilter !== "all" && p.provider_type !== typeFilter) return false;
       if (statusFilter === "active" && !p.is_active) return false;
       if (statusFilter === "inactive" && p.is_active) return false;
+      const pTagsLower = (p.tags || []).map((t) => t.toLowerCase());
+      if (selLower.length && !selLower.every((t) => pTagsLower.includes(t))) return false;
       if (!q) return true;
       return (
         p.name.toLowerCase().includes(q) ||
         p.email.toLowerCase().includes(q) ||
-        (p.city || "").toLowerCase().includes(q)
+        (p.city || "").toLowerCase().includes(q) ||
+        (p.description || "").toLowerCase().includes(q) ||
+        pTagsLower.some((t) => t.includes(q))
       );
     });
-  }, [providers, search, typeFilter, statusFilter]);
+  }, [providers, search, typeFilter, statusFilter, selectedTags]);
+
+  const toggleTagFilter = (tag: string) => {
+    setSelectedTags((prev) => (prev.includes(tag) ? prev.filter((t) => t !== tag) : [...prev, tag]));
+  };
 
   const initials = (name: string) =>
     name.split(/\s+/).map((w) => w[0]).filter(Boolean).slice(0, 2).join("").toUpperCase();
