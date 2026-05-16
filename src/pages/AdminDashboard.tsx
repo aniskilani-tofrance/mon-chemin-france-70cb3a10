@@ -637,40 +637,86 @@ export default function AdminDashboard() {
                           )}
                         </TableCell>
                         <TableCell className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="icon" className="h-8 w-8">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => openEdit(p)}>
-                                <Pencil className="mr-2 h-4 w-4" /> Modifier
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleToggleActive(p.id, p.is_active)}>
-                                {p.is_active ? (
-                                  <><XCircle className="mr-2 h-4 w-4" /> Désactiver</>
-                                ) : (
-                                  <><CheckCircle2 className="mr-2 h-4 w-4" /> Activer</>
+                          <div className="flex items-center justify-end gap-1">
+                            <div
+                              className="mr-1 hidden items-center gap-2 md:flex"
+                              title={p.is_active ? "Désactiver le partenaire" : "Activer le partenaire"}
+                            >
+                              <Switch
+                                checked={!!p.is_active}
+                                onCheckedChange={() => handleToggleActive(p.id, p.is_active)}
+                                aria-label="Activer/Désactiver"
+                              />
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title="Copier l'email"
+                              onClick={() => copyToClipboard(p.email, "Email")}
+                            >
+                              <Copy className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              title="Ouvrir le détail"
+                              onClick={() => openEdit(p)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8" title="Plus d'actions">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-56">
+                                <DropdownMenuLabel className="text-xs">Actions rapides</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => openEdit(p)}>
+                                  <Pencil className="mr-2 h-4 w-4" /> Modifier
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleToggleActive(p.id, p.is_active)}>
+                                  {p.is_active ? (
+                                    <><XCircle className="mr-2 h-4 w-4" /> Désactiver</>
+                                  ) : (
+                                    <><CheckCircle2 className="mr-2 h-4 w-4" /> Activer</>
+                                  )}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleSendAccess(p)}>
+                                  <KeyRound className="mr-2 h-4 w-4" />
+                                  {p.user_id ? "Renvoyer l'accès" : "Créer un accès"}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuLabel className="text-xs">Copier</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => copyToClipboard(p.email, "Email")}>
+                                  <Mail className="mr-2 h-4 w-4" /> Copier l'email
+                                </DropdownMenuItem>
+                                {p.phone && (
+                                  <DropdownMenuItem onClick={() => copyToClipboard(p.phone!, "Téléphone")}>
+                                    <Phone className="mr-2 h-4 w-4" /> Copier le téléphone
+                                  </DropdownMenuItem>
                                 )}
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleSendAccess(p)}>
-                                <KeyRound className="mr-2 h-4 w-4" />
-                                {p.user_id ? "Renvoyer l'accès" : "Créer un accès"}
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem asChild disabled={!p.website}>
-                                <a href={p.website || "#"} target="_blank" rel="noreferrer">
-                                  <Globe className="mr-2 h-4 w-4" /> Site web
-                                </a>
-                              </DropdownMenuItem>
-                              <DropdownMenuItem asChild>
-                                <a href={`mailto:${p.email}`}>
-                                  <Mail className="mr-2 h-4 w-4" /> Envoyer un email
-                                </a>
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                                {p.website && (
+                                  <DropdownMenuItem onClick={() => copyToClipboard(p.website!, "Lien")}>
+                                    <Copy className="mr-2 h-4 w-4" /> Copier le site web
+                                  </DropdownMenuItem>
+                                )}
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem asChild disabled={!p.website}>
+                                  <a href={p.website || "#"} target="_blank" rel="noreferrer">
+                                    <Globe className="mr-2 h-4 w-4" /> Ouvrir le site
+                                  </a>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem asChild>
+                                  <a href={`mailto:${p.email}`}>
+                                    <Mail className="mr-2 h-4 w-4" /> Envoyer un email
+                                  </a>
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
