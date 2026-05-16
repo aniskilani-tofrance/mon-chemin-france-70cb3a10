@@ -126,6 +126,7 @@ Deno.serve(async (req) => {
           postal_code: postal_code || null,
           is_active: is_active ?? true,
           user_id: partner_user_id,
+          tags: cleanTags,
         })
         .select()
         .single();
