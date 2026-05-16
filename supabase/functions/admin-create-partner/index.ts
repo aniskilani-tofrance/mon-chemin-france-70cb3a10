@@ -51,6 +51,7 @@ Deno.serve(async (req) => {
     const {
       name, email, phone, website, description, provider_type,
       address, city, postal_code, is_active, create_access,
+      _existing_provider_id,
     } = body;
 
     if (!name || !email) {
