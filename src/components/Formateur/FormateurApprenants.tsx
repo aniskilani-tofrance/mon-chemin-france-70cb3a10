@@ -135,7 +135,8 @@ export function FormateurApprenants() {
 
   // Drill-down sheet
   const [selected, setSelected] = useState<Learner | null>(null);
-  const [history, setHistory] = useState<LearnerHistory>({ placements: [], diagnostics: [] });
+  const EMPTY_HISTORY: LearnerHistory = { placements: [], diagnostics: [], audios: [], notifications: [], progress: null };
+  const [history, setHistory] = useState<LearnerHistory>(EMPTY_HISTORY);
   const [historyLoading, setHistoryLoading] = useState(false);
 
   // Bulk selection
