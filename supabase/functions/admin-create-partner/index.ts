@@ -91,30 +91,49 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Create training_provider using service role (bypasses RLS)
-    const { data: provider, error: providerError } = await supabaseAdmin
-      .from("training_providers")
-      .insert({
-        name,
-        email,
-        phone: phone || null,
-        website: website || null,
-        description: description || null,
-        provider_type: provider_type || "training_org",
-        address: address || null,
-        city: city || null,
-        postal_code: postal_code || null,
-        is_active: is_active ?? true,
-        user_id: partner_user_id,
-      })
-      .select()
-      .single();
+    let provider: any = null;
 
-    if (providerError) {
-      console.error("Provider creation error:", providerError);
-      return new Response(JSON.stringify({ error: providerError.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (_existing_provider_id) {
+      // Just attach the (possibly new) auth user to the existing partner record
+      const { data, error } = await supabaseAdmin
+        .from("training_providers")
+        .update({ user_id: partner_user_id ?? undefined })
+        .eq("id", _existing_provider_id)
+        .select()
+        .single();
+      if (error) {
+        console.error("Provider update error:", error);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      provider = data;
+    } else {
+      const { data, error: providerError } = await supabaseAdmin
+        .from("training_providers")
+        .insert({
+          name,
+          email,
+          phone: phone || null,
+          website: website || null,
+          description: description || null,
+          provider_type: provider_type || "training_org",
+          address: address || null,
+          city: city || null,
+          postal_code: postal_code || null,
+          is_active: is_active ?? true,
+          user_id: partner_user_id,
+        })
+        .select()
+        .single();
+
+      if (providerError) {
+        console.error("Provider creation error:", providerError);
+        return new Response(JSON.stringify({ error: providerError.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      provider = data;
     }
 
     return new Response(JSON.stringify({ provider, invite_status, partner_user_id }), {
