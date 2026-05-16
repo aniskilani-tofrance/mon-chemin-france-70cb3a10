@@ -102,6 +102,7 @@ export function FormateurApprenants() {
   const navigate = useNavigate();
   const [learners, setLearners] = useState<Learner[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<null | { kind: "timeout" | "network" | "unknown"; message: string }>(null);
   const [creatingDiagnostic, setCreatingDiagnostic] = useState<string | null>(null);
   const [creatingPlacement, setCreatingPlacement] = useState<string | null>(null);
 
