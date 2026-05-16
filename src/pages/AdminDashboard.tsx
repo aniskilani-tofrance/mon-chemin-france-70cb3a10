@@ -13,7 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Plus, Pencil, Trash2, Building2, Users, Search, Mail, ExternalLink } from "lucide-react";
+import { Loader2, Plus, Pencil, Trash2, Building2, Users, Search, Mail, ExternalLink, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
 import { AdminContactRequests } from "@/components/AdminContactRequests";
