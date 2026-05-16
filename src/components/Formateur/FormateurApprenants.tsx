@@ -82,9 +82,30 @@ interface Learner {
 }
 
 interface LearnerHistory {
-  placements: Array<{ id: string; status: string | null; level_estimated: string | null; created_at: string }>;
+  placements: Array<{ id: string; status: string | null; level_estimated: string | null; access_code: string | null; created_at: string }>;
   diagnostics: Array<{ id: string; status: string | null; access_code: string | null; created_at: string }>;
+  audios: Array<{ id: string; status: string; module_id: string; created_at: string; reviewed_at: string | null }>;
+  notifications: Array<{ id: string; title: string; kind: string; created_at: string; read_at: string | null }>;
+  progress: {
+    streak_days: number | null;
+    words_learned: number | null;
+    phrases_mastered: number | null;
+    total_time_minutes: number | null;
+    oral_score: number | null;
+    comprehension_score: number | null;
+    placement_completed: boolean | null;
+  } | null;
 }
+
+type TimelineEvent = {
+  id: string;
+  kind: "placement" | "diagnostic" | "audio" | "notification";
+  date: string;
+  title: string;
+  subtitle: string;
+  href?: string;
+  badge?: { label: string; tone: "default" | "secondary" | "outline" | "destructive" };
+};
 
 const LEVELS = ["A1", "A2", "B1", "B2", "C1", "C2"];
 
