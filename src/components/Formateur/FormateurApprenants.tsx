@@ -586,8 +586,58 @@ export function FormateurApprenants() {
 
         <CardContent className="p-0">
           {loading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="p-4 space-y-3" aria-busy="true" aria-label="Chargement des apprenants">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <Skeleton className="h-4 w-4 rounded" />
+                  <Skeleton className="h-9 w-9 rounded-full" />
+                  <div className="flex-1 space-y-1.5">
+                    <Skeleton className="h-3.5 w-1/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-6 w-12 rounded-full" />
+                  <Skeleton className="h-4 w-10" />
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              ))}
+              <p className="text-xs text-muted-foreground text-center pt-2">
+                Récupération de la liste de vos apprenants…
+              </p>
+            </div>
+          ) : loadError ? (
+            <div className="text-center py-16 px-6 space-y-3">
+              <div
+                className={`mx-auto h-14 w-14 rounded-full flex items-center justify-center ${
+                  loadError.kind === "network"
+                    ? "bg-destructive/10 text-destructive"
+                    : "bg-amber-500/10 text-amber-600"
+                }`}
+              >
+                {loadError.kind === "network" ? (
+                  <WifiOff className="h-7 w-7" />
+                ) : (
+                  <AlertCircle className="h-7 w-7" />
+                )}
+              </div>
+              <div>
+                <p className="font-semibold">
+                  {loadError.kind === "timeout"
+                    ? "Chargement trop long"
+                    : loadError.kind === "network"
+                    ? "Connexion interrompue"
+                    : "Une erreur est survenue"}
+                </p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {loadError.message}
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2">
+                <Button onClick={fetchLearners}>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  Réessayer
+                </Button>
+              </div>
             </div>
           ) : learners.length === 0 ? (
             <div className="text-center py-16 px-6 space-y-3">
@@ -597,11 +647,12 @@ export function FormateurApprenants() {
               <div>
                 <p className="font-semibold">Aucun apprenant pour le moment</p>
                 <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
-                  Créez un compte apprenant ou démarrez un diagnostic rapide avec un code d'accès.
+                  Créez un compte apprenant, importez depuis une source existante, ou démarrez un diagnostic rapide avec un code d'accès.
                 </p>
               </div>
-              <div className="flex justify-center gap-2 pt-2">
+              <div className="flex justify-center gap-2 pt-2 flex-wrap">
                 <CreateLearnerDialog onCreated={fetchLearners} />
+                <ImportFromSourceDialog onImported={fetchLearners} />
                 <Button variant="outline" onClick={() => handleCreatePlacement(null)}>
                   <GraduationCap className="mr-2 h-4 w-4" />
                   Code de positionnement
@@ -609,8 +660,35 @@ export function FormateurApprenants() {
               </div>
             </div>
           ) : filtered.length === 0 ? (
-            <div className="text-center py-12 text-sm text-muted-foreground">
-              Aucun résultat avec ces filtres.
+            <div className="text-center py-16 px-6 space-y-3">
+              <div className="mx-auto h-14 w-14 rounded-full bg-muted flex items-center justify-center">
+                <SearchX className="h-7 w-7 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="font-semibold">Aucun apprenant ne correspond</p>
+                <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {search.trim()
+                    ? `Aucun résultat pour "${search.trim()}"`
+                    : "Aucun apprenant ne correspond aux filtres sélectionnés."}
+                  {" "}Ajustez votre recherche ou réinitialisez les filtres.
+                </p>
+              </div>
+              <div className="flex justify-center gap-2 pt-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearch("");
+                    setLevelFilter("all");
+                    setActivityFilter("all");
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Réinitialiser les filtres
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground pt-1">
+                {learners.length} apprenant{learners.length > 1 ? "s" : ""} au total
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
