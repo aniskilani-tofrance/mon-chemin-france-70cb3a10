@@ -54,6 +54,7 @@ interface Provider {
   postal_code: string | null;
   address: string | null;
   user_id: string | null;
+  tags: string[] | null;
   created_at: string;
 }
 
@@ -69,6 +70,7 @@ const emptyForm = {
   address: "",
   is_active: true,
   create_access: false,
+  tags: [] as string[],
 };
 
 const PROVIDER_TYPE_META: Record<ProviderType, { label: string; short: string }> = {
