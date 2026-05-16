@@ -124,7 +124,7 @@ const App = () => (
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/admin/tts" element={<AdminRoute><AdminTTSDiagnostic /></AdminRoute>} />
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
-              <Route path="/directeur" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
+              <Route path="/directeur/*" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
               <Route path="/diagnostic-partage" element={<SharedDiagnostic />} />
               <Route path="/cip" element={<ProtectedRoute><CIPDashboard /></ProtectedRoute>} />
               <Route path="/fle" element={<FLEGatedRoute><FLEDashboard /></FLEGatedRoute>} />
