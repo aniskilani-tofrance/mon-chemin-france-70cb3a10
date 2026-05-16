@@ -679,15 +679,22 @@ export default function AdminDashboard() {
 }
 
 function KpiCard({
-  label, value, icon: Icon, tone, hint,
-}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string }) {
+  label, value, icon: Icon, tone, hint, active, onClick,
+}: { label: string; value: number; icon: React.ComponentType<{ className?: string }>; tone: "primary" | "success" | "muted"; hint?: string; active?: boolean; onClick?: () => void }) {
   const toneClasses = {
     primary: "bg-primary/10 text-primary",
     success: "bg-success/10 text-success",
     muted: "bg-muted text-muted-foreground",
   }[tone];
+  const interactive = !!onClick;
   return (
-    <Card className="group relative overflow-hidden transition-all hover:-translate-y-0.5 hover:shadow-md">
+    <Card
+      onClick={onClick}
+      role={interactive ? "button" : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onKeyDown={interactive ? (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick?.(); } } : undefined}
+      className={`group relative overflow-hidden transition-all ${interactive ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary" : ""} ${active ? "ring-2 ring-primary shadow-md" : ""}`}
+    >
       <CardContent className="flex items-start gap-3 p-4">
         <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ${toneClasses} transition-transform group-hover:scale-105`}>
           <Icon className="h-5 w-5" />
