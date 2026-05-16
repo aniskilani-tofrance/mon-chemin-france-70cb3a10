@@ -38,6 +38,7 @@ import { AdminCheckpointAnalytics } from "@/components/AdminCheckpointAnalytics"
 import { AdminPlacementTestAnalytics } from "@/components/AdminPlacementTestAnalytics";
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
 import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
+import { PartnerWizard } from "@/components/admin/PartnerWizard";
 
 type ProviderType = "employer" | "training_org" | "housing";
 
@@ -341,149 +342,20 @@ export default function AdminDashboard() {
                     <Plus className="h-4 w-4" /> Ajouter un partenaire
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+                <DialogContent className="max-h-[92vh] max-w-2xl overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
                   </DialogHeader>
-                  <div className="space-y-4 pt-4">
-                    <div className="space-y-2">
-                      <Label>Type de structure</Label>
-                      <Select value={form.provider_type} onValueChange={(v) => setForm({ ...form, provider_type: v as any })}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="training_org">Organisme de formation</SelectItem>
-                          <SelectItem value="employer">Employeur</SelectItem>
-                          <SelectItem value="housing">Hébergeur</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Nom *</Label>
-                      <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom de l'organisme" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Email *</Label>
-                      <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@organisme.fr" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Téléphone</Label>
-                        <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01 23 45 67 89" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Site web</Label>
-                        <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Adresse</Label>
-                      <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 rue..." />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label>Ville</Label>
-                        <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Paris" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Code postal</Label>
-                        <Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="75001" />
-                      </div>
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Description</Label>
-                      <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-1.5">
-                        <Tag className="h-3.5 w-3.5" /> Tags / Mots-clés
-                      </Label>
-                      <p className="text-xs text-muted-foreground">
-                        Compétences, secteurs, langues parlées, publics, certifications… Appuyez sur Entrée ou virgule pour ajouter.
-                      </p>
-                      <div className="flex flex-wrap gap-1.5 rounded-md border bg-background p-2">
-                        {form.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="gap-1 px-2 py-0.5 text-xs">
-                            {tag}
-                            <button
-                              type="button"
-                              onClick={() => setForm({ ...form, tags: form.tags.filter((t) => t !== tag) })}
-                              className="ml-0.5 rounded-sm opacity-60 hover:opacity-100"
-                              aria-label={`Retirer ${tag}`}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                        <Input
-                          value={tagInput}
-                          onChange={(e) => setTagInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === "Enter" || e.key === ",") {
-                              e.preventDefault();
-                              const v = tagInput.trim().replace(/,$/, "");
-                              if (v && !form.tags.includes(v)) {
-                                setForm({ ...form, tags: [...form.tags, v] });
-                              }
-                              setTagInput("");
-                            } else if (e.key === "Backspace" && !tagInput && form.tags.length) {
-                              setForm({ ...form, tags: form.tags.slice(0, -1) });
-                            }
-                          }}
-                          onBlur={() => {
-                            const v = tagInput.trim();
-                            if (v && !form.tags.includes(v)) {
-                              setForm({ ...form, tags: [...form.tags, v] });
-                              setTagInput("");
-                            }
-                          }}
-                          placeholder={form.tags.length ? "" : "ex: anglais, cuisine, BTP, RQTH…"}
-                          className="h-7 min-w-[140px] flex-1 border-0 p-0 text-sm shadow-none focus-visible:ring-0"
-                        />
-                      </div>
-                      {tagSuggestions.length > 0 && tagInput && (
-                        <div className="flex flex-wrap gap-1">
-                          <span className="text-[11px] text-muted-foreground">Suggestions :</span>
-                          {tagSuggestions.map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="outline"
-                              className="cursor-pointer px-1.5 py-0 text-[11px] hover:bg-primary/10"
-                              onClick={() => {
-                                if (!form.tags.includes(tag)) setForm({ ...form, tags: [...form.tags, tag] });
-                                setTagInput("");
-                              }}
-                            >
-                              + {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
-                      <div className="flex items-center justify-between gap-2">
-                        <div>
-                          <Label className="text-sm font-medium">Structure active</Label>
-                          <p className="text-xs text-muted-foreground">Visible dans les annuaires et matching</p>
-                        </div>
-                        <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                      </div>
-                      {!editingId && (
-                        <div className="flex items-center justify-between gap-2 border-t pt-3">
-                          <div className="flex items-start gap-2">
-                            <KeyRound className="mt-0.5 h-4 w-4 text-primary" />
-                            <div>
-                              <Label className="text-sm font-medium">Créer un accès partenaire</Label>
-                              <p className="text-xs text-muted-foreground">Envoie un email d'invitation pour activer le compte</p>
-                            </div>
-                          </div>
-                          <Switch checked={form.create_access} onCheckedChange={(v) => setForm({ ...form, create_access: v })} />
-                        </div>
-                      )}
-                    </div>
-                    <Button onClick={handleSave} disabled={saving} className="w-full">
-                      {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                      {editingId ? "Enregistrer" : "Créer le partenaire"}
-                    </Button>
+                  <div className="pt-2">
+                    <PartnerWizard
+                      form={form}
+                      setForm={setForm}
+                      onSubmit={handleSave}
+                      saving={saving}
+                      editing={!!editingId}
+                      existingTags={allTags}
+                      onCancel={() => setDialogOpen(false)}
+                    />
                   </div>
                 </DialogContent>
               </Dialog>
