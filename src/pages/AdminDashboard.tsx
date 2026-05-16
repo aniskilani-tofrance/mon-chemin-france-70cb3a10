@@ -229,8 +229,6 @@ export default function AdminDashboard() {
     try {
       const { data, error } = await supabase.functions.invoke("admin-create-partner", {
         body: {
-          // re-use the existing partner: we pass create_access only, the function will invite by email
-          // but since this would create a duplicate, instead we just call auth invite directly via a tiny RPC pattern:
           name: p.name, email: p.email, provider_type: p.provider_type, is_active: p.is_active,
           create_access: true, _existing_provider_id: p.id,
         },
@@ -240,6 +238,15 @@ export default function AdminDashboard() {
       toast({ title: "Invitation envoyée", description: `Un email d'accès a été envoyé à ${p.email}.` });
     } catch (e: any) {
       toast({ variant: "destructive", title: "Erreur", description: e.message });
+    }
+  };
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast({ title: "Copié", description: `${label} copié dans le presse-papier.` });
+    } catch {
+      toast({ variant: "destructive", title: "Erreur", description: "Impossible de copier." });
     }
   };
   const stats = useMemo(() => {
