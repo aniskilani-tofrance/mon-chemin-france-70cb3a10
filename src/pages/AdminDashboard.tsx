@@ -232,113 +232,128 @@ export default function AdminDashboard() {
       <Header />
 
       <main className="container mx-auto px-4 py-24">
-        {/* Page header */}
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground">
-              <Building2 className="h-8 w-8 text-primary" />
-              Gestion des partenaires
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              Pilotez les organismes et employeurs partenaires de ToFrance.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
-                  <ExternalLink className="h-4 w-4" /> Outils admin
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel>Espaces admin</DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
-                  <DropdownMenuItem key={to} asChild>
-                    <Link to={to} className="cursor-pointer">
-                      <Icon className="mr-2 h-4 w-4" /> {label}
-                    </Link>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={openCreate} size="sm" className="gap-2">
-                  <Plus className="h-4 w-4" /> Ajouter un partenaire
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
-                </DialogHeader>
-                <div className="space-y-4 pt-4">
-                  <div className="space-y-2">
-                    <Label>Type de structure</Label>
-                    <Select value={form.provider_type} onValueChange={(v) => setForm({ ...form, provider_type: v as any })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="training_org">Organisme de formation</SelectItem>
-                        <SelectItem value="employer">Employeur</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Nom *</Label>
-                    <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom de l'organisme" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Email *</Label>
-                    <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@organisme.fr" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Téléphone</Label>
-                      <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01 23 45 67 89" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Site web</Label>
-                      <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Adresse</Label>
-                    <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 rue..." />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Ville</Label>
-                      <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Paris" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Code postal</Label>
-                      <Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="75001" />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Description</Label>
-                    <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                    <Label>Actif</Label>
-                  </div>
-                  <Button onClick={handleSave} disabled={saving} className="w-full">
-                    {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    {editingId ? "Enregistrer" : "Créer le partenaire"}
+        {/* Hero header */}
+        <div className="relative mb-8 overflow-hidden rounded-2xl border bg-gradient-to-br from-primary/10 via-background to-background p-6 sm:p-8">
+          <div className="pointer-events-none absolute -right-16 -top-16 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
+          <div className="relative flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <div className="inline-flex items-center gap-2 rounded-full border bg-background/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur">
+                <Sparkles className="h-3.5 w-3.5 text-primary" />
+                Back-office ToFrance
+              </div>
+              <h1 className="flex items-center gap-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/15 text-primary">
+                  <Building2 className="h-6 w-6" />
+                </span>
+                Partenaires & écosystème
+              </h1>
+              <p className="max-w-xl text-sm text-muted-foreground">
+                Pilotez les organismes de formation, employeurs et outils administratifs depuis un espace unifié.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 bg-background/70 backdrop-blur">
+                    <ExternalLink className="h-4 w-4" /> Outils admin
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>Espaces admin</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {QUICK_LINKS.map(({ to, label, icon: Icon }) => (
+                    <DropdownMenuItem key={to} asChild>
+                      <Link to={to} className="cursor-pointer">
+                        <Icon className="mr-2 h-4 w-4" /> {label}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button onClick={openCreate} size="sm" className="gap-2 shadow-sm">
+                    <Plus className="h-4 w-4" /> Ajouter un partenaire
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] max-w-lg overflow-y-auto">
+                  <DialogHeader>
+                    <DialogTitle>{editingId ? "Modifier le partenaire" : "Nouveau partenaire"}</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label>Type de structure</Label>
+                      <Select value={form.provider_type} onValueChange={(v) => setForm({ ...form, provider_type: v as any })}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="training_org">Organisme de formation</SelectItem>
+                          <SelectItem value="employer">Employeur</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Nom *</Label>
+                      <Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} placeholder="Nom de l'organisme" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Email *</Label>
+                      <Input type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} placeholder="contact@organisme.fr" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Téléphone</Label>
+                        <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="01 23 45 67 89" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Site web</Label>
+                        <Input value={form.website} onChange={(e) => setForm({ ...form, website: e.target.value })} placeholder="https://..." />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Adresse</Label>
+                      <Input value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} placeholder="123 rue..." />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Ville</Label>
+                        <Input value={form.city} onChange={(e) => setForm({ ...form, city: e.target.value })} placeholder="Paris" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Code postal</Label>
+                        <Input value={form.postal_code} onChange={(e) => setForm({ ...form, postal_code: e.target.value })} placeholder="75001" />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                      <Label>Actif</Label>
+                    </div>
+                    <Button onClick={handleSave} disabled={saving} className="w-full">
+                      {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                      {editingId ? "Enregistrer" : "Créer le partenaire"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </div>
 
         {/* KPI cards */}
         <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" />
-          <KpiCard label="Actifs" value={stats.active} icon={CheckCircle2} tone="success" />
-          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" />
-          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" />
+          <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
+          <KpiCard
+            label="Actifs"
+            value={stats.active}
+            icon={CheckCircle2}
+            tone="success"
+            hint={stats.total ? `${Math.round((stats.active / stats.total) * 100)}% du réseau` : "—"}
+          />
+          <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
+          <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
         </div>
 
         {/* Partners table */}
