@@ -339,42 +339,18 @@ export function FormateurApprenants() {
           </Select>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Ajouter
-              <ChevronDown className="ml-2 h-4 w-4 opacity-60" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-64">
-            <DropdownMenuLabel>Nouveau</DropdownMenuLabel>
-            <CreateLearnerDialog
-              onCreated={fetchLearners}
-              trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <User className="mr-2 h-4 w-4" />
-                  Créer un apprenant
-                </DropdownMenuItem>
-              }
-            />
-            <ImportFromSourceDialog
-              onImported={fetchLearners}
-              trigger={
-                <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                  <FileText className="mr-2 h-4 w-4" />
-                  Importer depuis une source
-                </DropdownMenuItem>
-              }
-            />
-            <DropdownMenuSeparator />
-            <DropdownMenuLabel>Action rapide</DropdownMenuLabel>
-            <DropdownMenuItem onClick={() => handleCreatePlacement(null)}>
-              <GraduationCap className="mr-2 h-4 w-4" />
-              Code de positionnement
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <div className="flex flex-wrap gap-2">
+          <Button
+            variant="outline"
+            onClick={() => handleCreatePlacement(null)}
+            disabled={creatingPlacement === "quick"}
+          >
+            <GraduationCap className="mr-2 h-4 w-4" />
+            Code positionnement
+          </Button>
+          <ImportFromSourceDialog onImported={fetchLearners} />
+          <CreateLearnerDialog onCreated={fetchLearners} />
+        </div>
       </div>
 
       {/* List */}
