@@ -626,6 +626,23 @@ export default function AdminDashboard() {
                                   {p.description}
                                 </div>
                               )}
+                              {p.tags && p.tags.length > 0 && (
+                                <div className="mt-1 flex flex-wrap gap-1">
+                                  {p.tags.slice(0, 4).map((tag) => (
+                                    <Badge
+                                      key={tag}
+                                      variant="secondary"
+                                      className="cursor-pointer px-1.5 py-0 text-[10px] font-normal hover:bg-primary/15 hover:text-primary"
+                                      onClick={(e) => { e.stopPropagation(); toggleTagFilter(tag); }}
+                                    >
+                                      {tag}
+                                    </Badge>
+                                  ))}
+                                  {p.tags.length > 4 && (
+                                    <span className="text-[10px] text-muted-foreground">+{p.tags.length - 4}</span>
+                                  )}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </TableCell>
