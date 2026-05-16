@@ -38,6 +38,7 @@ const AdminFLEProgress = lazy(() => import("./pages/AdminFLEProgress"));
 const AdminHubSpotLeads = lazy(() => import("./pages/AdminHubSpotLeads"));
 const AdminPilotes = lazy(() => import("./pages/AdminPilotes"));
 const AdminTTSDiagnostic = lazy(() => import("./pages/AdminTTSDiagnostic"));
+const AdminSubscriptions = lazy(() => import("./pages/AdminSubscriptions"));
 const ToSourceRedirect = lazy(() => import("./pages/ToSourceRedirect"));
 const MentionsLegales = lazy(() => import("./pages/MentionsLegales"));
 const Heberger = lazy(() => import("./pages/Heberger"));
@@ -123,6 +124,7 @@ const App = () => (
               <Route path="/admin/pilotes" element={<AdminRoute><AdminPilotes /></AdminRoute>} />
               <Route path="/admin/fle" element={<AdminRoute><AdminFLEProgress /></AdminRoute>} />
               <Route path="/admin/tts" element={<AdminRoute><AdminTTSDiagnostic /></AdminRoute>} />
+              <Route path="/admin/subscriptions" element={<AdminRoute><AdminSubscriptions /></AdminRoute>} />
               <Route path="/formateur/*" element={<FormateurRoute><FormateurDashboard /></FormateurRoute>} />
               <Route path="/directeur/*" element={<DirecteurRoute><DirecteurDashboard /></DirecteurRoute>} />
               <Route path="/diagnostic-partage" element={<SharedDiagnostic />} />
