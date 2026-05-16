@@ -2276,7 +2276,7 @@ export type Database = {
         | "entre_formation"
         | "recrute"
         | "perdu_injoignable"
-      provider_type: "employer" | "training_org"
+      provider_type: "employer" | "training_org" | "housing"
       recommended_path:
         | "francais"
         | "emploi"
@@ -2487,7 +2487,7 @@ export const Constants = {
         "recrute",
         "perdu_injoignable",
       ],
-      provider_type: ["employer", "training_org"],
+      provider_type: ["employer", "training_org", "housing"],
       recommended_path: [
         "francais",
         "emploi",

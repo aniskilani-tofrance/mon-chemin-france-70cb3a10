@@ -27,6 +27,7 @@ import {
   Loader2, Plus, Pencil, Building2, Users, Search, Mail, ExternalLink,
   CreditCard, MoreHorizontal, Globe, MapPin, CheckCircle2, XCircle,
   Briefcase, GraduationCap, Phone, BarChart3, Filter, TrendingUp, Sparkles,
+  Home, KeyRound, ShieldCheck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Switch } from "@/components/ui/switch";
@@ -38,6 +39,8 @@ import { AdminPlacementTestAnalytics } from "@/components/AdminPlacementTestAnal
 import { AdminMarianneCodes } from "@/components/AdminMarianneCodes";
 import { AdminHubSpotSyncLogs } from "@/components/AdminHubSpotSyncLogs";
 
+type ProviderType = "employer" | "training_org" | "housing";
+
 interface Provider {
   id: string;
   name: string;
@@ -45,7 +48,7 @@ interface Provider {
   phone: string | null;
   website: string | null;
   description: string | null;
-  provider_type: "employer" | "training_org";
+  provider_type: ProviderType;
   is_active: boolean | null;
   city: string | null;
   postal_code: string | null;
@@ -60,11 +63,18 @@ const emptyForm = {
   phone: "",
   website: "",
   description: "",
-  provider_type: "training_org" as "employer" | "training_org",
+  provider_type: "training_org" as ProviderType,
   city: "",
   postal_code: "",
   address: "",
   is_active: true,
+  create_access: false,
+};
+
+const PROVIDER_TYPE_META: Record<ProviderType, { label: string; short: string }> = {
+  training_org: { label: "Organisme de formation", short: "Formation" },
+  employer: { label: "Employeur", short: "Employeur" },
+  housing: { label: "Hébergeur", short: "Hébergeur" },
 };
 
 const QUICK_LINKS = [
@@ -84,7 +94,7 @@ export default function AdminDashboard() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [search, setSearch] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | "employer" | "training_org">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | ProviderType>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "inactive">("all");
   const { toast } = useToast();
 
@@ -126,6 +136,7 @@ export default function AdminDashboard() {
       postal_code: p.postal_code || "",
       address: p.address || "",
       is_active: p.is_active ?? true,
+      create_access: false,
     });
     setDialogOpen(true);
   };
@@ -170,12 +181,18 @@ export default function AdminDashboard() {
             postal_code: form.postal_code || null,
             address: form.address || null,
             is_active: form.is_active,
+            create_access: form.create_access,
           },
         });
 
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
-        toast({ title: "Partenaire créé" });
+        const inviteMsg =
+          data?.invite_status === "sent" ? " — invitation envoyée par email"
+          : data?.invite_status === "existing" ? " — compte existant rattaché"
+          : data?.invite_status === "failed" ? " — partenaire créé mais invitation échouée"
+          : "";
+        toast({ title: "Partenaire créé" + inviteMsg });
       }
 
       setDialogOpen(false);
@@ -200,12 +217,31 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleSendAccess = async (p: Provider) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-create-partner", {
+        body: {
+          // re-use the existing partner: we pass create_access only, the function will invite by email
+          // but since this would create a duplicate, instead we just call auth invite directly via a tiny RPC pattern:
+          name: p.name, email: p.email, provider_type: p.provider_type, is_active: p.is_active,
+          create_access: true, _existing_provider_id: p.id,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      toast({ title: "Invitation envoyée", description: `Un email d'accès a été envoyé à ${p.email}.` });
+    } catch (e: any) {
+      toast({ variant: "destructive", title: "Erreur", description: e.message });
+    }
+  };
   const stats = useMemo(() => {
     const total = providers.length;
     const active = providers.filter((p) => p.is_active).length;
     const employers = providers.filter((p) => p.provider_type === "employer").length;
     const trainingOrgs = providers.filter((p) => p.provider_type === "training_org").length;
-    return { total, active, inactive: total - active, employers, trainingOrgs };
+    const housing = providers.filter((p) => p.provider_type === "housing").length;
+    const withAccess = providers.filter((p) => !!p.user_id).length;
+    return { total, active, inactive: total - active, employers, trainingOrgs, housing, withAccess };
   }, [providers]);
 
   const filteredProviders = useMemo(() => {
@@ -288,6 +324,7 @@ export default function AdminDashboard() {
                         <SelectContent>
                           <SelectItem value="training_org">Organisme de formation</SelectItem>
                           <SelectItem value="employer">Employeur</SelectItem>
+                          <SelectItem value="housing">Hébergeur</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -327,9 +364,26 @@ export default function AdminDashboard() {
                       <Label>Description</Label>
                       <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} placeholder="Description de l'activité..." />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
-                      <Label>Actif</Label>
+                    <div className="space-y-3 rounded-lg border bg-muted/30 p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <Label className="text-sm font-medium">Structure active</Label>
+                          <p className="text-xs text-muted-foreground">Visible dans les annuaires et matching</p>
+                        </div>
+                        <Switch checked={form.is_active} onCheckedChange={(v) => setForm({ ...form, is_active: v })} />
+                      </div>
+                      {!editingId && (
+                        <div className="flex items-center justify-between gap-2 border-t pt-3">
+                          <div className="flex items-start gap-2">
+                            <KeyRound className="mt-0.5 h-4 w-4 text-primary" />
+                            <div>
+                              <Label className="text-sm font-medium">Créer un accès partenaire</Label>
+                              <p className="text-xs text-muted-foreground">Envoie un email d'invitation pour activer le compte</p>
+                            </div>
+                          </div>
+                          <Switch checked={form.create_access} onCheckedChange={(v) => setForm({ ...form, create_access: v })} />
+                        </div>
+                      )}
                     </div>
                     <Button onClick={handleSave} disabled={saving} className="w-full">
                       {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
@@ -343,7 +397,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* KPI cards */}
-        <div className="mb-6 grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-5">
           <KpiCard label="Partenaires" value={stats.total} icon={Building2} tone="primary" hint="total répertoriés" />
           <KpiCard
             label="Actifs"
@@ -354,6 +408,7 @@ export default function AdminDashboard() {
           />
           <KpiCard label="Organismes" value={stats.trainingOrgs} icon={GraduationCap} tone="muted" hint="formation" />
           <KpiCard label="Employeurs" value={stats.employers} icon={Briefcase} tone="muted" hint="recruteurs" />
+          <KpiCard label="Hébergeurs" value={stats.housing} icon={Home} tone="muted" hint="logement / accueil" />
         </div>
 
         {/* Partners table */}
@@ -382,6 +437,7 @@ export default function AdminDashboard() {
                     <TabsTrigger value="all" className="text-xs">Tous</TabsTrigger>
                     <TabsTrigger value="training_org" className="text-xs">Formation</TabsTrigger>
                     <TabsTrigger value="employer" className="text-xs">Employeurs</TabsTrigger>
+                    <TabsTrigger value="housing" className="text-xs">Hébergeurs</TabsTrigger>
                   </TabsList>
                 </Tabs>
                 <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as any)}>
@@ -466,13 +522,19 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant={p.provider_type === "employer" ? "secondary" : "default"} className="gap-1">
-                            {p.provider_type === "employer" ? (
-                              <><Briefcase className="h-3 w-3" /> Employeur</>
-                            ) : (
-                              <><GraduationCap className="h-3 w-3" /> Formation</>
-                            )}
+                          <Badge
+                            variant={p.provider_type === "training_org" ? "default" : "secondary"}
+                            className="gap-1"
+                          >
+                            {p.provider_type === "employer" && <><Briefcase className="h-3 w-3" /> Employeur</>}
+                            {p.provider_type === "training_org" && <><GraduationCap className="h-3 w-3" /> Formation</>}
+                            {p.provider_type === "housing" && <><Home className="h-3 w-3" /> Hébergeur</>}
                           </Badge>
+                          {p.user_id ? (
+                            <Badge variant="outline" className="ml-1 gap-1 border-success/30 bg-success/10 text-success text-[10px]">
+                              <ShieldCheck className="h-2.5 w-2.5" /> accès
+                            </Badge>
+                          ) : null}
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">{p.email}</div>
@@ -521,6 +583,10 @@ export default function AdminDashboard() {
                                 ) : (
                                   <><CheckCircle2 className="mr-2 h-4 w-4" /> Activer</>
                                 )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => handleSendAccess(p)}>
+                                <KeyRound className="mr-2 h-4 w-4" />
+                                {p.user_id ? "Renvoyer l'accès" : "Créer un accès"}
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem asChild disabled={!p.website}>

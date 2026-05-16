@@ -48,7 +48,11 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json();
-    const { name, email, phone, website, description, provider_type, address, city, postal_code, is_active } = body;
+    const {
+      name, email, phone, website, description, provider_type,
+      address, city, postal_code, is_active, create_access,
+      _existing_provider_id,
+    } = body;
 
     if (!name || !email) {
       return new Response(JSON.stringify({ error: "Nom et email requis" }), {
@@ -56,32 +60,83 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Create training_provider using service role (bypasses RLS)
-    const { data: provider, error: providerError } = await supabaseAdmin
-      .from("training_providers")
-      .insert({
-        name,
-        email,
-        phone: phone || null,
-        website: website || null,
-        description: description || null,
-        provider_type: provider_type || "training_org",
-        address: address || null,
-        city: city || null,
-        postal_code: postal_code || null,
-        is_active: is_active ?? true,
-      })
-      .select()
-      .single();
+    // Optionally create an auth user and send invite email
+    let partner_user_id: string | null = null;
+    let invite_status: "sent" | "existing" | "skipped" | "failed" = "skipped";
 
-    if (providerError) {
-      console.error("Provider creation error:", providerError);
-      return new Response(JSON.stringify({ error: providerError.message }), {
-        status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    if (create_access) {
+      try {
+        const redirectTo = `${supabaseUrl.replace(".supabase.co", ".lovable.app")}/partner-dashboard`;
+        const { data: invited, error: inviteError } = await supabaseAdmin.auth.admin
+          .inviteUserByEmail(email, { redirectTo });
+
+        if (inviteError) {
+          // If user already exists, look it up
+          if (`${inviteError.message}`.toLowerCase().includes("already")) {
+            const { data: list } = await supabaseAdmin.auth.admin.listUsers();
+            const existing = list?.users?.find((u: any) => u.email?.toLowerCase() === email.toLowerCase());
+            partner_user_id = existing?.id ?? null;
+            invite_status = existing ? "existing" : "failed";
+          } else {
+            invite_status = "failed";
+            console.error("Invite error:", inviteError);
+          }
+        } else {
+          partner_user_id = invited?.user?.id ?? null;
+          invite_status = "sent";
+        }
+      } catch (e) {
+        invite_status = "failed";
+        console.error("Invite exception:", e);
+      }
     }
 
-    return new Response(JSON.stringify({ provider }), {
+    let provider: any = null;
+
+    if (_existing_provider_id) {
+      // Just attach the (possibly new) auth user to the existing partner record
+      const { data, error } = await supabaseAdmin
+        .from("training_providers")
+        .update({ user_id: partner_user_id ?? undefined })
+        .eq("id", _existing_provider_id)
+        .select()
+        .single();
+      if (error) {
+        console.error("Provider update error:", error);
+        return new Response(JSON.stringify({ error: error.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      provider = data;
+    } else {
+      const { data, error: providerError } = await supabaseAdmin
+        .from("training_providers")
+        .insert({
+          name,
+          email,
+          phone: phone || null,
+          website: website || null,
+          description: description || null,
+          provider_type: provider_type || "training_org",
+          address: address || null,
+          city: city || null,
+          postal_code: postal_code || null,
+          is_active: is_active ?? true,
+          user_id: partner_user_id,
+        })
+        .select()
+        .single();
+
+      if (providerError) {
+        console.error("Provider creation error:", providerError);
+        return new Response(JSON.stringify({ error: providerError.message }), {
+          status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      provider = data;
+    }
+
+    return new Response(JSON.stringify({ provider, invite_status, partner_user_id }), {
       status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
