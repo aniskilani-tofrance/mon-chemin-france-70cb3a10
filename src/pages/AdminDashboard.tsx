@@ -135,6 +135,7 @@ export default function AdminDashboard() {
       postal_code: p.postal_code || "",
       address: p.address || "",
       is_active: p.is_active ?? true,
+      create_access: false,
     });
     setDialogOpen(true);
   };
