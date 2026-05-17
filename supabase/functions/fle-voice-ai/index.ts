@@ -172,8 +172,31 @@ serve(async (req) => {
       throw new Error("LOVABLE_API_KEY not configured");
     }
 
-    const body = await req.json();
+    const rawBody = await req.text();
+    if (rawBody.length > 12000) {
+      return new Response(JSON.stringify({ error: "Payload too large" }), {
+        status: 413,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let body: any;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     const { action } = body;
+
+    // Bound user-controlled string inputs to mitigate AI credit abuse on anonymous-callable endpoints
+    const capStr = (v: unknown, max: number) =>
+      typeof v === "string" && v.length > max ? v.slice(0, max) : v;
+    body.user_answer = capStr(body.user_answer, 2000);
+    body.prompt_text = capStr(body.prompt_text, 2000);
+    body.expected_answer = capStr(body.expected_answer, 1000);
+    body.conversation_summary = capStr(body.conversation_summary, 3000);
 
     let systemPrompt = "";
     let userMessage = "";
