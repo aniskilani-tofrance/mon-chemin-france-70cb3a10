@@ -837,6 +837,12 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "diagnosticType et diagnosticId sont requis" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
+    // Validate UUID format to reduce abuse surface
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(diagnosticId)) {
+      return new Response(JSON.stringify({ error: "diagnosticId invalide" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const payload = diagnosticType === "marianne"
       ? await buildMariannePayload(supabaseAdmin, diagnosticId)
       : await buildSharedPayload(supabaseAdmin, diagnosticId);
