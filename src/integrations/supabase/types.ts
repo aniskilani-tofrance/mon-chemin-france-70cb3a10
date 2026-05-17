@@ -2176,6 +2176,17 @@ export type Database = {
     Functions: {
       can_access_provider: { Args: { _provider_id: string }; Returns: boolean }
       check_marianne_access_code: { Args: { _code: string }; Returns: Json }
+      check_test_results_cooldown: {
+        Args: { _email: string }
+        Returns: {
+          created_at: string
+          id: string
+        }[]
+      }
+      claim_shared_diagnostic_by_code: {
+        Args: { _code: string }
+        Returns: string
+      }
       generate_access_code: { Args: never; Returns: string }
       get_lead_price: {
         Args: { cert_type: Database["public"]["Enums"]["certification_type"] }
