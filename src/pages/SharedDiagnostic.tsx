@@ -100,27 +100,32 @@ const SharedDiagnostic = () => {
     let cancelled = false;
     (async () => {
       try {
-        let query = supabase.from("shared_diagnostics").select("*");
-        query = diagnosticIdParam
-          ? query.eq("id", diagnosticIdParam)
-          : query.eq("access_code", codeParam!.toUpperCase());
+        let resolvedId = diagnosticIdParam as string | null;
 
-        const { data: diagnostic, error: dErr } = await query.maybeSingle();
+        if (!resolvedId && codeParam) {
+          const { data: claimed, error: rpcErr } = await supabase.rpc(
+            "claim_shared_diagnostic_by_code",
+            { _code: codeParam }
+          );
+          if (rpcErr || !claimed) {
+            toast.error("Diagnostic introuvable.");
+            navigate("/");
+            return;
+          }
+          resolvedId = claimed as string;
+        }
+
+        const { data: diagnostic, error: dErr } = await supabase
+          .from("shared_diagnostics")
+          .select("*")
+          .eq("id", resolvedId!)
+          .maybeSingle();
         if (dErr || !diagnostic) {
           toast.error("Diagnostic introuvable.");
           navigate("/");
           return;
         }
         if (cancelled) return;
-
-        // If learner is empty and we arrived via code, claim the diagnostic
-        if (!diagnostic.learner_id && codeParam) {
-          const { error: claimErr } = await supabase
-            .from("shared_diagnostics")
-            .update({ learner_id: user.id })
-            .eq("id", diagnostic.id);
-          if (claimErr) console.warn("Claim error", claimErr);
-        }
 
         setDiagnosticId(diagnostic.id);
         setLearnerLanguage((diagnostic.learner_language as LanguageCode) || "fr");
