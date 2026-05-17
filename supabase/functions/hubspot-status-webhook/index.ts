@@ -118,7 +118,41 @@ serve(async (req) => {
   const supabaseAdmin = createClient(Deno.env.get("SUPABASE_URL") ?? "", Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "");
 
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+
+    // HubSpot v3 signature verification (HMAC-SHA256 over METHOD+URL+BODY+TIMESTAMP)
+    const clientSecret = Deno.env.get("HUBSPOT_CLIENT_SECRET");
+    if (clientSecret) {
+      const signature = req.headers.get("x-hubspot-signature-v3");
+      const timestamp = req.headers.get("x-hubspot-request-timestamp");
+      if (!signature || !timestamp) {
+        return json({ error: "Missing HubSpot signature headers" }, 401);
+      }
+      // Reject requests older than 5 minutes
+      const ts = Number(timestamp);
+      if (!Number.isFinite(ts) || Math.abs(Date.now() - ts) > 5 * 60 * 1000) {
+        return json({ error: "Stale or invalid timestamp" }, 401);
+      }
+      const url = req.url;
+      const baseString = `${req.method}${url}${rawBody}${timestamp}`;
+      const key = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(clientSecret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"],
+      );
+      const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(baseString));
+      const expected = btoa(String.fromCharCode(...new Uint8Array(sig)));
+      if (expected !== signature) {
+        return json({ error: "Invalid signature" }, 401);
+      }
+    } else {
+      console.warn("HUBSPOT_CLIENT_SECRET not set — webhook signature verification is disabled");
+      return json({ error: "Webhook signature verification not configured" }, 401);
+    }
+
+    const body = JSON.parse(rawBody);
     const events = Array.isArray(body) ? body : [body];
     const statusEvents = events.filter((event: any) => event?.propertyName === "statut_lead" && event?.objectId);
     const results = [];
