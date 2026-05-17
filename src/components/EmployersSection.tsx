@@ -75,7 +75,7 @@ export function EmployersSection() {
             Notre réseau
           </Badge>
           <p className="text-muted-foreground">
-            Un réseau d'organismes de formation et d'associations pour vous accompagner
+            Des organismes de formation et d'accompagnement pour vous aider à avancer sereinement en France
           </p>
         </AnimatedContainer>
 
