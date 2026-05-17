@@ -63,6 +63,14 @@ serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
 
+  // Cron-only endpoint: require service role bearer token
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  const authHeader = req.headers.get("Authorization") || "";
+  const provided = authHeader.replace(/^Bearer\s+/i, "");
+  if (!serviceKey || provided !== serviceKey) {
+    return json({ error: "Unauthorized" }, 401);
+  }
+
   try {
     const body = await req.json().catch(() => ({}));
 

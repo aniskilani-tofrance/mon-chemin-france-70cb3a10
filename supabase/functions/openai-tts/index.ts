@@ -211,6 +211,14 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Cap input length to prevent abuse of paid TTS APIs
+    if (text.length > 1500) {
+      return new Response(JSON.stringify({ error: 'text too long (max 1500 chars)' }), {
+        status: 413,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     const elevenKey = Deno.env.get('ELEVENLABS_API_KEY');
 

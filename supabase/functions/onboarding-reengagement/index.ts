@@ -117,6 +117,16 @@ Deno.serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // Cron-only endpoint: require service role bearer token
+  const authHeader = req.headers.get("Authorization") || "";
+  const provided = authHeader.replace(/^Bearer\s+/i, "");
+  if (!provided || provided !== supabaseServiceKey) {
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
+  }
+
   try {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const now = new Date();

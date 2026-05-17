@@ -31,12 +31,7 @@ export default function PlacementTestHome() {
     threeMonthsAgo.setMonth(threeMonthsAgo.getMonth() - 3);
 
     const { data: existing } = await supabase
-      .from("test_results")
-      .select("id, created_at")
-      .eq("candidate_email", email.trim().toLowerCase())
-      .gte("created_at", threeMonthsAgo.toISOString())
-      .order("created_at", { ascending: false })
-      .limit(1);
+      .rpc("check_test_results_cooldown", { _email: email.trim().toLowerCase() });
 
     if (existing && existing.length > 0) {
       const lastDate = new Date(existing[0].created_at);
