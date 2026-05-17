@@ -11,10 +11,10 @@ export function AccessCodeSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 text-center">
           <h2 className="mb-3 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-            Commencez avec Marianne
+            Votre boussole pour avancer en France
           </h2>
           <p className="mx-auto max-w-xl text-lg text-muted-foreground">
-            Marianne vous écoute et vous oriente. C'est simple et gratuit.
+            Un diagnostic simple et gratuit pour trouver votre direction, vos rendez-vous et vos prochaines étapes.
           </p>
         </div>
 
