@@ -41,6 +41,13 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Cap input size to limit abuse of paid AI credits
+    if (typeof text !== "string" || text.length > 2000) {
+      return new Response(JSON.stringify({ error: "Text too long (max 2000 chars)" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     if (source_lang === target_lang) {
       return new Response(JSON.stringify({ translation: text }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
