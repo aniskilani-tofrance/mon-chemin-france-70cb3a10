@@ -199,6 +199,23 @@ serve(async (req) => {
       });
     }
 
+    // Input validation to limit abuse of the public email endpoint
+    const emailOk = /^[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}$/.test(body.email);
+    if (
+      !emailOk ||
+      body.email.length > 255 ||
+      body.name.length > 200 ||
+      body.organization.length > 200 ||
+      body.structureType.length > 50 ||
+      (body.message && body.message.length > 2000)
+    ) {
+      return new Response(JSON.stringify({ error: "Invalid input" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Force internalRecipient to a server-controlled allowlist (ignore client value)
+    body.internalRecipient = undefined;
+
     // 1) Send confirmation to the partner
     const confirmation = buildConfirmationEmail(body);
     const sendToPartner = await sendOutlookMail({
