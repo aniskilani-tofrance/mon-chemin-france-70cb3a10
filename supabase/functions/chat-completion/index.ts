@@ -18,6 +18,20 @@ serve(async (req) => {
 
     const { model, messages, max_tokens } = await req.json();
 
+    // Basic abuse mitigation: cap payload size
+    if (!Array.isArray(messages) || messages.length === 0 || messages.length > 30) {
+      return new Response(JSON.stringify({ error: "Invalid messages" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const totalChars = messages.reduce((n: number, m: any) => n + (typeof m?.content === "string" ? m.content.length : 0), 0);
+    if (totalChars > 8000) {
+      return new Response(JSON.stringify({ error: "Payload too large" }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const safeMaxTokens = Math.min(Number(max_tokens) || 300, 800);
+
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
